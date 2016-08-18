@@ -32,7 +32,6 @@ if (inputFile.is_open()){
 std::string P = lines[1];
 std::string t = lines[3];
 
-
 std::list<std::vector<std::string>> T;
 std::vector<std::string> tempVector;
 std::stringstream tempString;
@@ -53,6 +52,7 @@ for (int i=0; i<t.length(); i++){ //loop through text string
 		tempString << t[i];
 	}
 }
+
 tempVector.clear();
 tempString.str("");
 tempString.clear();
@@ -68,8 +68,6 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 }
 std::cout << "\nstring P:" << std::endl;
 std::cout << P << std::endl;
-
-
 
 //Construct Suffix Tree of pattern P
 
