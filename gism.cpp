@@ -71,16 +71,16 @@ for (int i=0; i<t.length(); i++){ //loop through text string
 	}
 	std::cout << std::endl << std::endl;
 }
-/*
-std::list<std::vector<std::string>>::iterator listit;
-std::vector<std::string>::iterator vecit; 
-for (listit=T.begin(); listit!=T.end(); listit++){
-	for(vecit=listit.begin(); vecit!=listit.end(); vecit++){
-		std::cout << *vecit << " ";
-	}
-	std::cout << std::endl;
+tempVector.clear();
+tempString.str("");
+tempString.clear();
+
+std::cout << std::endl << std::endl << "trying to print T properly" << std::endl << std::endl;
+for (auto i=0; i<T.size(); i++){
+	tempVector = T[i];
 }
-*/
+
+
 
 //Construct Suffix Tree of pattern P
 
