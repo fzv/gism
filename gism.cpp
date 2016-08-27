@@ -38,18 +38,18 @@ std::stringstream tempString;
 
 for (int i=0; i<t.length(); i++){ //loop through text string
 	if (t[i]=='{'){ //if new pos in T
-		tempVector.clear(); //create vector to hold letters in current pos in T
-		tempString.str("");
-		tempString.clear();
-	} else if (t[i]=='}'){ //if reach end of current pos in T
-		tempVector.push_back(tempString.str()); //add current s to tempVector
+		tempVector.clear(); //clear vector to hold all s in t[i]
+		tempString.str(""); //clear string stream to hold all a in s[j]
+		tempString.clear();//clear string stream to hold all a in s[j]
+	} else if (t[i]=='}'){ //if reach end of t[i]
+		tempVector.push_back(tempString.str()); //add previous s to tempVector
 		T.push_back(tempVector); //fill current pos in T with tempVector
-	} else if (t[i]==','){
-		tempVector.push_back(tempString.str()); //add current s to tempVector
-		tempString.str("");
-		tempString.clear();
-	} else {
-		tempString << t[i];
+	} else if (t[i]==','){ //if new s in t[i]
+		tempVector.push_back(tempString.str()); //add previous s to tempVector
+		tempString.str(""); //clear string stream to hold all a in s[j]
+		tempString.clear(); //clear string stream to hold all a in s[j]
+	} else { //if next a in s
+		tempString << t[i]; //add a to string stream
 	}
 }
 
