@@ -70,8 +70,13 @@ std::cout << "\nstring P:" << std::endl;
 std::cout << P << std::endl;
 
 //Construct Suffix Tree of pattern P
-
-
+std::string file = "pattern";
+sdsl::cst_sada<> cst;
+construct(cst, file, 1);
+std::cout << "size " << cst.size() << std::endl;
+for (sdsl::cst_sada<>::const_iterator it = cst.begin(); it!=cst.end(); it++){
+	std::cout << cst.depth(*it) << "-[" << cst.lb(*it) << "," << cst.rb(*it) << "]" << std::endl;
+}
 
 
 return 0;
