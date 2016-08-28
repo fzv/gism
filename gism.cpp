@@ -72,5 +72,7 @@ std::cout << P << std::endl;
 //Construct Suffix Tree of pattern P
 
 
+
+
 return 0;
 }
