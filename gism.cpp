@@ -4,6 +4,8 @@
 #include <fstream> //ifstream,is_open,good,getline,close
 #include <sstream> //
 #include "sdsl/suffix_trees.hpp"
+#include "sdsl/util.hpp"
+#include <iterator>
 
 int main()
 {
@@ -73,9 +75,18 @@ std::cout << P << std::endl;
 std::string file = "pattern";
 sdsl::cst_sada<> cst;
 construct(cst, file, 1);
+
+//Do stuff with STp
 std::cout << "size " << cst.size() << std::endl;
-for (sdsl::cst_sada<>::const_iterator it = cst.begin(); it!=cst.end(); it++){
-	std::cout << cst.depth(*it) << "-[" << cst.lb(*it) << "," << cst.rb(*it) << "]" << std::endl;
+sdsl::cst_sada<>::size_type d;
+sdsl::cst_sada<>::node_type v;
+for (sdsl::cst_sada<>::const_iterator it = cst.begin(); it!=cst.end(); it++)
+{
+	v = *it;
+	d = cst.depth(v);
+	std::cout << d << "-[" << cst.lb(v) << "," << cst.rb(v) << "]" << std::endl;
+	//std::cout << extract(cst,v) << std::endl;
+	//std::cout << "Number of children " << cst.size(*it) << std::endl;
 }
 
 
