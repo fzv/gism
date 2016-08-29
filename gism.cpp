@@ -117,8 +117,14 @@ for (sdsl::cst_sct3<>::const_iterator it = cst.begin(); it!=cst.end(); it++)
 	c = cst.degree(v);
 	std::cout << "Number of children " << c << std::endl;
 	
-	a = cst.edge(v,1);
-	std::cout << "First letter on edge label from root to v: " << a << std::endl;
+	//a = cst.edge(v,1);
+	//std::cout << "First letter on edge label from root to v: " << a << std::endl;
+
+	for (int i = 1; i <= cst.depth(v); i++)
+	{
+	std::cout << cst.edge(v,i);
+	}
+	std::cout << std::endl;
 
 	std::cout << std::endl;
 	
