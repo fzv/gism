@@ -7,6 +7,8 @@
 #include "sdsl/util.hpp"
 #include <iterator>
 
+std::vector<int> computeBorderTable(std::string X, std::vector<int> B);
+
 int main()
 {
 
@@ -137,6 +139,8 @@ std::stringstream x;
 std::string X;
 std::string alpha = "mnopqrsvwxyz";
 int unique = 0;
+std::vector<int> B;
+
 for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++){
 	tempVector = *i;
 	for (std::vector<std::string>::iterator j=tempVector.begin(); j!=tempVector.end(); j++){
@@ -145,8 +149,10 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 	}
 	X = x.str();
 	X.pop_back();
+	//string X is ready
 	std::cout << X << std::endl;
-	//
+	computeBorderTable(X, B);
+	//clean up
 	x.str("");
 	x.clear();
 	unique = 0;
@@ -154,4 +160,10 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 }
 
 return 0;
+}
+
+std::vector<int> computeBorderTable(std::string X, std::vector<int> B)
+{
+	std::cout << "hi" << std::endl;
+	return B;
 }
