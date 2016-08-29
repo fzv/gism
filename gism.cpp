@@ -92,8 +92,8 @@ sdsl::cst_sct3<>::char_type a;
 
 for (sdsl::cst_sct3<>::const_iterator it = cst.begin(); it!=cst.end(); it++)
 {
-	if(it.visit()==1){ //if we have not traversed the subtree rooted at v
-
+if(it.visit()==1) //if we have not traversed the subtree rooted at v
+{
 	v = *it;
 
 	sn = cst.sn(v);
@@ -120,21 +120,38 @@ for (sdsl::cst_sct3<>::const_iterator it = cst.begin(); it!=cst.end(); it++)
 	//a = cst.edge(v,1);
 	//std::cout << "First letter on edge label from root to v: " << a << std::endl;
 
+	std::cout << "L(v) : ";
 	for (int i = 1; i <= cst.depth(v); i++)
 	{
-	std::cout << cst.edge(v,i);
+		std::cout << cst.edge(v,i);
 	}
 	std::cout << std::endl;
 
 	std::cout << std::endl;
-	
-
-	
-	//std::cout << extract(cst,v) << std::endl;
-
-	}
+}
 }
 
+//Lemma 2
+/// if len(s) >= m ???
+std::stringstream x;
+std::string X;
+std::string alpha = "mnopqrsvwxyz";
+int unique = 0;
+for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++){
+	tempVector = *i;
+	for (std::vector<std::string>::iterator j=tempVector.begin(); j!=tempVector.end(); j++){
+		x << *j << alpha[unique];
+		unique++;
+	}
+	X = x.str();
+	X.pop_back();
+	std::cout << X << std::endl;
+	//
+	x.str("");
+	x.clear();
+	unique = 0;
+	std::cout << std::endl;
+}
 
 return 0;
 }
