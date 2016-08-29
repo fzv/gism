@@ -70,23 +70,54 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 }
 std::cout << "\nstring P:" << std::endl;
 std::cout << P << std::endl;
+std::cout << std::endl;
 
 //Construct Suffix Tree of pattern P
 std::string file = "pattern";
-sdsl::cst_sada<> cst;
+sdsl::cst_sct3<> cst;
 construct(cst, file, 1);
 
 //Do stuff with STp
-std::cout << "size " << cst.size() << std::endl;
-sdsl::cst_sada<>::size_type d;
-sdsl::cst_sada<>::node_type v;
-for (sdsl::cst_sada<>::const_iterator it = cst.begin(); it!=cst.end(); it++)
+std::cout << "number of nodes in suffix tree " << cst.nodes() << std::endl;
+sdsl::cst_sct3<>::size_type d;
+sdsl::cst_sct3<>::node_type v;
+sdsl::cst_sct3<>::size_type s;
+sdsl::cst_sct3<>::size_type sn;
+bool l;
+sdsl::cst_sct3<>::size_type lb;
+sdsl::cst_sct3<>::size_type rb;
+
+for (sdsl::cst_sct3<>::const_iterator it = cst.begin(); it!=cst.end(); it++)
 {
+	if(it.visit()==1){ //if we have not traversed the subtree rooted at v
+
 	v = *it;
-	d = cst.depth(v);
-	std::cout << d << "-[" << cst.lb(v) << "," << cst.rb(v) << "]" << std::endl;
+
+	sn = cst.sn(v);
+	std::cout << "Suffix number in SA" << sn << std::endl;
+
+	d = cst.node_depth(v);
+	std::cout << "Node depth " << d << std::endl;
+
+	s = cst.size(v);
+	std::cout << s << " leaves in subtree rooted at v" << std::endl;
+
+	l = cst.is_leaf(v);
+	std::cout << "I am a leaf: " << l << std::endl;
+
+	lb = cst.lb(v);
+	std::cout << "Index of leftmost leaf in SA " << lb << std::endl;
+
+	rb = cst.rb(v);
+	std::cout << "Index of rightmost leaf in SA " << rb << std::endl;
+
+	std::cout << std::endl;
+	
+
+	
 	//std::cout << extract(cst,v) << std::endl;
-	//std::cout << "Number of children " << cst.size(*it) << std::endl;
+
+	}
 }
 
 
