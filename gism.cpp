@@ -8,6 +8,7 @@
 #include <iterator>
 
 std::vector<int> computeBorderTable(std::string X, std::vector<int> B);
+std::vector<int> computeBorder(std::string temp, std::vector<int> B);
 
 int main()
 {
@@ -150,7 +151,7 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 	X = x.str();
 	X.pop_back();
 	//string X is ready
-	std::cout << X << std::endl;
+	std::cout << X << " : " << std::endl;
 	computeBorderTable(X, B);
 	//clean up
 	x.str("");
@@ -164,6 +165,43 @@ return 0;
 
 std::vector<int> computeBorderTable(std::string X, std::vector<int> B)
 {
-	std::cout << "hi" << std::endl;
+	std::string temp;
+	B.push_back(0);
+	for (int i = 2; i < X.length(); i++){
+		temp = X.substr(0,i);
+		std::cout << temp << std::endl;
+		//compute border length of string temp
+		computeBorder(temp, B);
+
+	}
+	temp = X;
+	std::cout << temp << std::endl;
+	computeBorder(temp, B);
+
+	for (std::vector<int>::iterator it = B.begin(); it != B.end(); it++){
+		std::cout << *it << " ";
+	}
+	std::cout << std::endl;
+
+	return B;
+}
+
+std::vector<int> computeBorder(std::string temp, std::vector<int> B)
+{
+	int len = temp.length();
+	int borderlen = 0;
+	for (int j = 0; j < len; j++){
+		std::string abc = temp[j];
+		std::string xyz = temp[len-j];
+		if (abc==xyz){
+			borderlen++;
+		} else if (xyz != "A" | xyz != "G" | xyz != "C" | xyz != "T"){
+			break;
+		} else {
+			break;
+		}
+	}
+	B.push_back(borderlen);
+	
 	return B;
 }
