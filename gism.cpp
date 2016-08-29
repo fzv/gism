@@ -78,7 +78,8 @@ sdsl::cst_sct3<> cst;
 construct(cst, file, 1);
 
 //Do stuff with STp
-std::cout << "number of nodes in suffix tree " << cst.nodes() << std::endl;
+std::cout << "number of nodes in suffix tree " << cst.nodes() << std::endl << std::endl;
+
 sdsl::cst_sct3<>::size_type d;
 sdsl::cst_sct3<>::node_type v;
 sdsl::cst_sct3<>::size_type s;
@@ -86,6 +87,8 @@ sdsl::cst_sct3<>::size_type sn;
 bool l;
 sdsl::cst_sct3<>::size_type lb;
 sdsl::cst_sct3<>::size_type rb;
+sdsl::cst_sct3<>::size_type c;
+sdsl::cst_sct3<>::char_type a;
 
 for (sdsl::cst_sct3<>::const_iterator it = cst.begin(); it!=cst.end(); it++)
 {
@@ -94,7 +97,7 @@ for (sdsl::cst_sct3<>::const_iterator it = cst.begin(); it!=cst.end(); it++)
 	v = *it;
 
 	sn = cst.sn(v);
-	std::cout << "Suffix number in SA" << sn << std::endl;
+	std::cout << "Suffix number " << sn << std::endl;
 
 	d = cst.node_depth(v);
 	std::cout << "Node depth " << d << std::endl;
@@ -110,6 +113,12 @@ for (sdsl::cst_sct3<>::const_iterator it = cst.begin(); it!=cst.end(); it++)
 
 	rb = cst.rb(v);
 	std::cout << "Index of rightmost leaf in SA " << rb << std::endl;
+
+	c = cst.degree(v);
+	std::cout << "Number of children " << c << std::endl;
+	
+	a = cst.edge(v,1);
+	std::cout << "First letter on edge label from root to v: " << a << std::endl;
 
 	std::cout << std::endl;
 	
