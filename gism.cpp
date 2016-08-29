@@ -152,7 +152,7 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 	X.pop_back();
 	//string X is ready
 	std::cout << X << " : " << std::endl;
-	computeBorderTable(X, B);
+	B = computeBorderTable(X, B);
 	//clean up
 	x.str("");
 	x.clear();
@@ -160,23 +160,62 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 	std::cout << std::endl;
 }
 
+
+
 return 0;
 }
 
 std::vector<int> computeBorderTable(std::string X, std::vector<int> B)
 {
+	B.clear();
+	int m = X.length();
+	std::cout << "length of string X is " << m << std::endl;
+	for (int b = 0; b < m; b++){
+		B.push_back(0);
+	}
+
+	//algorithm from Maxime's book
+	int i = 0;
+	for (int j = 1; j < m; j++){
+		B[j-1] = i;
+		while (i >= 0 & X[j]!=X[i]){
+			if (i=0){
+				i = -1;
+			} else {
+				i = B[i-1];
+			}
+		}
+		i++;
+	}
+	B[m-1] = i;
+
+	//print border table
+	for (std::vector<int>::iterator it = B.begin(); it != B.end(); it++){
+		std::cout << *it << " ";
+	}
+	std::cout << std::endl << std::endl;
+
+	return B;
+}
+/*
+std::vector<int> computeBorderTable(std::string X, std::vector<int> B)
+{
+	B.clear();
 	std::string temp;
 	B.push_back(0);
-	for (int i = 2; i < X.length(); i++){
-		temp = X.substr(0,i);
+	if (X.length() == 1){
+		std::cout << X << std::endl;
+		std::cout << "Won't compute border because string too short" << std::endl;
+	} else {
+		for (int i = 2; i < X.length(); i++){
+			temp = X.substr(0,i);
+			std::cout << temp << std::endl;
+			B = computeBorder(temp, B);
+		}
+		temp = X;
 		std::cout << temp << std::endl;
-		//compute border length of string temp
-		computeBorder(temp, B);
-
+		B = computeBorder(temp, B);
 	}
-	temp = X;
-	std::cout << temp << std::endl;
-	computeBorder(temp, B);
 
 	//print border table
 	for (std::vector<int>::iterator it = B.begin(); it != B.end(); it++){
@@ -193,21 +232,32 @@ std::vector<int> computeBorder(std::string temp, std::vector<int> B)
 	std::cout << "Length of temp is " << len << std::endl;
 	int borderlen = 0;
 	std::cout << "Borderlen initialised to " << borderlen << std::endl;
+	char A = 'A';
+	char G = 'G';
+	char C = 'C';
+	char T = 'T';
+	char abc;
+	char xyz;
 	for (int j = 0; j < len; j++){
-		std::cout << "Looping through temp string" << std::endl;
-		char abc = temp[j];
-		std::cout << "First letter in temp is " << abc << " at pos " << j << std::endl;
-		char xyz = temp[len-j-1];
-		std::cout << "Last letter in temp is " << xyz << " at pos " << len-j-1 << std::endl;
-		if (abc==xyz){
-			std::cout << "First and last letter match" << std::endl;
-			borderlen++;
-		} else if (xyz != 'A' | xyz != 'G' | xyz != 'C' | xyz != 'T'){
-			std::cout << "Last letter is not ACGT" << std::endl;
+		if (j==len-j-1){
 			break;
 		} else {
-			std::cout << "Letters do not match" << std::endl;
-			break;
+			std::cout << "Looping through temp string" << std::endl;
+			abc = temp[j];
+			std::cout << "First letter in temp is " << abc << " at pos " << j << std::endl;
+			xyz = temp[len-j-1];
+			std::cout << "Last letter in temp is " << xyz << " at pos " << len-j-1 << std::endl;
+			if (abc==xyz){
+				std::cout << "First and last letter match" << std::endl;
+				borderlen++;
+			} else if (xyz != A | xyz != G | xyz != C | xyz != T){
+				///what happens if E???
+				std::cout << "Last letter " << xyz << " is not ACGT" << std::endl;
+				break;
+			} else {
+				std::cout << "Letters do not match" << std::endl;
+				break;
+			}
 		}
 	}
 	std::cout << "Borderlen = " << borderlen << std::endl <<std::endl;
@@ -215,3 +265,4 @@ std::vector<int> computeBorder(std::string temp, std::vector<int> B)
 	
 	return B;
 }
+*/
