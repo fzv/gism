@@ -170,30 +170,55 @@ std::vector<int> computeBorderTable(std::string X, std::vector<int> B)
 	B.clear();
 	int m = X.length();
 	std::cout << "length of string X is " << m << std::endl;
+
+	if (m == 1){
+		std::cout << X << std::endl;
+		std::cout << "Won't compute border because string too short" << std::endl;
+	} else {
+//else
+	std::cout << X << std::endl;
 	for (int b = 0; b < m; b++){
 		B.push_back(0);
 	}
+	//print border table
+	std::cout << "Empty border table of correct size" << std::endl;
+	for (std::vector<int>::iterator it = B.begin(); it != B.end(); it++){
+		std::cout << *it << " ";
+	}
+	std::cout << std::endl << std::endl;
 
 	//algorithm from Maxime's book
-	int i = 0;
-	for (int j = 1; j < m; j++){
-		B[j-1] = i;
-		while (i >= 0 & X[j]!=X[i]){
-			if (i=0){
-				i = -1;
+	int p = 0;
+	std::cout << "p = " << p << std::endl;
+	for (int q = 1; q < m; q++){
+		std::cout << "entering loop" << std::endl;
+		std::cout << "q = " << q << std::endl;
+		B[q-1] = p;
+		std::cout << "setting B[" << q << "-1] = " << p << std::endl;
+		while (p >= 0 & X[q]!=X[p]){
+			std::cout << "p >= 0 and X[" << q << "] != X[" << p << "]" << std::endl;
+			std::cout << "that is, " << X[q] << " != " << X[p] << std::endl;
+			if (p==0){
+				std::cout << "p = 0 so setting p = -1" << std::endl;
+				p = -1;
 			} else {
-				i = B[i-1];
+				p = B[p-1];
+				std::cout << "p = B[p-1] = " << p << std::endl;
 			}
 		}
-		i++;
+		std::cout << "p = p+1" << std::endl;
+		p++;
 	}
-	B[m-1] = i;
+	B[m-1] = p;
+	std::cout << "B[m-1] = " << p << std::endl;
 
 	//print border table
 	for (std::vector<int>::iterator it = B.begin(); it != B.end(); it++){
 		std::cout << *it << " ";
 	}
 	std::cout << std::endl << std::endl;
+//endelse
+	}
 
 	return B;
 }
