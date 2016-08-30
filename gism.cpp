@@ -11,7 +11,7 @@ std::vector<int> computeBorderTable(std::string X, std::vector<int> B);
 std::vector<int> computeBorder(std::string temp, std::vector<int> B);
 void preKMP(std::string pattern, int f[]);
 bool KMP(std::string needle, std::string haystack);
-std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::vector<int>>> L, std::stringstream report, int posT, std::vector<int> B, std::vector<int> Bprime);
+std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::vector<int>>> L, std::vector<int> report, int posT, std::vector<int> B, std::vector<int> Bprime);
 
 
 int main()
@@ -145,7 +145,7 @@ std::string alpha = "mnoqrsvwxyz"; //asuming no more than 12 s in T[i]
 int unique = 0;
 std::vector<int> B;
 std::vector<int> Bprime;
-std::stringstream report;
+std::vector<int> report;
 std::list<std::vector<std::vector<int>>> L;
 int posT;
 
@@ -163,15 +163,26 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 	//string X is ready
 	std::cout << X << " : " << std::endl;
 	for (int b = 0; b<Bprime.size(); b++) std::cout << Bprime[b] << " ";
-	std::cout << "check above indexes of below border table" << std::endl;
+	std::cout << std::endl << "check above indexes of below border table" << std::endl;
+	if (i==T.begin())
+	{
+	std::cout << "we are on T[" << posT << "]" << std::endl;
 	B = computeBorderTable(X, B);
 	L = computeBps(L,report,posT,B,Bprime);
+	}
+	else
+	{
+	std::cout << "we are on T[" << posT << "]" << std::endl;
+	}
+
 	//clean up
 	Bprime.clear();
 	B.clear();
+	report.clear()
 	x.str("");
 	x.clear();
 	unique = 0;
+	posT++;
 	std::cout << std::endl;
 }
 
@@ -184,9 +195,12 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 return 0;
 }
 
-std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::vector<int>>> L, std::stringstream report, int posT, std::vector<int> B, std::vector<int> Bprime)
+std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::vector<int>>> L, std::vector<int> report, int posT, std::vector<int> B, std::vector<int> Bprime)
 {
-	std::cout << "you are now in computeBps function" << std::endl;
+	for (std::vector<int>::iterator it = Bprime.begin(); it != Bprime.end(); it++)
+	{
+	
+	}
 
 	return L;
 }
