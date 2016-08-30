@@ -210,12 +210,33 @@ return 0;
 std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::vector<int>>> L, std::vector<int> report, std::vector<int> B, std::vector<int> Bprime, std::string P)
 {
 	int Bi;	
+	std::vector<int> Sj;
+	std::vector<std::vector<int>> Bps;
 	for (int i = 0; i != Bprime.size(); i++)
 	{
 		Bi = Bprime[i];
 		if (B[Bi] != 0)
 		{
 			std::cout << "looking at " << Bi <<"th pos in B: " << B[Bi] << std::endl;
+		}
+		else
+		{
+			Sj.push_back(-1);
+		}
+		Bps.push_back(Sj);
+	}
+	L.push_back(Bps);
+
+	//print L
+	for (int i = 0; i != L.size(); i++)
+	{
+		std::cout << "L[" << i << "]" << std::endl;
+		for (int j = 0; j != i.size(); j++)
+		{
+			for (int k = 0; k != j.size(); k++)
+			{
+				
+			}
 		}
 	}
 
