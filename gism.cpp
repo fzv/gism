@@ -199,14 +199,22 @@ return 0;
 std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::vector<int>>> L, std::vector<int> report, int posT, std::vector<int> B, std::vector<int> Bprime, int m)
 {
 	std::cout << "\nwe are now inside computeBps() function" << std::endl;
-	int iBp;
+	int iB;
 	for (std::vector<int>::iterator it = Bprime.end(); it != Bprime.begin(); it--)
 	{
 		std::cout << "Bprime[i] = " << Bprime[*it] << std::endl;
-		for (int iB = Bprime[*it]; iB!=m; iB--)
+		iB = Bprime[*it];
+		while (iB>=m+1)
+		{
+			std::cout << "looking at " << iB <<"th pos in B: " << B[iB] << std::endl;
+			iB--;
+		}
+		/*
+		for (int iB = Bprime[*it]; iB>=m+1; iB--)
 		{
 			std::cout << "looking at " << iB <<"th pos in B: " << B[iB] << std::endl;
 		}
+		*/
 	}
 
 	return L;
