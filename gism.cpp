@@ -223,15 +223,25 @@ std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::v
 	L.push_back(Bps);
 
 	//print L
+	std::vector<std::vector<int>> tempVecVec;
+	std::vector<int> tempVec;
+	int tempInt;
+	int inti = 0;
+	int intj = 0;
 	for (std::list<std::vector<std::vector<int>>>::iterator i = L.begin(); i != L.end(); i++)
 	{
-		//std::cout << "L[" << i << "]" << std::endl;
-		for (std::vector<std::vector<int>>::iterator j = L[*i].begin(); j != L[*i].end(); j++)
+		std::cout << std::endl << "L[" << inti << "]" << std::endl;
+		tempVecVec = *i;
+		inti++;
+		for (std::vector<std::vector<int>>::iterator j = tempVecVec.begin(); j != tempVecVec.end(); j++)
 		{
-			//std::cout << "S_" << j << " : ";
-			for (std::vector<int>::iterator k = L[*i[**j]].begin(); k != L[*i[**j]].end(); k++)
+			std::cout << "S_" << intj << " : ";
+			tempVec = *j;
+			intj++;
+			for (std::vector<int>::iterator k = tempVec.begin(); k != tempVec.end(); k++)
 			{
-				//std::cout << *i[**j[***k]] << " ";
+				tempInt = *k;
+				std::cout << tempInt << " ";
 			}
 		}
 	}
