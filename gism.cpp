@@ -84,6 +84,7 @@ std::cout << "\nstring P:" << std::endl;
 std::cout << P << std::endl;
 std::cout << std::endl;
 
+////////////////////////////////////suffix array instead??
 //Construct Suffix Tree of pattern P
 std::string file = "pattern";
 sdsl::cst_sct3<> cst;
@@ -196,12 +197,6 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 	std::cout << std::endl << std::endl;
 }
 
-
-
-
-
-
-
 return 0;
 }
 /************************************************************************************/
@@ -217,7 +212,7 @@ std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::v
 		Bi = Bprime[i];
 		if (B[Bi] != 0)
 		{
-			std::cout << "looking at " << Bi <<"th pos in B: " << B[Bi] << std::endl;
+			std::cout << "looking at " << Bi << "th pos in B: " << B[Bi] << std::endl;
 		}
 		else
 		{
@@ -228,14 +223,15 @@ std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::v
 	L.push_back(Bps);
 
 	//print L
-	for (int i = 0; i != L.size(); i++)
+	for (std::list<std::vector<std::vector<int>>>::iterator i = L.begin(); i != L.end(); i++)
 	{
-		std::cout << "L[" << i << "]" << std::endl;
-		for (int j = 0; j != i.size(); j++)
+		//std::cout << "L[" << i << "]" << std::endl;
+		for (std::vector<std::vector<int>>::iterator j = L[*i].begin(); j != L[*i].end(); j++)
 		{
-			for (int k = 0; k != j.size(); k++)
+			//std::cout << "S_" << j << " : ";
+			for (std::vector<int>::iterator k = L[*i[**j]].begin(); k != L[*i[**j]].end(); k++)
 			{
-				
+				//std::cout << *i[**j[***k]] << " ";
 			}
 		}
 	}
