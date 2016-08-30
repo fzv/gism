@@ -7,11 +7,11 @@
 #include "sdsl/util.hpp"
 #include <iterator>
 
-std::vector<int> computeBorderTable(std::string X, std::vector<int> B, int ms);
+std::vector<int> computeBorderTable(std::string X, std::vector<int> B);
 std::vector<int> computeBorder(std::string temp, std::vector<int> B);
 void preKMP(std::string pattern, int f[]);
 bool KMP(std::string needle, std::string haystack);
-std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::vector<int>>> L, std::vector<int> report, int posT, std::vector<int> B, std::vector<int> Bprime, int m);
+std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::vector<int>>> L, std::vector<int> report, int posT, std::vector<int> B, std::vector<int> Bprime, std::string P);
 
 
 int main()
@@ -167,14 +167,15 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 	std::cout << std::endl << "check above indexes of below border table" << std::endl;
 	std::cout << "we are on T[" << posT << "]" << std::endl;
 	if (i==T.begin())
-	{
-	B = computeBorderTable(X, B, m);
-	L = computeBps(L, report, posT, B, Bprime, m);
-	}
+		{
+		B = computeBorderTable(X, B);
+		L = computeBps(L, report, posT, B, Bprime, P);
+		}
 	else
-	{
-	//
-	}
+		{
+		B = computeBorderTable(X, B);
+		L = computeBps(L, report, posT, B, Bprime, P);
+		}
 
 	//clean up
 	Bprime.clear();
@@ -196,34 +197,29 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 return 0;
 }
 
-std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::vector<int>>> L, std::vector<int> report, int posT, std::vector<int> B, std::vector<int> Bprime, int m)
+std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::vector<int>>> L, std::vector<int> report, int posT, std::vector<int> B, std::vector<int> Bprime, std::string P)
 {
 	std::cout << "\nwe are now inside computeBps() function" << std::endl;
-	int iB;
+	int Bi;
+	std::cout << "P.length() = " << P.length() << std::endl;
 	for (std::vector<int>::iterator it = Bprime.end(); it != Bprime.begin(); it--)
 	{
-		std::cout << "Bprime[i] = " << Bprime[*it] << std::endl;
-		iB = Bprime[*it];
-		while (iB>=m+1)
+		Bi = Bprime[*it];
+		std::cout << "Bprime[i] = " << Bi << std::endl;
+		while (Bi>P.length())
 		{
-			std::cout << "looking at " << iB <<"th pos in B: " << B[iB] << std::endl;
-			iB--;
+			std::cout << "looking at " << Bi <<"th pos in B: " << B[Bi] << std::endl;
+			Bi--;
 		}
-		/*
-		for (int iB = Bprime[*it]; iB>=m+1; iB--)
-		{
-			std::cout << "looking at " << iB <<"th pos in B: " << B[iB] << std::endl;
-		}
-		*/
 	}
 
 	return L;
 }
 
 
-std::vector<int> computeBorderTable(std::string X, std::vector<int> B, int m)
+std::vector<int> computeBorderTable(std::string X, std::vector<int> B)
 {
-	
+	int m = X.length();
 
 	for (int b = 0; b < m; b++) B.push_back(0);
 
