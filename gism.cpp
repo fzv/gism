@@ -14,7 +14,7 @@ std::vector<int> computeBorderTable(std::string X, std::vector<int> B);
 std::vector<int> computeBorder(std::string temp, std::vector<int> B);
 void preKMP(std::string pattern, int f[]);
 bool KMP(std::string needle, std::string haystack);
-std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::vector<int>>> L, std::vector<int> report, int posT, std::vector<int> B, std::vector<int> Bprime, std::string P);
+std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::vector<int>>> L, std::vector<int> report, std::vector<int> B, std::vector<int> Bprime, std::string P);
 
 /*********************************************************************/
 /******************************* GISM ********************************/
@@ -152,7 +152,7 @@ std::vector<int> B;
 std::vector<int> Bprime;
 std::vector<int> report;
 std::list<std::vector<std::vector<int>>> L;
-int posT;
+
 
 
 for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++){
@@ -170,17 +170,16 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 	int m = X.length();
 	for (int b = 0; b<Bprime.size(); b++) std::cout << Bprime[b] << " ";
 	std::cout << std::endl << "check above indexes of below border table" << std::endl;
-	std::cout << "we are on T[" << posT << "]" << std::endl;
 	if (i==T.begin())
 		{
 		B = computeBorderTable(X, B);
-		L = computeBps(L, report, posT, B, Bprime, P);
+		L = computeBps(L, report, B, Bprime, P);
 		//if |S| >= m ...
 		}
 	else
 		{
 		B = computeBorderTable(X, B);
-		L = computeBps(L, report, posT, B, Bprime, P);
+		L = computeBps(L, report, B, Bprime, P);
 		//if |S| < m ...
 		//compute Bsp
 		//if there exists ...
@@ -194,7 +193,6 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 	x.str("");
 	x.clear();
 	unique = 0;
-	posT++;
 	std::cout << std::endl << std::endl;
 }
 
@@ -209,7 +207,7 @@ return 0;
 /************************************************************************************/
 /******************************* FUNCTION DEFINITIONS *******************************/
 /************************************************************************************/
-std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::vector<int>>> L, std::vector<int> report, int posT, std::vector<int> B, std::vector<int> Bprime, std::string P)
+std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::vector<int>>> L, std::vector<int> report, std::vector<int> B, std::vector<int> Bprime, std::string P)
 {
 	int Bi;	
 	for (int i = 0; i != Bprime.size(); i++)
