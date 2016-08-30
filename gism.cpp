@@ -7,13 +7,18 @@
 #include "sdsl/util.hpp"
 #include <iterator>
 
+/************************************************************************************/
+/******************************* FUNCTION DECLARATIONS ******************************/
+/************************************************************************************/
 std::vector<int> computeBorderTable(std::string X, std::vector<int> B);
 std::vector<int> computeBorder(std::string temp, std::vector<int> B);
 void preKMP(std::string pattern, int f[]);
 bool KMP(std::string needle, std::string haystack);
-std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::vector<int>>> L, std::vector<int> report, int posT, std::vector<int> B, std::vector<int> Bprime, std::string P);
+std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::vector<int>>> L, std::vector<int> report, int posT, std::vector<int> B, std::vector<int> Bprime, std::string P, int Bi);
 
-
+/*********************************************************************/
+/******************************* GISM ********************************/
+/*********************************************************************/
 int main()
 {
 
@@ -148,6 +153,7 @@ std::vector<int> Bprime;
 std::vector<int> report;
 std::list<std::vector<std::vector<int>>> L;
 int posT;
+int Bi;
 
 
 for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++){
@@ -169,12 +175,17 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 	if (i==T.begin())
 		{
 		B = computeBorderTable(X, B);
-		L = computeBps(L, report, posT, B, Bprime, P);
+		L = computeBps(L, report, posT, B, Bprime, P, Bi);
+		//if |S| >= m ...
 		}
 	else
 		{
 		B = computeBorderTable(X, B);
-		L = computeBps(L, report, posT, B, Bprime, P);
+		L = computeBps(L, report, posT, B, Bprime, P, Bi);
+		//if |S| < m ...
+		//compute Bsp
+		//if there exists ...
+		//if |S| >= m ...
 		}
 
 	//clean up
@@ -185,7 +196,8 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 	x.clear();
 	unique = 0;
 	posT++;
-	std::cout << std::endl;
+	Bi = 0;
+	std::cout << std::endl << std::endl;
 }
 
 
@@ -196,17 +208,18 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 
 return 0;
 }
-
-std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::vector<int>>> L, std::vector<int> report, int posT, std::vector<int> B, std::vector<int> Bprime, std::string P)
+/************************************************************************************/
+/******************************* FUNCTION DEFINITIONS *******************************/
+/************************************************************************************/
+std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::vector<int>>> L, std::vector<int> report, int posT, std::vector<int> B, std::vector<int> Bprime, std::string P, int Bi)
 {
-	std::cout << "\nwe are now inside computeBps() function" << std::endl;
-	int Bi;
+	std::cout << "we are now inside computeBps() function" << std::endl;
 	std::cout << "P.length() = " << P.length() << std::endl;
-	for (std::vector<int>::iterator it = Bprime.end(); it != Bprime.begin(); it--)
+	for (int it = Bprime.size()-1; it >= 0; it--)
 	{
-		Bi = Bprime[*it];
+		Bi = Bprime[it];
 		std::cout << "Bprime[i] = " << Bi << std::endl;
-		while (Bi>P.length())
+		while (Bi>P.length() && Bi != Bprime[it-1]+1 && B[Bi] != 0)
 		{
 			std::cout << "looking at " << Bi <<"th pos in B: " << B[Bi] << std::endl;
 			Bi--;
