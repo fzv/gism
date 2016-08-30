@@ -138,12 +138,13 @@ if(it.visit()==1) //if we have not traversed the subtree rooted at v
 /// if len(s) >= m ???
 std::stringstream x;
 std::string X;
-std::string alpha = "mnopqrsvwxyz";
+std::string alpha = "mnoqrsvwxyz"; //asuming no more than 12 s in T[i]
 int unique = 0;
 std::vector<int> B;
 
 for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++){
 	tempVector = *i;
+	x << P << "p";
 	for (std::vector<std::string>::iterator j=tempVector.begin(); j!=tempVector.end(); j++){
 		x << *j << alpha[unique];
 		unique++;
@@ -154,6 +155,7 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 	std::cout << X << " : " << std::endl;
 	B = computeBorderTable(X, B);
 	//clean up
+	B.clear();
 	x.str("");
 	x.clear();
 	unique = 0;
@@ -167,18 +169,7 @@ return 0;
 
 std::vector<int> computeBorderTable(std::string X, std::vector<int> B)
 {
-	B.clear();
 	int m = X.length();
-
-	if (m == 1)
-	{
-
-	std::cout << X << std::endl;
-	std::cout << "Won't compute border table because string too short" << std::endl;
-
-	}
-	else
-	{
 
 	for (int b = 0; b < m; b++) B.push_back(0);
 
@@ -186,7 +177,7 @@ std::vector<int> computeBorderTable(std::string X, std::vector<int> B)
 	int p = 0;
 	for (int q = 1; q < m; q++){
 		B[q-1] = p;
-		while (p >= 0 & X[q]!=X[p]){
+		while (p >= 0 & X[q]!=X[p]){ //what does E match with??
 			if (p==0){
 				p = -1;
 			} else {
@@ -202,8 +193,6 @@ std::vector<int> computeBorderTable(std::string X, std::vector<int> B)
 		std::cout << *it << " ";
 	}
 	std::cout << std::endl << std::endl;
-
-	} //endif
 
 	return B;
 }
