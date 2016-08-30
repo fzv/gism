@@ -11,6 +11,8 @@ std::vector<int> computeBorderTable(std::string X, std::vector<int> B);
 std::vector<int> computeBorder(std::string temp, std::vector<int> B);
 void preKMP(std::string pattern, int f[]);
 bool KMP(std::string needle, std::string haystack);
+std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::vector<int>>> L, std::stringstream report, int posT, std::vector<int> B, std::vector<int> Bprime);
+
 
 int main()
 {
@@ -137,26 +139,35 @@ if(it.visit()==1) //if we have not traversed the subtree rooted at v
 }
 
 //Lemma 2
-/// if len(s) >= m ???
 std::stringstream x;
 std::string X;
 std::string alpha = "mnoqrsvwxyz"; //asuming no more than 12 s in T[i]
 int unique = 0;
 std::vector<int> B;
+std::vector<int> Bprime;
+std::stringstream report;
+std::list<std::vector<std::vector<int>>> L;
+int posT;
+
 
 for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++){
 	tempVector = *i;
 	x << P << "p";
 	for (std::vector<std::string>::iterator j=tempVector.begin(); j!=tempVector.end(); j++){
 		x << *j << alpha[unique];
+		Bprime.push_back(x.str().length()-2);
 		unique++;
 	}
 	X = x.str();
 	X.pop_back();
 	//string X is ready
 	std::cout << X << " : " << std::endl;
+	for (int b = 0; b<Bprime.size(); b++) std::cout << Bprime[b] << " ";
+	std::cout << "check above indexes of below border table" << std::endl;
 	B = computeBorderTable(X, B);
+	L = computeBps(L,report,posT,B,Bprime);
 	//clean up
+	Bprime.clear();
 	B.clear();
 	x.str("");
 	x.clear();
@@ -164,15 +175,23 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 	std::cout << std::endl;
 }
 
-//test KMP
-std::string needle = "hell";
-std::string haystack = "hello";
-std::cout << KMP(needle, haystack) << std::endl;
+
+//
+
+
 
 
 
 return 0;
 }
+
+std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::vector<int>>> L, std::stringstream report, int posT, std::vector<int> B, std::vector<int> Bprime)
+{
+	std::cout << "you are now in computeBps function" << std::endl;
+
+	return L;
+}
+
 
 std::vector<int> computeBorderTable(std::string X, std::vector<int> B)
 {
