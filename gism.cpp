@@ -9,6 +9,8 @@
 
 std::vector<int> computeBorderTable(std::string X, std::vector<int> B);
 std::vector<int> computeBorder(std::string temp, std::vector<int> B);
+void preKMP(std::string pattern, int f[]);
+bool KMP(std::string needle, std::string haystack);
 
 int main()
 {
@@ -162,6 +164,11 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 	std::cout << std::endl;
 }
 
+//test KMP
+std::string needle = "hell";
+std::string haystack = "hello";
+std::cout << KMP(needle, haystack) << std::endl;
+
 
 
 return 0;
@@ -195,4 +202,59 @@ std::vector<int> computeBorderTable(std::string X, std::vector<int> B)
 	std::cout << std::endl << std::endl;
 
 	return B;
+}
+
+//credit to http://www.sanfoundry.com/cpp-program-implement-kruth-morris-patt-algorithm-kmp/
+
+void preKMP(std::string pattern, int f[])
+{
+	int m = pattern.length();
+	int k;
+	f[0] = -1;
+	for (int i = 1; i < m; i++)
+	{
+		k = f[i - 1];
+		while (k >= 0)
+		{
+			if (pattern[k] == pattern[i - 1])
+			{
+				break;
+			}
+			else
+			{
+				k = f[k];
+			}
+		}
+		f[i] = k + 1;
+	}
+
+}
+
+bool KMP(std::string needle, std::string haystack)
+{
+	int m = needle.length();
+	int n = haystack.length();
+	int f[m];
+	preKMP(needle, f);
+	int i = 0;
+	int k = 0;
+	while (i<n)
+	{
+		if (k==-1)
+		{
+			i++;
+			k = 0;
+		}
+        	else if (haystack[i] == needle[k])
+		{
+			i++;
+			k++;
+			if (k==m) return 1;
+		}
+		else
+		{
+			k = f[k];
+		}
+	}
+	return 0;
 }
