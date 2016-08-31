@@ -153,14 +153,21 @@ std::vector<int> B;
 std::vector<int> Bprime;
 std::vector<int> report;
 std::list<std::vector<std::vector<int>>> L;
+std::string S_j;
 
 
 
-for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++){
+for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++){ //for each pos in T
+
 	tempVector = *i;
 	x << P << "p";
-	for (std::vector<std::string>::iterator j=tempVector.begin(); j!=tempVector.end(); j++){
-		x << *j << alpha[unique];
+	for (std::vector<std::string>::iterator j=tempVector.begin(); j!=tempVector.end(); j++){ //for each S_j in T[i]
+		S_j = *j;
+		x << S_j << alpha[unique];
+		if (S_j.length() >= P.length()){
+			if (KMP(P, S_j)==1) report.push_back(std::distance(T.begin(),i));
+		}
+		
 		Bprime.push_back(x.str().length()-2);
 		unique++;
 	}
@@ -168,14 +175,12 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 	X.pop_back();
 	//string X is ready
 	std::cout << X << " : " << std::endl;
-	int m = X.length();
 	for (int b = 0; b<Bprime.size(); b++) std::cout << Bprime[b] << " ";
 	std::cout << std::endl << "check above indexes of below border table" << std::endl;
 	if (i==T.begin())
 		{
 		B = computeBorderTable(X, B);
 		L = computeBps(L, report, B, Bprime, P);
-		//if |S| >= m ...
 		}
 	else
 		{
@@ -183,8 +188,7 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 		L = computeBps(L, report, B, Bprime, P);
 		//if |S| < m ...
 		//compute Bsp
-		//if there exists ...
-		//if |S| >= m ...
+		//if there exists ..
 		}
 
 	//clean up
@@ -197,6 +201,8 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 	std::cout << std::endl << std::endl;
 }
 
+//output
+for(std::vector<int>::iterator it = report.begin(); it != report.end(); it++) std::cout << *it << " ";
 return 0;
 }
 /************************************************************************************/
