@@ -222,6 +222,7 @@ std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::v
 			Sj.push_back(-1);
 		}
 		Bps.push_back(Sj);
+		Sj.clear();
 	}
 	L.push_back(Bps);
 
@@ -244,7 +245,7 @@ std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::v
 			for (std::vector<int>::iterator k = tempVec.begin(); k != tempVec.end(); k++)
 			{
 				tempInt = *k;
-				std::cout << tempInt << " ";
+				std::cout << tempInt << " "; //ending pos of pref(P) = suff(Sj)
 			}
 		}
 	}
