@@ -213,6 +213,9 @@ std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::v
 		if (B[Bi] != 0)
 		{
 			std::cout << "looking at " << Bi << "th pos in B: " << B[Bi] << std::endl;
+			for(int x = B[Bi]; x != 0; x = B[x-1]){
+				Sj.push_back(x-1);
+			}
 		}
 		else
 		{
@@ -235,7 +238,7 @@ std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::v
 		inti++;
 		for (std::vector<std::vector<int>>::iterator j = tempVecVec.begin(); j != tempVecVec.end(); j++)
 		{
-			std::cout << "S_" << intj << " : ";
+			std::cout << "  S_" << intj << " : ";
 			tempVec = *j;
 			intj++;
 			for (std::vector<int>::iterator k = tempVec.begin(); k != tempVec.end(); k++)
