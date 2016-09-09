@@ -84,7 +84,7 @@ std::cout << "\nstring P:" << std::endl;
 std::cout << P << std::endl;
 std::cout << std::endl;
 
-////////////////////////////////////suffix array instead??
+/*
 //Construct Suffix Tree of pattern P
 std::string file = "pattern";
 sdsl::cst_sct3<> cst;
@@ -143,6 +143,7 @@ if(it.visit()==1) //if we have not traversed the subtree rooted at v
 	std::cout << std::endl;
 }
 }
+*/
 
 //Lemma 2
 std::stringstream x;
