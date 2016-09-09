@@ -5,6 +5,7 @@
 #include <sstream> //
 #include "sdsl/suffix_trees.hpp"
 #include "sdsl/suffix_arrays.hpp"
+#include "sdsl/lcp.hpp"
 #include "sdsl/util.hpp"
 #include <iterator>
 
@@ -117,13 +118,10 @@ for (sdsl::csa_bitcompressed<>::iterator it = SA.begin(); it != SA.end(); it ++)
 std::cout << std::endl << std::endl;
 
 //construct inverse suffix array
-std::vector<int> iSA;
-int j;
-for (sdsl::csa_bitcompressed<>::iterator it = SA.begin(); it != SA.end(); it ++) iSA.push_back(0);
-for (int i = 0; i != SA.size(); i ++){
-	j = SA[i];
-	iSA[j] = i;
-}
+int size = SA.size();
+std::vector<int> iSA(size, 0);
+//for (sdsl::csa_bitcompressed<>::iterator it = SA.begin(); it != SA.end(); it ++) iSA.push_back(0);
+for (int i = 0; i != SA.size(); i ++) iSA[SA[i]] = i;
 
 // print inverse suffix array
 std::cout << std::endl << "iSA" << std::endl;
@@ -132,7 +130,26 @@ for (std::vector<int>::iterator it = iSA.begin(); it != iSA.end(); it ++){
 }
 std::cout << std::endl << std::endl;
 
-// cstruct LCP array
+// cstruct LCP array - Kasai's algorithm
+std::vector<int> LCP(size, 0);
+int lcp = 0;
+for (int i = 0; i < size; i++){
+	if (iSA[i] == 1){
+		lcp = 0;
+		continue;
+	}
+	int j = SA[iSA[i]+1];
+	while (i+lcp < size && j+lcp < size && all[i+lcp]==all[j+lcp]) lcp++;
+	LCP[iSA[i]] = lcp;
+	if (lcp > 0) lcp--;
+}
+
+//print LCP array
+std::cout << std::endl << "LCP array" << std::endl;
+for (std::vector<int>::iterator it = LCP.begin(); it != LCP.end(); it ++){
+	std::cout << *it << "    "; 
+}
+std::cout << std::endl << std::endl;
 
 
 /*
