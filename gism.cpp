@@ -12,23 +12,24 @@
 /************************************************************************************/
 /******************************* FUNCTION DECLARATIONS ******************************/
 /************************************************************************************/
+
 std::vector<int> computeBorderTable(std::string X, std::vector<int> B);
 std::vector<int> computeBorder(std::string temp, std::vector<int> B);
 void preKMP(std::string pattern, int f[]);
 bool KMP(std::string needle, std::string haystack);
 std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::vector<int>>> L, std::vector<int> report, std::vector<int> B, std::vector<int> Bprime, std::string P);
 
-/*********************************************************************/
-/******************************* GISM ********************************/
-/*********************************************************************/
+/***********************************************************************************/
+/************************************ GISM *****************************************/
+/***********************************************************************************/
 int main()
 {
 
-//Welcome message
+/*********************            Welcome message         **************************/
 
 std::cout << "Welcome to GISM - Generalised Indeterminate String Matching\n" << std::endl;
 
-//Parse input file
+/*********************            Parse input file          **************************/
 
 std::string line;
 std::vector<std::string> lines;
@@ -73,7 +74,7 @@ tempVector.clear();
 tempString.str("");
 tempString.clear();
 
-//Print input sequences
+/*********************            Print input sequences         **************************/
 std::cout << "string T:" << std::endl;
 for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++){
 	tempVector = *i;
@@ -87,33 +88,55 @@ std::cout << P << std::endl;
 std::cout << std::endl;
 
 
-//constuct one long string all
-std::stringstream allstream;
-std::string all;
-std::vector<std::string> Ti;
-std::string Sj;
-int y = 0;
-allstream << P;
-std::string lambda = "bdfhijklmnopqrsuvwxyz";
+/*********************            (C)oncatenate all strings         **************************/
+std::vector<int> Cprime;
+std::string C;
+
+{
+std::stringstream Cstream;
+int k = 0;
+std::string unique = "bdfhijklmnopqrsuvwxyz";
+
+Cstream << P;
 for (std::list<std::vector<std::string>>::iterator i = T.begin(); i != T.end(); i++){
-	Ti = *i;
-	for (std::vector<std::string>::iterator j = Ti.begin(); j != Ti.end(); j++){
-		Sj = *j;
-		allstream << lambda[y] << Sj;
-		y++;
+	std::vector<std::string> T_i = *i;
+	for (std::vector<std::string>::iterator j = T_i.begin(); j != T_i.end(); j++){
+		std::string S_j = *j;
+		Cprime.push_back(Cstream.str().length()+1);
+		Cstream << unique[k] << S_j;
+		k++;
 	}
 }
-all = allstream.str();
-std::cout << all << std::endl;
+C = Cstream.str();
+}
 
-// constuct suffix array
+std::cout << C << std::endl;
+
+/*********************                     Print C'               **************************/
+//** C'[i] = k s.t. C[k] is starting pos of S_k, where max(k) = total number of S_j in all T 
+std::cout << std::endl << std::endl;
+for (std::vector<int>::iterator it = Cprime.begin(); it != Cprime.end(); it ++){
+	std::cout << *it << " "; 
+}
+std::cout << std::endl << std::endl;
+
+/*********************           Construct suffix array of C       **************************/
 sdsl::csa_bitcompressed<> SA;
-construct_im(SA, all, 1);
+construct_im(SA, C, 1);
+
+//do stuff with SA
+std::cout << std::endl << "sigma" << std::endl;
+std::cout << SA.sigma << std::endl;
+std::cout << std::endl << "maybe iSA" << std::endl;
+std::cout << SA.isa << std::endl;
+std::cout << std::endl << "text" << std::endl;
+std::cout << SA.text << std::endl;
+
 
 // print suffxi array
 std::cout << std::endl << "SA" << std::endl;
 for (sdsl::csa_bitcompressed<>::iterator it = SA.begin(); it != SA.end(); it ++){
-	std::cout << *it << "    "; 
+	std::cout << *it << " "; 
 }
 std::cout << std::endl << std::endl;
 
@@ -126,7 +149,7 @@ for (int i = 0; i != SA.size(); i ++) iSA[SA[i]] = i;
 // print inverse suffix array
 std::cout << std::endl << "iSA" << std::endl;
 for (std::vector<int>::iterator it = iSA.begin(); it != iSA.end(); it ++){
-	std::cout << *it << "    "; 
+	std::cout << *it << " "; 
 }
 std::cout << std::endl << std::endl;
 
@@ -139,7 +162,7 @@ for (int i = 0; i < size; i++){
 		continue;
 	}
 	int j = SA[iSA[i]+1];
-	while (i+lcp < size && j+lcp < size && all[i+lcp]==all[j+lcp]) lcp++;
+	while (i+lcp < size && j+lcp < size && C[i+lcp]==C[j+lcp]) lcp++;
 	LCP[iSA[i]] = lcp;
 	if (lcp > 0) lcp--;
 }
@@ -147,7 +170,7 @@ for (int i = 0; i < size; i++){
 //print LCP array
 std::cout << std::endl << "LCP array" << std::endl;
 for (std::vector<int>::iterator it = LCP.begin(); it != LCP.end(); it ++){
-	std::cout << *it << "    "; 
+	std::cout << *it << "  "; 
 }
 std::cout << std::endl << std::endl;
 
