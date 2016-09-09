@@ -4,6 +4,7 @@
 #include <fstream> //ifstream,is_open,good,getline,close
 #include <sstream> //
 #include "sdsl/suffix_trees.hpp"
+#include "sdsl/suffix_arrays.hpp"
 #include "sdsl/util.hpp"
 #include <iterator>
 
@@ -84,6 +85,33 @@ std::cout << "\nstring P:" << std::endl;
 std::cout << P << std::endl;
 std::cout << std::endl;
 
+//constuct one long string all
+std::stringstream allstream;
+std::string all;
+std::vector<std::string> Ti;
+std::string Sj;
+int y = 0;
+allstream << P;
+std::string lambda = "bdfhijklmnopqrsuvwxyz";
+for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++){
+	Ti = *i;
+	for (std::vector<std::string>::iterator j=tempVector.begin(); j!=tempVector.end(); j++){
+		Sj = *j;
+		allstream << lambda[y] << Sj;
+		y++;
+	}
+}
+all = allstream.str();
+std::cout << all << std::endl;
+
+// constuct suffix array
+sdsl::csa_bitcompressed<> csa;
+construct_im(csa, P, 1);
+std::cout << std::endl << "suffix array" << std::endl;
+for (sdsl::csa_bitcompressed<>::iterator it = csa.begin(); it != csa.end(); it ++){
+	std::cout << *it << "    "; 
+}
+std::cout << std::endl;
 /*
 //Construct Suffix Tree of pattern P
 std::string file = "pattern";
