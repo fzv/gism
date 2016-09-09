@@ -93,9 +93,9 @@ std::string Sj;
 int y = 0;
 allstream << P;
 std::string lambda = "bdfhijklmnopqrsuvwxyz";
-for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++){
+for (std::list<std::vector<std::string>>::iterator i = T.begin(); i != T.end(); i++){
 	Ti = *i;
-	for (std::vector<std::string>::iterator j=tempVector.begin(); j!=tempVector.end(); j++){
+	for (std::vector<std::string>::iterator j = Ti.begin(); j != Ti.end(); j++){
 		Sj = *j;
 		allstream << lambda[y] << Sj;
 		y++;
