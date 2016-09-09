@@ -106,12 +106,12 @@ std::cout << all << std::endl;
 
 // constuct suffix array
 sdsl::csa_bitcompressed<> csa;
-construct_im(csa, P, 1);
+construct_im(csa, all, 1);
 std::cout << std::endl << "suffix array" << std::endl;
 for (sdsl::csa_bitcompressed<>::iterator it = csa.begin(); it != csa.end(); it ++){
 	std::cout << *it << "    "; 
 }
-std::cout << std::endl;
+std::cout << std::endl << std::endl;
 /*
 //Construct Suffix Tree of pattern P
 std::string file = "pattern";
