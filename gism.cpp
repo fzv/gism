@@ -85,6 +85,7 @@ std::cout << "\nstring P:" << std::endl;
 std::cout << P << std::endl;
 std::cout << std::endl;
 
+
 //constuct one long string all
 std::stringstream allstream;
 std::string all;
@@ -105,13 +106,35 @@ all = allstream.str();
 std::cout << all << std::endl;
 
 // constuct suffix array
-sdsl::csa_bitcompressed<> csa;
-construct_im(csa, all, 1);
-std::cout << std::endl << "suffix array" << std::endl;
-for (sdsl::csa_bitcompressed<>::iterator it = csa.begin(); it != csa.end(); it ++){
+sdsl::csa_bitcompressed<> SA;
+construct_im(SA, all, 1);
+
+// print suffxi array
+std::cout << std::endl << "SA" << std::endl;
+for (sdsl::csa_bitcompressed<>::iterator it = SA.begin(); it != SA.end(); it ++){
 	std::cout << *it << "    "; 
 }
 std::cout << std::endl << std::endl;
+
+//construct inverse suffix array
+std::vector<int> iSA;
+int j;
+for (sdsl::csa_bitcompressed<>::iterator it = SA.begin(); it != SA.end(); it ++) iSA.push_back(0);
+for (int i = 0; i != SA.size(); i ++){
+	j = SA[i];
+	iSA[j] = i;
+}
+
+// print inverse suffix array
+std::cout << std::endl << "iSA" << std::endl;
+for (std::vector<int>::iterator it = iSA.begin(); it != iSA.end(); it ++){
+	std::cout << *it << "    "; 
+}
+std::cout << std::endl << std::endl;
+
+// cstruct LCP array
+
+
 /*
 //Construct Suffix Tree of pattern P
 std::string file = "pattern";
@@ -186,6 +209,7 @@ std::string S_j;
 
 
 
+
 for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++){ //for each pos in T
 
 	tempVector = *i;
@@ -193,6 +217,9 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 	for (std::vector<std::string>::iterator j=tempVector.begin(); j!=tempVector.end(); j++){ //for each S_j in T[i]
 		S_j = *j;
 		x << S_j << alpha[unique];
+		if (S_j.length() < P.length()){ // then S_j could be a factor of P
+			// search S_j in P using LCP array
+		}
 		if (S_j.length() >= P.length()){
 			if (KMP(P, S_j)==1) report.push_back(std::distance(T.begin(),i));
 		}
@@ -234,6 +261,10 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 for(std::vector<int>::iterator it = report.begin(); it != report.end(); it++) std::cout << *it << " ";
 return 0;
 }
+
+
+
+
 /************************************************************************************/
 /******************************* FUNCTION DEFINITIONS *******************************/
 /************************************************************************************/
