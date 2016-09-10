@@ -27,7 +27,7 @@ int main()
 
 /*********************            Welcome message         **************************/
 
-std::cout << "Welcome to GISM - Generalised Indeterminate String Matching\n" << std::endl;
+std::cout << "GISM - Generalised Indeterminate String Matching" << std::endl << std::endl;
 
 /*********************            Parse input file          **************************/
 
@@ -90,12 +90,13 @@ std::cout << P << std::endl << std::endl;
 /*********************            (C)oncatenate all strings         **************************/
 std::string C; 
 std::vector<int> Cprime;
-//** C'[i] = k s.t. C[k] is starting pos of S_k, where max(k) = total number of S_j in all T 
+// C'[i] = k s.t. C[k] is starting pos of S_k, where max(k) = total number of S_j in all T 
 
-{
+{ //concatenation
+
 std::stringstream Cstream;
 int k = 0;
-std::string unique = "bdfhijklmnopqrsuvwxyz";
+std::string unique = "bdfhijklmnopqrsuvwxyz"; //assumption: no more than 20 S_k in T
 
 Cstream << P;
 for (std::list<std::vector<std::string>>::iterator i = T.begin(); i != T.end(); i++){
@@ -108,7 +109,8 @@ for (std::list<std::vector<std::string>>::iterator i = T.begin(); i != T.end(); 
 	}
 }
 C = Cstream.str();
-}
+
+} //end_concatenation
 
 std::cout << C << std::endl;
 
@@ -123,16 +125,17 @@ std::cout << std::endl << std::endl;
 sdsl::csa_bitcompressed<> SA;
 construct_im(SA, C, 1);
 
+
 /*********************                Do stuff with SA(C)          **************************/
+/*
 std::cout << std::endl << "sigma" << std::endl;
 std::cout << SA.sigma << std::endl;
-std::cout << std::endl << "maybe iSA" << std::endl;
-std::cout << SA.isa << std::endl;
 std::cout << std::endl << "text" << std::endl;
 std::cout << SA.text << std::endl;
+*/
 
 /*********************                    Print SA(C)             **************************/
-std::cout << std::endl << "SA" << std::endl;
+std::cout << std::endl << "Suffix array of C" << std::endl;
 for (sdsl::csa_bitcompressed<>::iterator it = SA.begin(); it != SA.end(); it ++){
 	std::cout << *it << " "; 
 }
@@ -144,7 +147,7 @@ std::vector<int> iSA(size, 0);
 for (int i = 0; i != size; i ++) iSA[SA[i]] = i;
 
 /*********************                    Print iSA(C)             **************************/
-std::cout << std::endl << "iSA" << std::endl;
+std::cout << std::endl << "iSA of C" << std::endl;
 for (std::vector<int>::iterator it = iSA.begin(); it != iSA.end(); it ++){
 	std::cout << *it << " "; 
 }
@@ -165,50 +168,44 @@ for (int i = 0; i < size; i++){
 }
 
 /*********************                    Print LCP(C)             **************************/
-std::cout << std::endl << "LCP array" << std::endl;
+std::cout << std::endl << "LCP array of C" << std::endl;
 for (std::vector<int>::iterator it = LCP.begin(); it != LCP.end(); it ++){
 	std::cout << *it << "  "; 
 }
 std::cout << std::endl << std::endl;
 
-/*********************                          GISM                  **************************/
-std::stringstream x;
-std::string X;
-//std::string alpha = "mnoqrsvwxyz"; //asuming no more than 12 s in T[i]
+/*********************                       GISM                  **************************/
 
-std::vector<int> B;
-std::vector<int> Bprime;
 std::vector<int> report;
-std::list<std::vector<std::vector<int>>> L;
-std::string S_j;
 
 { //gism
+std::stringstream x;
+std::string X; // concatenation of P and all S_j, separated by unique chars
+std::vector<int> B; // border table
+std::vector<int> Bprime; //B'[j] = i s.t. i is ending pos of S_j in X
+std::list<std::vector<std::vector<int>>> L; //as defined in paper
+std::string unique = "bdfhijklmnopqrsuvwxyz"; //assumption: no more than 20 S_j in T[i]
 
-std::string unique = "bdfhijklmnopqrsuvwxyz";
-
-for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++){ //for each pos in T
-
-	std::vector<std::string> tempVector = *i;
-	x << P << unique[0];
+for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++){ //for each pos T[i] in T 
+	std::vector<std::string> tempVector = *i; //tempVector holds list of all S_j in T[i]
+	x << P << unique[0]; //concatenate unique symbol to P to form string X
 	int a = 1;
 	for (std::vector<std::string>::iterator j=tempVector.begin(); j!=tempVector.end(); j++){ //for each S_j in T[i]
-		S_j = *j;
-		x << S_j << unique[a];
+		std::string S_j = *j;
+		x << S_j << unique[a]; //concatenate S_j and unique letter to string X
 		if (S_j.length() < P.length()){ // then S_j could be a factor of P
-			// search S_j in P using LCP array
+			/////////////////////// search S_j in P using LCP array
 		}
-		if (S_j.length() >= P.length()){
-			if (KMP(P, S_j)==1) report.push_back(std::distance(T.begin(),i));
+		if (S_j.length() >= P.length()){ //then P could occur in S_j
+			if (KMP(P, S_j)==1) report.push_back(std::distance(T.begin(),i)); //if P occurs in S_j, report pos T[i]
 		}
-		
-		Bprime.push_back(x.str().length()-2);
+		Bprime.push_back(x.str().length()-2); //in B': store ending pos of S_j in X
 		a++;
 	}
-	X = x.str();
-	X.pop_back();
-	//string X is ready
-	std::cout << X << " : " << std::endl;
-	for (int b = 0; b<Bprime.size(); b++) std::cout << Bprime[b] << " ";
+	X = x.str(); //convert stringstream x into string X
+	X.pop_back(); //remove unecessary unique letter at end pos of X
+	std::cout << X << " : " << std::endl; //print string X
+	for (int b = 0; b<Bprime.size(); b++) std::cout << Bprime[b] << " "; //print vector B'
 	std::cout << std::endl << "check above indexes of below border table" << std::endl;
 	if (i==T.begin())
 		{
@@ -224,7 +221,7 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 		//if there exists ..
 		}
 
-	//clean up
+	//** clean up **//
 	Bprime.clear();
 	B.clear();
 	report.clear();
@@ -235,10 +232,14 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 }
 
 } //end_gism
-//output
+
+/*********************                     Print GISM output               **************************/
 for(std::vector<int>::iterator it = report.begin(); it != report.end(); it++) std::cout << *it << " ";
+
+
 return 0;
-}
+
+} //end_main
 
 
 
@@ -246,14 +247,22 @@ return 0;
 /************************************************************************************/
 /******************************* FUNCTION DEFINITIONS *******************************/
 /************************************************************************************/
+
+/*********************                     Compute B_p,s               **************************/
+// B_p,s stores all prefixes of pattern P that are suffixes of S_j, given parameters:
+// L: stores all B_p,s (for all pos in T)
+// report: stores pos T[i] to be reported as output
+// B: border table
+// B': B'[j] = i s.t. i is ending pos of S_j in X
+// P: pattern string
 std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::vector<int>>> L, std::vector<int> report, std::vector<int> B, std::vector<int> Bprime, std::string P)
 {
-	int Bi;	
+	//int Bi;	
 	std::vector<int> Sj;
 	std::vector<std::vector<int>> Bps;
 	for (int i = 0; i != Bprime.size(); i++)
 	{
-		Bi = Bprime[i];
+		int Bi = Bprime[i];
 		if (B[Bi] != 0)
 		{
 			std::cout << "looking at " << Bi << "th pos in B: " << B[Bi] << std::endl;
@@ -297,6 +306,7 @@ std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::v
 	return L;
 }
 
+/*********************                     Compute border table               **************************/
 std::vector<int> computeBorderTable(std::string X, std::vector<int> B)
 {
 	int m = X.length();
