@@ -20,6 +20,8 @@ bool KMP(std::string needle, std::string haystack);
 std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::vector<int>>> L, std::vector<int> report, std::vector<int> B, std::vector<int> Bprime, std::string P);
 sdsl::csa_bitcompressed<> computeSuffixArray(std::string s);
 void printSuffixArray(sdsl::csa_bitcompressed<> SA);
+void printVector(std::vector<int> vector);
+std::vector<int> computeLCParray(std::string s, sdsl::csa_bitcompressed<> SA, std::vector<int> iSA, std::vector<int> LCP);
 
 /***********************************************************************************/
 /************************************ GISM *****************************************/
@@ -136,34 +138,17 @@ for (int i = 0; i != size; i ++) iSA[SA[i]] = i;
 
 /*********************                    Print iSA(C)             **************************/
 std::cout << std::endl << "iSA of C" << std::endl;
-for (std::vector<int>::iterator it = iSA.begin(); it != iSA.end(); it ++){
-	std::cout << *it << " "; 
-}
-std::cout << std::endl << std::endl;
+printVector(iSA);
 
 /*********************   Construct LCP array of C - Kasai's algorithm  **************************/
 std::vector<int> LCP(size, 0);
-int lcp = 0;
-for (int i = 0; i < size; i++){
-	if (iSA[i] == 1){
-		lcp = 0;
-		continue;
-	}
-	int j = SA[iSA[i]+1];
-	while (i+lcp < size && j+lcp < size && C[i+lcp]==C[j+lcp]) lcp++;
-	LCP[iSA[i]] = lcp;
-	if (lcp > 0) lcp--;
-}
+LCP = computeLCParray(C, SA, iSA, LCP);
 
 /*********************                    Print LCP(C)             **************************/
-std::cout << std::endl << "LCP array of C" << std::endl;
-for (std::vector<int>::iterator it = LCP.begin(); it != LCP.end(); it ++){
-	std::cout << *it << "  "; 
-}
-std::cout << std::endl << std::endl;
+std::cout << std::endl << "LCP array" << std::endl;
+printVector(LCP);
 
 /*********************                       GISM                  **************************/
-
 std::vector<int> report;
 
 { //gism
@@ -205,6 +190,14 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 		B = computeBorderTable(X, B);
 		L = computeBps(L, report, B, Bprime, P);
 		//if |S| < m ...
+		int len;
+		int cumulative_len = 0;
+		for (int b = 0; b<Bprime.size(); b++){ //for all S_j in T[i]
+			len = Bprime[b] - P.length() - cumulative_len - b;
+			std::cout << std::endl << X.substr(Bprime[b]-len+1,len-1) << std::endl;
+			std::cout << "is of length " << len << std::endl;
+			cumulative_len += len;
+		}
 		//compute Bsp
 		//if there exists ..
 		}
@@ -235,6 +228,33 @@ return 0;
 /************************************************************************************/
 /******************************* FUNCTION DEFINITIONS *******************************/
 /************************************************************************************/
+
+/*********************          Compute LCP array of string s         **************************/
+std::vector<int> computeLCParray(std::string s, sdsl::csa_bitcompressed<> SA, std::vector<int> iSA, std::vector<int> LCP)
+{
+int size = SA.size();
+int lcp = 0;
+for (int i = 0; i < size; i++){
+	if (iSA[i] == 1){
+		lcp = 0;
+		continue;
+	}
+	int j = SA[iSA[i]+1];
+	while (i+lcp < size && j+lcp < size && s[i+lcp]==s[j+lcp]) lcp++;
+	LCP[iSA[i]] = lcp;
+	if (lcp > 0) lcp--;
+}
+return LCP;
+}
+
+/*********************          Print any int vector         **************************/
+void printVector(std::vector<int> vector)
+{
+for (std::vector<int>::iterator it = vector.begin(); it != vector.end(); it ++){
+	std::cout << *it << " "; 
+}
+std::cout << std::endl << std::endl;
+}
 
 /*********************          Compute suffix array of string s         **************************/
 sdsl::csa_bitcompressed<> computeSuffixArray(std::string s)
