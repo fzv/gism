@@ -256,8 +256,7 @@ return 0;
 // B': B'[j] = i s.t. i is ending pos of S_j in X
 // P: pattern string
 std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::vector<int>>> L, std::vector<int> report, std::vector<int> B, std::vector<int> Bprime, std::string P)
-{
-	//int Bi;	
+{	
 	std::vector<int> Sj;
 	std::vector<std::vector<int>> Bps;
 	for (int i = 0; i != Bprime.size(); i++)
@@ -279,25 +278,22 @@ std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::v
 	}
 	L.push_back(Bps);
 
-	//print L
-	std::vector<std::vector<int>> tempVecVec;
-	std::vector<int> tempVec;
-	int tempInt;
+	//** print L **//
 	int inti = 0;
 	int intj = 0;
 	for (std::list<std::vector<std::vector<int>>>::iterator i = L.begin(); i != L.end(); i++)
 	{
 		std::cout << std::endl << "L[" << inti << "]" << std::endl;
-		tempVecVec = *i;
+		std::vector<std::vector<int>> tempVecVec = *i;
 		inti++;
 		for (std::vector<std::vector<int>>::iterator j = tempVecVec.begin(); j != tempVecVec.end(); j++)
 		{
 			std::cout << "  S_" << intj << " : ";
-			tempVec = *j;
+			std::vector<int> tempVec = *j;
 			intj++;
 			for (std::vector<int>::iterator k = tempVec.begin(); k != tempVec.end(); k++)
 			{
-				tempInt = *k;
+				int tempInt = *k;
 				std::cout << tempInt << " "; //ending pos of pref(P) = suff(Sj)
 			}
 		}
@@ -307,17 +303,20 @@ std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::v
 }
 
 /*********************                     Compute border table               **************************/
+// given parameters:
+// X: string formed from concatenation of P and all S_j in T[i], separated by unique chars
+// B: vector to hold border table
 std::vector<int> computeBorderTable(std::string X, std::vector<int> B)
 {
 	int m = X.length();
 
 	for (int b = 0; b < m; b++) B.push_back(0);
 
-	//algorithm from Maxime's book
+	//** algorithm from Maxime's book **//
 	int p = 0;
 	for (int q = 1; q < m; q++){
 		B[q-1] = p;
-		while (p >= 0 & X[q]!=X[p]){ //what does E match with??
+		while (p >= 0 & X[q]!=X[p]){ //what does E match with?? what about reporting occ where E in T[i...j]?
 			if (p==0){
 				p = -1;
 			} else {
@@ -328,7 +327,7 @@ std::vector<int> computeBorderTable(std::string X, std::vector<int> B)
 	}
 	B[m-1] = p;
 
-	//print border table
+	//** print border table **//
 	for (std::vector<int>::iterator it = B.begin(); it != B.end(); it++){
 		std::cout << *it << " ";
 	}
@@ -337,7 +336,9 @@ std::vector<int> computeBorderTable(std::string X, std::vector<int> B)
 	return B;
 }
 
+/*********************                    KMP string matching algorithm              **************************/
 //credit to http://www.sanfoundry.com/cpp-program-implement-kruth-morris-patt-algorithm-kmp/
+//returns 1 if needle found in haystack, else returns 0
 
 void preKMP(std::string pattern, int f[])
 {
