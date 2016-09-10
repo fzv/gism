@@ -91,62 +91,7 @@ std::cout << std::endl << "string P:" << std::endl;
 std::cout << P << std::endl << std::endl;
 
 
-/*********************            (C)oncatenate all strings         **************************/
-std::string C; 
-std::vector<int> Cprime;
-// C'[i] = k s.t. C[k] is starting pos of S_k, where max(k) = total number of S_j in all T 
 
-{ //concatenation
-
-std::stringstream Cstream;
-int k = 0;
-std::string unique = "bdfhijklmnopqrsuvwxyz"; //assumption: no more than 20 S_k in T
-
-Cstream << P;
-for (std::list<std::vector<std::string>>::iterator i = T.begin(); i != T.end(); i++){
-	std::vector<std::string> T_i = *i;
-	for (std::vector<std::string>::iterator j = T_i.begin(); j != T_i.end(); j++){
-		std::string S_j = *j;
-		Cprime.push_back(Cstream.str().length()+1);
-		Cstream << unique[k] << S_j;
-		k++;
-	}
-}
-C = Cstream.str();
-
-} //end_concatenation
-
-std::cout << C << std::endl;
-
-/*********************                     Print C'               **************************/
-std::cout << std::endl << std::endl;
-for (std::vector<int>::iterator it = Cprime.begin(); it != Cprime.end(); it ++){
-	std::cout << *it << " "; 
-}
-std::cout << std::endl << std::endl;
-
-/*********************           Construct suffix array of C       **************************/
-sdsl::csa_bitcompressed<> SA = computeSuffixArray(C);
-
-/*********************                    Print SA(C)             **************************/
-printSuffixArray(SA);
-
-/*********************      Construct inverse suffix array of C   **************************/
-int size = SA.size();
-std::vector<int> iSA(size, 0);
-for (int i = 0; i != size; i ++) iSA[SA[i]] = i;
-
-/*********************                    Print iSA(C)             **************************/
-std::cout << std::endl << "iSA of C" << std::endl;
-printVector(iSA);
-
-/*********************   Construct LCP array of C - Kasai's algorithm  **************************/
-std::vector<int> LCP(size, 0);
-LCP = computeLCParray(C, SA, iSA, LCP);
-
-/*********************                    Print LCP(C)             **************************/
-std::cout << std::endl << "LCP array" << std::endl;
-printVector(LCP);
 
 /*********************                       GISM                  **************************/
 std::vector<int> report;
@@ -189,14 +134,28 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 		{
 		B = computeBorderTable(X, B);
 		L = computeBps(L, report, B, Bprime, P);
+		//
+		sdsl::csa_bitcompressed<> SAX = computeSuffixArray(X);
+		printSuffixArray(SAX);
+		int sizex = SAX.size();
+		std::vector<int> iSAX(sizex, 0);
+		for (int i = 0; i != sizex; i ++) iSAX[SAX[i]] = i;
+		printVector(iSAX);
+		std::vector<int> LCPX(sizex, 0);
+		LCPX = computeLCParray(X, SAX, iSAX, LCPX);
+		printVector(LCPX);
 		//if |S| < m ...
 		int len;
 		int cumulative_len = 0;
 		for (int b = 0; b<Bprime.size(); b++){ //for all S_j in T[i]
 			len = Bprime[b] - P.length() - cumulative_len - b;
-			std::cout << std::endl << X.substr(Bprime[b]-len+1,len-1) << std::endl;
+			std::cout << std::endl << X.substr(Bprime[b]-len+1,len) << std::endl;
 			std::cout << "is of length " << len << std::endl;
 			cumulative_len += len;
+
+			if (len < P.length()){
+				//
+			}
 		}
 		//compute Bsp
 		//if there exists ..
@@ -510,3 +469,67 @@ if(it.visit()==1) //if we have not traversed the subtree rooted at v
 }
 }
 */
+
+
+/*********************            (C)oncatenate all strings         **************************/
+/*
+std::string C; 
+std::vector<int> Cprime;
+// C'[i] = k s.t. C[k] is starting pos of S_k, where max(k) = total number of S_j in all T 
+
+{ //concatenation
+
+std::stringstream Cstream;
+int k = 0;
+std::string unique = "bdfhijklmnopqrsuvwxyz"; //assumption: no more than 20 S_k in T
+
+Cstream << P;
+for (std::list<std::vector<std::string>>::iterator i = T.begin(); i != T.end(); i++){
+	std::vector<std::string> T_i = *i;
+	for (std::vector<std::string>::iterator j = T_i.begin(); j != T_i.end(); j++){
+		std::string S_j = *j;
+		Cprime.push_back(Cstream.str().length()+1);
+		Cstream << unique[k] << S_j;
+		k++;
+	}
+}
+C = Cstream.str();
+
+} //end_concatenation
+
+std::cout << C << std::endl;
+*/
+
+/*********************                     Print C'               **************************/
+/*
+std::cout << std::endl << std::endl;
+for (std::vector<int>::iterator it = Cprime.begin(); it != Cprime.end(); it ++){
+	std::cout << *it << " "; 
+}
+std::cout << std::endl << std::endl;
+*/
+
+/*********************           Construct suffix array of C       **************************/
+//sdsl::csa_bitcompressed<> SA = computeSuffixArray(C);
+
+/*********************                    Print SA(C)             **************************/
+//printSuffixArray(SA);
+
+/*********************      Construct inverse suffix array of C   **************************/
+/*
+int size = SA.size();
+std::vector<int> iSA(size, 0);
+for (int i = 0; i != size; i ++) iSA[SA[i]] = i;
+*/
+
+/*********************                    Print iSA(C)             **************************/
+//std::cout << std::endl << "iSA of C" << std::endl;
+//printVector(iSA);
+
+/*********************   Construct LCP array of C - Kasai's algorithm  **************************/
+//std::vector<int> LCP(size, 0);
+//LCP = computeLCParray(C, SA, iSA, LCP);
+
+/*********************                    Print LCP(C)             **************************/
+//std::cout << std::endl << "LCP array" << std::endl;
+//printVector(LCP);
