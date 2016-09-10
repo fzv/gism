@@ -90,9 +90,6 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 std::cout << std::endl << "string P:" << std::endl;
 std::cout << P << std::endl << std::endl;
 
-
-
-
 /*********************                       GISM                  **************************/
 std::vector<int> report;
 
@@ -111,9 +108,6 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 	for (std::vector<std::string>::iterator j=tempVector.begin(); j!=tempVector.end(); j++){ //for each S_j in T[i]
 		std::string S_j = *j;
 		x << S_j << unique[a]; //concatenate S_j and unique letter to string X
-		if (S_j.length() < P.length()){ // then S_j could be a factor of P
-			/////////////////////// search S_j in P using LCP array
-		}
 		if (S_j.length() >= P.length()){ //then P could occur in S_j
 			if (KMP(P, S_j)==1) report.push_back(std::distance(T.begin(),i)); //if P occurs in S_j, report pos T[i]
 		}
