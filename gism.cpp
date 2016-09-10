@@ -83,14 +83,14 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 	}
 	std::cout << std::endl;
 }
-std::cout << "\nstring P:" << std::endl;
-std::cout << P << std::endl;
-std::cout << std::endl;
+std::cout << std::endl << "string P:" << std::endl;
+std::cout << P << std::endl << std::endl;
 
 
 /*********************            (C)oncatenate all strings         **************************/
+std::string C; 
 std::vector<int> Cprime;
-std::string C;
+//** C'[i] = k s.t. C[k] is starting pos of S_k, where max(k) = total number of S_j in all T 
 
 {
 std::stringstream Cstream;
@@ -113,7 +113,6 @@ C = Cstream.str();
 std::cout << C << std::endl;
 
 /*********************                     Print C'               **************************/
-//** C'[i] = k s.t. C[k] is starting pos of S_k, where max(k) = total number of S_j in all T 
 std::cout << std::endl << std::endl;
 for (std::vector<int>::iterator it = Cprime.begin(); it != Cprime.end(); it ++){
 	std::cout << *it << " "; 
@@ -124,7 +123,7 @@ std::cout << std::endl << std::endl;
 sdsl::csa_bitcompressed<> SA;
 construct_im(SA, C, 1);
 
-//do stuff with SA
+/*********************                Do stuff with SA(C)          **************************/
 std::cout << std::endl << "sigma" << std::endl;
 std::cout << SA.sigma << std::endl;
 std::cout << std::endl << "maybe iSA" << std::endl;
@@ -132,28 +131,26 @@ std::cout << SA.isa << std::endl;
 std::cout << std::endl << "text" << std::endl;
 std::cout << SA.text << std::endl;
 
-
-// print suffxi array
+/*********************                    Print SA(C)             **************************/
 std::cout << std::endl << "SA" << std::endl;
 for (sdsl::csa_bitcompressed<>::iterator it = SA.begin(); it != SA.end(); it ++){
 	std::cout << *it << " "; 
 }
 std::cout << std::endl << std::endl;
 
-//construct inverse suffix array
+/*********************      Construct inverse suffix array of C   **************************/
 int size = SA.size();
 std::vector<int> iSA(size, 0);
-//for (sdsl::csa_bitcompressed<>::iterator it = SA.begin(); it != SA.end(); it ++) iSA.push_back(0);
-for (int i = 0; i != SA.size(); i ++) iSA[SA[i]] = i;
+for (int i = 0; i != size; i ++) iSA[SA[i]] = i;
 
-// print inverse suffix array
+/*********************                    Print iSA(C)             **************************/
 std::cout << std::endl << "iSA" << std::endl;
 for (std::vector<int>::iterator it = iSA.begin(); it != iSA.end(); it ++){
 	std::cout << *it << " "; 
 }
 std::cout << std::endl << std::endl;
 
-// cstruct LCP array - Kasai's algorithm
+/*********************   Construct LCP array of C - Kasai's algorithm  **************************/
 std::vector<int> LCP(size, 0);
 int lcp = 0;
 for (int i = 0; i < size; i++){
@@ -167,96 +164,36 @@ for (int i = 0; i < size; i++){
 	if (lcp > 0) lcp--;
 }
 
-//print LCP array
+/*********************                    Print LCP(C)             **************************/
 std::cout << std::endl << "LCP array" << std::endl;
 for (std::vector<int>::iterator it = LCP.begin(); it != LCP.end(); it ++){
 	std::cout << *it << "  "; 
 }
 std::cout << std::endl << std::endl;
 
-
-/*
-//Construct Suffix Tree of pattern P
-std::string file = "pattern";
-sdsl::cst_sct3<> cst;
-construct(cst, file, 1);
-
-//Do stuff with STp
-std::cout << "number of nodes in suffix tree " << cst.nodes() << std::endl << std::endl;
-
-sdsl::cst_sct3<>::size_type d;
-sdsl::cst_sct3<>::node_type v;
-sdsl::cst_sct3<>::size_type s;
-sdsl::cst_sct3<>::size_type sn;
-bool l;
-sdsl::cst_sct3<>::size_type lb;
-sdsl::cst_sct3<>::size_type rb;
-sdsl::cst_sct3<>::size_type c;
-sdsl::cst_sct3<>::char_type a;
-
-for (sdsl::cst_sct3<>::const_iterator it = cst.begin(); it!=cst.end(); it++)
-{
-if(it.visit()==1) //if we have not traversed the subtree rooted at v
-{
-	v = *it;
-
-	sn = cst.sn(v);
-	std::cout << "Suffix number " << sn << std::endl;
-
-	d = cst.node_depth(v);
-	std::cout << "Node depth " << d << std::endl;
-
-	s = cst.size(v);
-	std::cout << s << " leaves in subtree rooted at v" << std::endl;
-
-	l = cst.is_leaf(v);
-	std::cout << "I am a leaf: " << l << std::endl;
-
-	lb = cst.lb(v);
-	std::cout << "Index of leftmost leaf in SA " << lb << std::endl;
-
-	rb = cst.rb(v);
-	std::cout << "Index of rightmost leaf in SA " << rb << std::endl;
-
-	c = cst.degree(v);
-	std::cout << "Number of children " << c << std::endl;
-	
-	//a = cst.edge(v,1);
-	//std::cout << "First letter on edge label from root to v: " << a << std::endl;
-
-	std::cout << "L(v) : ";
-	for (int i = 1; i <= cst.depth(v); i++)
-	{
-		std::cout << cst.edge(v,i);
-	}
-	std::cout << std::endl;
-
-	std::cout << std::endl;
-}
-}
-*/
-
-//Lemma 2
+/*********************                          GISM                  **************************/
 std::stringstream x;
 std::string X;
-std::string alpha = "mnoqrsvwxyz"; //asuming no more than 12 s in T[i]
-int unique = 0;
+//std::string alpha = "mnoqrsvwxyz"; //asuming no more than 12 s in T[i]
+
 std::vector<int> B;
 std::vector<int> Bprime;
 std::vector<int> report;
 std::list<std::vector<std::vector<int>>> L;
 std::string S_j;
 
+{ //gism
 
-
+std::string unique = "bdfhijklmnopqrsuvwxyz";
 
 for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++){ //for each pos in T
 
-	tempVector = *i;
-	x << P << "p";
+	std::vector<std::string> tempVector = *i;
+	x << P << unique[0];
+	int a = 1;
 	for (std::vector<std::string>::iterator j=tempVector.begin(); j!=tempVector.end(); j++){ //for each S_j in T[i]
 		S_j = *j;
-		x << S_j << alpha[unique];
+		x << S_j << unique[a];
 		if (S_j.length() < P.length()){ // then S_j could be a factor of P
 			// search S_j in P using LCP array
 		}
@@ -265,7 +202,7 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 		}
 		
 		Bprime.push_back(x.str().length()-2);
-		unique++;
+		a++;
 	}
 	X = x.str();
 	X.pop_back();
@@ -293,10 +230,11 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 	report.clear();
 	x.str("");
 	x.clear();
-	unique = 0;
+	a = 0;
 	std::cout << std::endl << std::endl;
 }
 
+} //end_gism
 //output
 for(std::vector<int>::iterator it = report.begin(); it != report.end(); it++) std::cout << *it << " ";
 return 0;
@@ -443,3 +381,90 @@ bool KMP(std::string needle, std::string haystack)
 	}
 	return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+//Construct Suffix Tree of pattern P
+std::string file = "pattern";
+sdsl::cst_sct3<> cst;
+construct(cst, file, 1);
+
+//Do stuff with STp
+std::cout << "number of nodes in suffix tree " << cst.nodes() << std::endl << std::endl;
+
+sdsl::cst_sct3<>::size_type d;
+sdsl::cst_sct3<>::node_type v;
+sdsl::cst_sct3<>::size_type s;
+sdsl::cst_sct3<>::size_type sn;
+bool l;
+sdsl::cst_sct3<>::size_type lb;
+sdsl::cst_sct3<>::size_type rb;
+sdsl::cst_sct3<>::size_type c;
+sdsl::cst_sct3<>::char_type a;
+
+for (sdsl::cst_sct3<>::const_iterator it = cst.begin(); it!=cst.end(); it++)
+{
+if(it.visit()==1) //if we have not traversed the subtree rooted at v
+{
+	v = *it;
+
+	sn = cst.sn(v);
+	std::cout << "Suffix number " << sn << std::endl;
+
+	d = cst.node_depth(v);
+	std::cout << "Node depth " << d << std::endl;
+
+	s = cst.size(v);
+	std::cout << s << " leaves in subtree rooted at v" << std::endl;
+
+	l = cst.is_leaf(v);
+	std::cout << "I am a leaf: " << l << std::endl;
+
+	lb = cst.lb(v);
+	std::cout << "Index of leftmost leaf in SA " << lb << std::endl;
+
+	rb = cst.rb(v);
+	std::cout << "Index of rightmost leaf in SA " << rb << std::endl;
+
+	c = cst.degree(v);
+	std::cout << "Number of children " << c << std::endl;
+	
+	//a = cst.edge(v,1);
+	//std::cout << "First letter on edge label from root to v: " << a << std::endl;
+
+	std::cout << "L(v) : ";
+	for (int i = 1; i <= cst.depth(v); i++)
+	{
+		std::cout << cst.edge(v,i);
+	}
+	std::cout << std::endl;
+
+	std::cout << std::endl;
+}
+}
+*/
