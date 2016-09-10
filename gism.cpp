@@ -18,6 +18,8 @@ std::vector<int> computeBorder(std::string temp, std::vector<int> B);
 void preKMP(std::string pattern, int f[]);
 bool KMP(std::string needle, std::string haystack);
 std::list<std::vector<std::vector<int>>> computeBps(std::list<std::vector<std::vector<int>>> L, std::vector<int> report, std::vector<int> B, std::vector<int> Bprime, std::string P);
+sdsl::csa_bitcompressed<> computeSuffixArray(std::string s);
+void printSuffixArray(sdsl::csa_bitcompressed<> SA);
 
 /***********************************************************************************/
 /************************************ GISM *****************************************/
@@ -122,24 +124,10 @@ for (std::vector<int>::iterator it = Cprime.begin(); it != Cprime.end(); it ++){
 std::cout << std::endl << std::endl;
 
 /*********************           Construct suffix array of C       **************************/
-sdsl::csa_bitcompressed<> SA;
-construct_im(SA, C, 1);
-
-
-/*********************                Do stuff with SA(C)          **************************/
-/*
-std::cout << std::endl << "sigma" << std::endl;
-std::cout << SA.sigma << std::endl;
-std::cout << std::endl << "text" << std::endl;
-std::cout << SA.text << std::endl;
-*/
+sdsl::csa_bitcompressed<> SA = computeSuffixArray(C);
 
 /*********************                    Print SA(C)             **************************/
-std::cout << std::endl << "Suffix array of C" << std::endl;
-for (sdsl::csa_bitcompressed<>::iterator it = SA.begin(); it != SA.end(); it ++){
-	std::cout << *it << " "; 
-}
-std::cout << std::endl << std::endl;
+printSuffixArray(SA);
 
 /*********************      Construct inverse suffix array of C   **************************/
 int size = SA.size();
@@ -247,6 +235,23 @@ return 0;
 /************************************************************************************/
 /******************************* FUNCTION DEFINITIONS *******************************/
 /************************************************************************************/
+
+/*********************          Compute suffix array of string s         **************************/
+sdsl::csa_bitcompressed<> computeSuffixArray(std::string s)
+{
+sdsl::csa_bitcompressed<> SA;
+construct_im(SA, s, 1);
+return SA;
+}
+
+/*********************          Print suffix array SA         **************************/
+void printSuffixArray(sdsl::csa_bitcompressed<> SA){
+std::cout << std::endl << "Suffix array" << std::endl;
+for (sdsl::csa_bitcompressed<>::iterator it = SA.begin(); it != SA.end(); it ++){
+	std::cout << *it << " "; 
+}
+std::cout << std::endl << std::endl;
+}
 
 /*********************                     Compute B_p,s               **************************/
 // B_p,s stores all prefixes of pattern P that are suffixes of S_j, given parameters:
@@ -414,7 +419,13 @@ bool KMP(std::string needle, std::string haystack)
 
 
 
-
+/*********************                Do stuff with SA(C)          **************************/
+/*
+std::cout << std::endl << "sigma" << std::endl;
+std::cout << SA.sigma << std::endl;
+std::cout << std::endl << "text" << std::endl;
+std::cout << SA.text << std::endl;
+*/
 
 
 
