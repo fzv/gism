@@ -33,18 +33,6 @@ std::vector<std::vector<std::vector<int>>> insertL(int value, std::vector<std::v
 /***********************************************************************************/
 int main()
 {
-{
-std::string X = "banana";
-		sdsl::csa_bitcompressed<> SA = computeSuffixArray(X);
-		printSuffixArray(SA);
-		int size = SA.size();
-		std::vector<int> iSA(size, 0);
-		for (int i = 0; i != size; i ++) iSA[SA[i]] = i;
-		printVector(iSA);
-		std::vector<int> LCP(size, 0);
-		LCP = computeLCParray(X, SA, iSA, LCP);
-		printVector(LCP);
-}
 /*********************            Welcome message         **************************/
 
 std::cout << "GISM - Generalised Indeterminate String Matching" << std::endl << std::endl;
@@ -356,7 +344,7 @@ std::vector<std::vector<std::vector<int>>> computeBps(std::vector<std::vector<st
 		}
 		else
 		{
-			Sj.push_back(-1);
+			Sj.push_back(-10);
 		}
 		Bps.push_back(Sj);
 		Sj.clear();
