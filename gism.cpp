@@ -172,15 +172,18 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 					std::cout << "lcp of suffixes " << suffp << " and " << suffs << " is " << lcp << std::endl;
 					if (lcp == 0){
 						//do nothing
-					} else if (lcp > len){ //S_j occurs in P
+					} else if (lcp >= len){ //S_j occurs in P
 						lcp = len;
 						int Li = std::distance(T.begin(),i);
 						if (checkL(suffp-1, L, Li-1)){
-							std::cout << "can extend" << std::endl;
+							std::cout << "can extend to pos ";
 							int endpos = suffp+lcp-1;
-							A[endpos]=false;
-							//L = insertL(endpos, L, Li, b);
-							L[Li][b].push_back(endpos);
+							std::cout << endpos << std::endl;
+							if (A[endpos]==true){
+								std::cout << "not already added to L" << std::endl;
+								A[endpos]=false;
+								L[Li][b].push_back(endpos);
+							}
 						}
 						//check L_i-1 for value suffp-1
 							//if yes 1) turn off A[endpos of p] 2) add endpos of p to L_i
@@ -219,12 +222,6 @@ return 0;
 /******************************* FUNCTION DEFINITIONS *******************************/
 /************************************************************************************/
 
-/*********************                 Insert value in to L[i]             **************************/
-std::vector<std::vector<std::vector<int>>> insertL(int value, std::vector<std::vector<std::vector<int>>> L, int i, int S_j)
-{
-L[i][S_j].push_back(value);
-return L;
-}
 
 /*********************                 Print L             **************************/
 void printL(std::vector<std::vector<std::vector<int>>> L)
@@ -263,7 +260,7 @@ bool checkL(int value, std::vector<std::vector<std::vector<int>>> L, int i)
 			if (tempInt==value) return 1;
 		}
 	}
-
+return 0;
 }
 
 
