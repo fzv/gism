@@ -8,6 +8,7 @@
 #include "sdsl/lcp.hpp"
 #include "sdsl/util.hpp"
 #include <iterator>
+#include "sdsl/rmq_support.hpp"
 
 /************************************************************************************/
 /******************************* FUNCTION DECLARATIONS ******************************/
@@ -22,7 +23,7 @@ sdsl::csa_bitcompressed<> computeSuffixArray(std::string s);
 void printSuffixArray(sdsl::csa_bitcompressed<> SA);
 void printVector(std::vector<int> vector);
 std::vector<int> computeLCParray(std::string s, sdsl::csa_bitcompressed<> SA, std::vector<int> iSA, std::vector<int> LCP);
-int getlcp(int suffx, int suffy, std::vector<int> iSA, std::vector<int> LCP);
+int getlcp(int suffx, int suffy, std::vector<int> iSA, std::vector<int> LCP, sdsl::rmq_succinct_sct<> rmq);
 
 /***********************************************************************************/
 /************************************ GISM *****************************************/
@@ -143,10 +144,14 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 		int size = SA.size();
 		std::vector<int> iSA(size, 0);
 		for (int i = 0; i != size; i ++) iSA[SA[i]] = i;
-		printVector(iSA);
+		std::cout << "inverse suffix array" << std::endl; printVector(iSA);
 		std::vector<int> LCP(size, 0);
 		LCP = computeLCParray(X, SA, iSA, LCP);
-		printVector(LCP);
+		//
+		sdsl::rmq_succinct_sct<> rmq;
+		rmq = sdsl::rmq_succinct_sct<>(&LCP);
+		//
+		std::cout << "longest common prefix array" << std::endl; printVector(LCP);
 		//if |S| < m ...
 		int len;
 		int cumulative_len = 0;
@@ -156,10 +161,10 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 			std::cout << std::endl << X.substr(suffs,len) << std::endl;
 			std::cout << "is of length " << len << std::endl;
 			cumulative_len += len;
-
 			if (len < P.length()){
-				for (int suffp = 0; suffp != P.length(); suffp++){
-					int lcp = getlcp(suffp, suffs, iSA, LCP);
+				for (int suffp = 0; suffp < P.length(); suffp++){
+					int lcp = getlcp(suffp, suffs, iSA, LCP, rmq);
+					std::cout << "lcp of suffixes " << suffp << " and " << suffs << " is " << lcp << std::endl;
 				}
 			}
 		}
@@ -194,10 +199,22 @@ return 0;
 /************************************************************************************/
 
 
-/*********************          Compute lcp(suffix x, suffix y)          **************************/
-int getlcp(int suffx, int suffy, std::vector<int> iSA, std::vector<int> LCP)
-{
 
+/*********************          Compute lcp(suffix x, suffix y)          **************************/
+int getlcp(int suffx, int suffy, std::vector<int> iSA, std::vector<int> LCP, sdsl::rmq_succinct_sct<> rmq)
+{
+int i;
+int j;
+if (iSA[suffx] < iSA[suffy]){
+	i = iSA[suffx];
+	j = iSA[suffy];
+} else {
+	i = iSA[suffy];
+	j = iSA[suffx];
+}
+auto min_idx = rmq(i,j);
+int lcp = LCP[min_idx];
+return lcp;
 }
 
 /*********************          Compute LCP array of string s         **************************/
@@ -219,6 +236,7 @@ for (int i = 0; i < n; i++){
 std::vector<int>::iterator it = LCP.begin();
 LCP.insert(it, 0);
 LCP.pop_back();
+
 return LCP;
 }
 
