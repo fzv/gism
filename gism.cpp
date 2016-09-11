@@ -22,6 +22,7 @@ sdsl::csa_bitcompressed<> computeSuffixArray(std::string s);
 void printSuffixArray(sdsl::csa_bitcompressed<> SA);
 void printVector(std::vector<int> vector);
 std::vector<int> computeLCParray(std::string s, sdsl::csa_bitcompressed<> SA, std::vector<int> iSA, std::vector<int> LCP);
+int getlcp(int suffx, int suffy, std::vector<int> iSA, std::vector<int> LCP);
 
 /***********************************************************************************/
 /************************************ GISM *****************************************/
@@ -99,24 +100,21 @@ std::string X; // concatenation of P and all S_j, separated by unique chars
 std::vector<int> B; // border table
 std::vector<int> Bprime; //B'[j] = i s.t. i is ending pos of S_j in X
 std::list<std::vector<std::vector<int>>> L; //as defined in paper
-std::string unique = "bdfhijklmnopqrsuvwxyz"; //assumption: no more than 20 S_j in T[i]
 
 for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++){ //for each pos T[i] in T 
 	std::vector<std::string> tempVector = *i; //tempVector holds list of all S_j in T[i]
-	x << P << unique[0]; //concatenate unique symbol to P to form string X
-	int a = 1;
+	x << P << "$"; //concatenate unique symbol to P to form string X
 	for (std::vector<std::string>::iterator j=tempVector.begin(); j!=tempVector.end(); j++){ //for each S_j in T[i]
 		std::string S_j = *j;
-		x << S_j << unique[a]; //concatenate S_j and unique letter to string X
+		x << S_j << "$"; //concatenate S_j and unique letter to string X
 		if (S_j.length() >= P.length()){ //then P could occur in S_j
 			if (KMP(P, S_j)==1) report.push_back(std::distance(T.begin(),i)); //if P occurs in S_j, report pos T[i]
 		}
 		Bprime.push_back(x.str().length()-2); //in B': store ending pos of S_j in X
-		a++;
 	}
 	X = x.str(); //convert stringstream x into string X
 	X.pop_back(); //remove unecessary unique letter at end pos of X
-	std::cout << X << " : " << std::endl; //print string X
+	std::cout << "String X: " << X << std::endl; //print string X
 	for (int b = 0; b<Bprime.size(); b++) std::cout << Bprime[b] << " "; //print vector B'
 	std::cout << std::endl << "check above indexes of below border table" << std::endl;
 	if (i==T.begin())
@@ -129,26 +127,29 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 		B = computeBorderTable(X, B);
 		L = computeBps(L, report, B, Bprime, P);
 		//
-		sdsl::csa_bitcompressed<> SAX = computeSuffixArray(X);
-		printSuffixArray(SAX);
-		int sizex = SAX.size();
-		std::vector<int> iSAX(sizex, 0);
-		for (int i = 0; i != sizex; i ++) iSAX[SAX[i]] = i;
-		printVector(iSAX);
-		std::vector<int> LCPX(sizex, 0);
-		LCPX = computeLCParray(X, SAX, iSAX, LCPX);
-		printVector(LCPX);
+		sdsl::csa_bitcompressed<> SA = computeSuffixArray(X);
+		printSuffixArray(SA);
+		int size = SA.size();
+		std::vector<int> iSA(size, 0);
+		for (int i = 0; i != size; i ++) iSA[SA[i]] = i;
+		printVector(iSA);
+		std::vector<int> LCP(size, 0);
+		LCP = computeLCParray(X, SA, iSA, LCP);
+		printVector(LCP);
 		//if |S| < m ...
 		int len;
 		int cumulative_len = 0;
 		for (int b = 0; b<Bprime.size(); b++){ //for all S_j in T[i]
 			len = Bprime[b] - P.length() - cumulative_len - b;
-			std::cout << std::endl << X.substr(Bprime[b]-len+1,len) << std::endl;
+			int suffs = Bprime[b]-len+1;
+			std::cout << std::endl << X.substr(suffs,len) << std::endl;
 			std::cout << "is of length " << len << std::endl;
 			cumulative_len += len;
 
 			if (len < P.length()){
-				//
+				for (int suffp = 0; suffp != P.length(); suffp++){
+					int lcp = getlcp(suffp, suffs, iSA, LCP);
+				}
 			}
 		}
 		//compute Bsp
@@ -161,7 +162,6 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 	report.clear();
 	x.str("");
 	x.clear();
-	a = 0;
 	std::cout << std::endl << std::endl;
 }
 
@@ -182,18 +182,25 @@ return 0;
 /******************************* FUNCTION DEFINITIONS *******************************/
 /************************************************************************************/
 
+
+/*********************          Compute lcp(suffix x, suffix y)          **************************/
+int getlcp(int suffx, int suffy, std::vector<int> iSA, std::vector<int> LCP)
+{
+
+}
+
 /*********************          Compute LCP array of string s         **************************/
 std::vector<int> computeLCParray(std::string s, sdsl::csa_bitcompressed<> SA, std::vector<int> iSA, std::vector<int> LCP)
 {
-int size = SA.size();
+
 int lcp = 0;
-for (int i = 0; i < size; i++){
-	if (iSA[i] == 1){
+for (int i = 0; i < s.length(); i++){
+	if (iSA[i] == s.length()){
 		lcp = 0;
 		continue;
 	}
 	int j = SA[iSA[i]+1];
-	while (i+lcp < size && j+lcp < size && s[i+lcp]==s[j+lcp]) lcp++;
+	while ( ( (i+lcp) < s.length() ) && ( (j+lcp) < s.length() ) && ( s[i+lcp]==s[j+lcp] ) ) lcp++;
 	LCP[iSA[i]] = lcp;
 	if (lcp > 0) lcp--;
 }
