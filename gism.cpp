@@ -155,7 +155,7 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 			std::cout << "is of length " << len << std::endl;
 			cumulative_len += len;
 			if (len < P.length()){
-				for (int suffp = 0; suffp < P.length(); suffp++){
+				for (int suffp = 0; suffp < P.length(); suffp++){ //for each suffix of P
 					int lcp = getlcp(suffp, suffs, iSA, LCP, rmq);
 					std::cout << "lcp of suffixes " << suffp << " and " << suffs << " is " << lcp << std::endl;
 					if (lcp == 0){
@@ -173,16 +173,17 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 								L[Li][b].push_back(endpos);
 							}
 						}
-						//check L_i-1 for value suffp-1
-							//if yes 1) turn off A[endpos of p] 2) add endpos of p to L_i
 					} else { //prefix of S_j is a suffix of P
-						//
+						int Li = std::distance(T.begin(),i);
+						int p = P.length() - lcp - 2; //j = lcp-1 ??? or j = lcp ????
+						if (checkL(p, L, Li-1)){
+							report.push_back(Li);
+						}
 					}
 				}
 			}
 		}
 		printL(L);
-		//check all j in A
 		//compute Bsp
 		//if there exists ..
 		}
