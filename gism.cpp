@@ -212,7 +212,9 @@ if (iSA[suffx] < iSA[suffy]){
 	i = iSA[suffy];
 	j = iSA[suffx];
 }
-auto min_idx = rmq(i,j);
+std::cout << "i = " << i << std::endl;
+std::cout << "j = " << j << std::endl;
+auto min_idx = rmq(i+1,j); 
 int lcp = LCP[min_idx];
 return lcp;
 }
