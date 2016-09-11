@@ -29,7 +29,18 @@ int getlcp(int suffx, int suffy, std::vector<int> iSA, std::vector<int> LCP);
 /***********************************************************************************/
 int main()
 {
-
+{
+std::string X = "banana";
+		sdsl::csa_bitcompressed<> SA = computeSuffixArray(X);
+		printSuffixArray(SA);
+		int size = SA.size();
+		std::vector<int> iSA(size, 0);
+		for (int i = 0; i != size; i ++) iSA[SA[i]] = i;
+		printVector(iSA);
+		std::vector<int> LCP(size, 0);
+		LCP = computeLCParray(X, SA, iSA, LCP);
+		printVector(LCP);
+}
 /*********************            Welcome message         **************************/
 
 std::cout << "GISM - Generalised Indeterminate String Matching" << std::endl << std::endl;
@@ -192,18 +203,22 @@ int getlcp(int suffx, int suffy, std::vector<int> iSA, std::vector<int> LCP)
 /*********************          Compute LCP array of string s         **************************/
 std::vector<int> computeLCParray(std::string s, sdsl::csa_bitcompressed<> SA, std::vector<int> iSA, std::vector<int> LCP)
 {
-
+s = s.append("$");
+int n = s.length(); 
 int lcp = 0;
-for (int i = 0; i < s.length(); i++){
-	if (iSA[i] == s.length()){
+for (int i = 0; i < n; i++){
+	if (iSA[i] == n-1){
 		lcp = 0;
 		continue;
 	}
 	int j = SA[iSA[i]+1];
-	while ( ( (i+lcp) < s.length() ) && ( (j+lcp) < s.length() ) && ( s[i+lcp]==s[j+lcp] ) ) lcp++;
+	while ( ( (i+lcp) < n ) && ( (j+lcp) < n ) && ( s[i+lcp]==s[j+lcp] ) ) lcp++;
 	LCP[iSA[i]] = lcp;
 	if (lcp > 0) lcp--;
 }
+std::vector<int>::iterator it = LCP.begin();
+LCP.insert(it, 0);
+LCP.pop_back();
 return LCP;
 }
 
