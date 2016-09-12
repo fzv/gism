@@ -27,6 +27,7 @@ int getlcp(int suffx, int suffy, std::vector<int> iSA, std::vector<int> LCP, sds
 bool checkL(int value, std::vector<std::vector<std::vector<int>>> L, int i);
 void printL(std::vector<std::vector<std::vector<int>>> L);
 std::vector<std::vector<std::vector<int>>> insertL(int value, std::vector<std::vector<std::vector<int>>> L, int i, int S_j);
+std::vector<std::vector<std::vector<int>>> maintainL(std::vector<std::vector<std::vector<int>>> L, int i);
 
 /***********************************************************************************/
 /************************************ GISM *****************************************/
@@ -104,11 +105,14 @@ std::vector<int> B; // border table
 std::vector<int> Bprime; //B'[j] = i s.t. i is ending pos of S_j in X
 std::vector<std::vector<std::vector<int>>> L; //as defined in paper
 
+
 for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++){ //for each pos T[i] in T 
+	bool flag = false;
 	std::vector<std::string> tempVector = *i; //tempVector holds list of all S_j in T[i]
 	x << P << "$"; //concatenate unique symbol to P to form string X
 	for (std::vector<std::string>::iterator j=tempVector.begin(); j!=tempVector.end(); j++){ //for each S_j in T[i]
 		std::string S_j = *j;
+		if (S_j == "E") flag=true;
 		x << S_j << "$"; //concatenate S_j and unique letter to string X
 		if (S_j.length() >= P.length()){ //then P could occur in S_j
 			if (KMP(P, S_j)==1) report.push_back(std::distance(T.begin(),i)); //if P occurs in S_j, report pos T[i]
@@ -183,10 +187,9 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 				}
 			}
 		}
-		printL(L);
-		//compute Bsp
-		//if there exists ..
 		}
+	if (flag==true) L = maintainL(L, std::distance(T.begin(),i));
+	printL(L);
 	//** report **//
 	for(std::vector<int>::iterator it = report.begin(); it != report.end(); it++) std::cout << *it << " ";
 	//** clean up **//
@@ -210,6 +213,21 @@ return 0;
 /************************************************************************************/
 /******************************* FUNCTION DEFINITIONS *******************************/
 /************************************************************************************/
+
+//copy L_i-1 to L_i
+std::vector<std::vector<std::vector<int>>> maintainL(std::vector<std::vector<std::vector<int>>> L, int i)
+{
+std::vector<std::vector<int>> Li = L[i];
+std::vector<std::vector<int>> Li_1 = L[i-1];
+for (std::vector<std::vector<int>>::iterator j = Li.begin(); j != Li.end(); j++){
+	std::vector<int> S_j_i = *j;
+	for (std::vector<std::vector<int>>::iterator k = Li_1.begin(); k != Li_1.end(); k++){
+		std::vector<int> S_j_i_1 = *k;
+		S_j_i.insert(S_j_i.begin(), S_j_i_1.begin(), S_j_i_1.end());
+	}
+}
+return L;
+}
 
 
 /*********************                 Print L             **************************/
