@@ -9,6 +9,7 @@
 #include "sdsl/util.hpp"
 #include <iterator>
 #include "sdsl/rmq_support.hpp"
+#include <algorithm> //std::find
 
 /************************************************************************************/
 /******************************* FUNCTION DECLARATIONS ******************************/
@@ -100,13 +101,14 @@ std::cout << P << std::endl << std::endl;
 /*********************                       GISM                  **************************/
 
 std::vector<int> report;
+std::vector<std::vector<std::vector<int>>> L; //as defined in paper
 
 { //gism
 std::stringstream x;
 std::string X; // concatenation of P and all S_j, separated by unique chars
 std::vector<int> B; // border table
 std::vector<int> Bprime; //B'[j] = i s.t. i is ending pos of S_j in X
-std::vector<std::vector<std::vector<int>>> L; //as defined in paper
+
 
 
 for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++){ //for each pos T[i] in T 
@@ -181,6 +183,7 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 								std::cout << "not already added to L" << std::endl;
 								A[endpos]=false;
 								L[Li][b].push_back(endpos);
+								if (endpos==P.length()-1) report.push_back(Li); //////////////////&& std::find(report.begin(), report.end(), endpos)==report.end()
 							}
 						}
 					} else { //prefix of S_j is a suffix of P
@@ -195,12 +198,13 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 			}
 		}
 		}
-	if (flag==true) L = maintainL(L, std::distance(T.begin(),i));
+	if (flag==true){
+		L = maintainL(L, std::distance(T.begin(),i));
+	}
 	printL(L);
 	//** clean up **//
 	Bprime.clear();
 	B.clear();
-	///report.clear();
 	x.str("");
 	x.clear();
 	std::cout << std::endl << std::endl;
@@ -234,7 +238,13 @@ for (std::vector<std::vector<int>>::iterator j = Li.begin(); j != Li.end(); j++)
 	std::vector<int> S_j_i = *j;
 	for (std::vector<std::vector<int>>::iterator k = Li_1.begin(); k != Li_1.end(); k++){
 		std::vector<int> S_j_i_1 = *k;
-		S_j_i.insert(S_j_i.begin(), S_j_i_1.begin(), S_j_i_1.end());
+		std::cout << "copying" << std::endl;
+		printVector(S_j_i_1);
+		std::cout << "to" << std::endl;
+		printVector(S_j_i);
+		//S_j_i.insert(S_j_i.end(), S_j_i_1.begin(), S_j_i_1.end());
+		for (std::vector<int>::iterator it = S_j_i_1.begin(); it != S_j_i_1.end(); it++) S_j_i.push_back(*it);
+		printVector(S_j_i);
 	}
 }
 return L;
