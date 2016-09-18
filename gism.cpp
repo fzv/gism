@@ -40,6 +40,11 @@ std::cout << "GISM - Generalised Indeterminate String Matching" << std::endl << 
 
 /*********************            Parse input file          **************************/
 
+std::string P;
+std::list<std::vector<std::string>> T;
+
+{
+
 std::string line;
 std::vector<std::string> lines;
 std::ifstream inputFile("testdata");
@@ -55,10 +60,9 @@ if (inputFile.is_open()){
 	std::cout << "Unable to open file." << std::endl;
 }
 
-std::string P = lines[1];
+P = lines[1];
 std::string t = lines[3];
 
-std::list<std::vector<std::string>> T;
 std::vector<std::string> tempVector;
 std::stringstream tempString;
 
@@ -79,14 +83,12 @@ for (int i=0; i<t.length(); i++){ //loop through text string
 	}
 }
 
-tempVector.clear();
-tempString.str("");
-tempString.clear();
+}
 
 /*********************            Print input sequences         **************************/
 std::cout << "string T:" << std::endl;
 for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++){
-	tempVector = *i;
+	std::vector<std::string> tempVector = *i;
 	for (std::vector<std::string>::iterator j=tempVector.begin(); j!=tempVector.end(); j++){
 		std::cout << *j << " ";
 	}
@@ -96,6 +98,7 @@ std::cout << std::endl << "string P:" << std::endl;
 std::cout << P << std::endl << std::endl;
 
 /*********************                       GISM                  **************************/
+
 std::vector<int> report;
 
 { //gism
@@ -159,12 +162,15 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 			std::cout << "is of length " << len << std::endl;
 			cumulative_len += len;
 			if (len < P.length()){
+				std::cout << "length of S_j is less than P" << std::endl;
 				for (int suffp = 0; suffp < P.length(); suffp++){ //for each suffix of P
 					int lcp = getlcp(suffp, suffs, iSA, LCP, rmq);
 					std::cout << "lcp of suffixes " << suffp << " and " << suffs << " is " << lcp << std::endl;
 					if (lcp == 0){
 						//do nothing
+						std::cout << "lcp is 0" << std::endl;
 					} else if (lcp >= len){ //S_j occurs in P
+						std::cout << "S_j occurs in P" << std::endl;
 						lcp = len;
 						int Li = std::distance(T.begin(),i);
 						if (checkL(suffp-1, L, Li-1)){
@@ -178,8 +184,9 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 							}
 						}
 					} else { //prefix of S_j is a suffix of P
+						std::cout << "prefix of S_j is suffix of P" << std::endl;
 						int Li = std::distance(T.begin(),i);
-						int p = P.length() - lcp - 2; //j = lcp-1 ??? or j = lcp ????
+						int p = P.length() - lcp - 3; //j = lcp - 1
 						if (checkL(p, L, Li-1)){
 							report.push_back(Li);
 						}
@@ -190,18 +197,21 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 		}
 	if (flag==true) L = maintainL(L, std::distance(T.begin(),i));
 	printL(L);
-	//** report **//
-	for(std::vector<int>::iterator it = report.begin(); it != report.end(); it++) std::cout << *it << " ";
 	//** clean up **//
 	Bprime.clear();
 	B.clear();
-	report.clear();
+	///report.clear();
 	x.str("");
 	x.clear();
 	std::cout << std::endl << std::endl;
 }
 
 } //end_gism
+
+//** report **//
+std::cout << "pattern occurs in text, ending at the following positions" << std::endl;
+for(std::vector<int>::iterator it = report.begin(); it != report.end(); it++) std::cout << *it << " ";
+std::cout << std::endl;
 
 return 0;
 
@@ -217,6 +227,7 @@ return 0;
 //copy L_i-1 to L_i
 std::vector<std::vector<std::vector<int>>> maintainL(std::vector<std::vector<std::vector<int>>> L, int i)
 {
+std::cout << "pos " << i << " has been flagged" << std::endl;
 std::vector<std::vector<int>> Li = L[i];
 std::vector<std::vector<int>> Li_1 = L[i-1];
 for (std::vector<std::vector<int>>::iterator j = Li.begin(); j != Li.end(); j++){
