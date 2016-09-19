@@ -19,7 +19,7 @@ std::vector<int> computeBorderTable(std::string X, std::vector<int> B);
 std::vector<int> computeBorder(std::string temp, std::vector<int> B);
 void preKMP(std::string pattern, int f[]);
 bool KMP(std::string needle, std::string haystack);
-std::vector<std::vector<std::vector<int>>> computeBps(std::vector<std::vector<std::vector<int>>> L, std::vector<int> report, std::vector<int> B, std::vector<int> Bprime, std::string P);
+std::vector<std::vector<std::vector<int>>> computeBps(std::vector<std::vector<std::vector<int>>> L, std::vector<int> B, std::vector<int> Bprime, std::string P);
 sdsl::csa_bitcompressed<> computeSuffixArray(std::string s);
 void printSuffixArray(sdsl::csa_bitcompressed<> SA);
 void printVector(std::vector<int> vector);
@@ -48,7 +48,7 @@ std::list<std::vector<std::string>> T;
 
 std::string line;
 std::vector<std::string> lines;
-std::ifstream inputFile("testdata_1");
+std::ifstream inputFile("testdata1");
 
 if (inputFile.is_open()){
 	if (inputFile.good()){
@@ -132,12 +132,12 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 	if (i==T.begin())
 		{
 		B = computeBorderTable(X, B);
-		L = computeBps(L, report, B, Bprime, P);
+		L = computeBps(L, B, Bprime, P);
 		}
 	else
 		{
 		B = computeBorderTable(X, B);
-		L = computeBps(L, report, B, Bprime, P);
+		L = computeBps(L, B, Bprime, P);
 		//
 		sdsl::csa_bitcompressed<> SA = computeSuffixArray(X);
 		printSuffixArray(SA);
@@ -191,6 +191,7 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 						int Li = std::distance(T.begin(),i);
 						int p = P.length() - lcp - 3; //j = lcp - 1
 						if (checkL(p, L, Li-1)){
+							std::cout << "reporting " << Li << std::endl;
 							report.push_back(Li);
 						}
 					}
@@ -201,6 +202,7 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 	if (flag==true){
 		L = maintainL(L, std::distance(T.begin(),i));
 	}
+	std::cout << "printing L outside function" << std::endl;
 	printL(L);
 	//** clean up **//
 	Bprime.clear();
@@ -232,8 +234,8 @@ return 0;
 std::vector<std::vector<std::vector<int>>> maintainL(std::vector<std::vector<std::vector<int>>> L, int i)
 {
 std::cout << "pos " << i << " has been flagged" << std::endl;
-std::vector<std::vector<int>> Li = L[i];
-std::vector<std::vector<int>> Li_1 = L[i-1];
+std::vector<std::vector<int>> &Li = L[i];
+std::vector<std::vector<int>> &Li_1 = L[i-1];
 for (std::vector<std::vector<int>>::iterator j = Li.begin(); j != Li.end(); j++){
 	std::vector<int> S_j_i = *j;
 	for (std::vector<std::vector<int>>::iterator k = Li_1.begin(); k != Li_1.end(); k++){
@@ -244,9 +246,12 @@ for (std::vector<std::vector<int>>::iterator j = Li.begin(); j != Li.end(); j++)
 		printVector(S_j_i);
 		//S_j_i.insert(S_j_i.end(), S_j_i_1.begin(), S_j_i_1.end());
 		for (std::vector<int>::iterator it = S_j_i_1.begin(); it != S_j_i_1.end(); it++) S_j_i.push_back(*it);
+		std::cout << "resulting in" << std::endl;
 		printVector(S_j_i);
 	}
 }
+std::cout << "printing L inside function" << std::endl;
+printL(L);
 return L;
 }
 
@@ -364,11 +369,10 @@ std::cout << std::endl << std::endl;
 /*********************                     Compute B_p,s               **************************/
 // B_p,s stores all prefixes of pattern P that are suffixes of S_j, given parameters:
 // L: stores all B_p,s (for all pos in T)
-// report: stores pos T[i] to be reported as output
 // B: border table
 // B': B'[j] = i s.t. i is ending pos of S_j in X
 // P: pattern string
-std::vector<std::vector<std::vector<int>>> computeBps(std::vector<std::vector<std::vector<int>>> L, std::vector<int> report, std::vector<int> B, std::vector<int> Bprime, std::string P)
+std::vector<std::vector<std::vector<int>>> computeBps(std::vector<std::vector<std::vector<int>>> L, std::vector<int> B, std::vector<int> Bprime, std::string P)
 {	
 	std::vector<int> Sj;
 	std::vector<std::vector<int>> Bps;
@@ -391,26 +395,7 @@ std::vector<std::vector<std::vector<int>>> computeBps(std::vector<std::vector<st
 	}
 	L.push_back(Bps);
 
-	//** print L **//
-	int inti = 0;
-	int intj = 0;
-	for (std::vector<std::vector<std::vector<int>>>::iterator i = L.begin(); i != L.end(); i++)
-	{
-		std::cout << std::endl << "L[" << inti << "]" << std::endl;
-		std::vector<std::vector<int>> tempVecVec = *i;
-		inti++;
-		for (std::vector<std::vector<int>>::iterator j = tempVecVec.begin(); j != tempVecVec.end(); j++)
-		{
-			std::cout << "  S_" << intj << " : ";
-			std::vector<int> tempVec = *j;
-			intj++;
-			for (std::vector<int>::iterator k = tempVec.begin(); k != tempVec.end(); k++)
-			{
-				int tempInt = *k;
-				std::cout << tempInt << " "; //ending pos of pref(P) = suff(Sj)
-			}
-		}
-	}
+	printL(L);
 
 	return L;
 }
@@ -429,7 +414,7 @@ std::vector<int> computeBorderTable(std::string X, std::vector<int> B)
 	int p = 0;
 	for (int q = 1; q < m; q++){
 		B[q-1] = p;
-		while (p >= 0 & X[q]!=X[p]){ //what does E match with?? what about reporting occ where E in T[i...j]?
+		while (p >= 0 & X[q]!=X[p]){ 
 			if (p==0){
 				p = -1;
 			} else {
