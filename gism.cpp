@@ -48,7 +48,7 @@ std::list<std::vector<std::string>> T;
 
 std::string line;
 std::vector<std::string> lines;
-std::ifstream inputFile("testdata");
+std::ifstream inputFile("testdata_1");
 
 if (inputFile.is_open()){
 	if (inputFile.good()){
@@ -183,7 +183,7 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 								std::cout << "not already added to L" << std::endl;
 								A[endpos]=false;
 								L[Li][b].push_back(endpos);
-								if (endpos==P.length()-1) report.push_back(Li); //////////////////&& std::find(report.begin(), report.end(), endpos)==report.end()
+								//if (endpos==P.length()-1) report.push_back(Li); //////////////////&& std::find(report.begin(), report.end(), endpos)==report.end()
 							}
 						}
 					} else { //prefix of S_j is a suffix of P
