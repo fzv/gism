@@ -28,7 +28,7 @@ int getlcp(int suffx, int suffy, std::vector<int> iSA, std::vector<int> LCP, sds
 bool checkL(int value, std::vector<std::vector<std::vector<int>>> L, int i);
 void printL(std::vector<std::vector<std::vector<int>>> L);
 std::vector<std::vector<std::vector<int>>> insertL(int value, std::vector<std::vector<std::vector<int>>> L, int i, int S_j);
-std::vector<std::vector<std::vector<int>>> maintainL(std::vector<std::vector<std::vector<int>>> L, int i);
+void maintainL(std::vector<std::vector<std::vector<int>>> *L, int i);
 
 /***********************************************************************************/
 /************************************ GISM *****************************************/
@@ -183,7 +183,6 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 								std::cout << "not already added to L" << std::endl;
 								A[endpos]=false;
 								L[Li][b].push_back(endpos);
-								//if (endpos==P.length()-1) report.push_back(Li); //////////////////&& std::find(report.begin(), report.end(), endpos)==report.end()
 							}
 						}
 					} else { //prefix of S_j is a suffix of P
@@ -198,11 +197,11 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 				}
 			}
 		}
-		}
+		} //break after reporting!!!!!!!!!!!!!!!!!!!11
 	if (flag==true){
-		L = maintainL(L, std::distance(T.begin(),i));
+		maintainL(&L, std::distance(T.begin(),i));
 	}
-	std::cout << "printing L outside function" << std::endl;
+	std::cout << std::endl << "printing L outside function" << std::endl;
 	printL(L);
 	//** clean up **//
 	Bprime.clear();
@@ -230,12 +229,44 @@ return 0;
 /******************************* FUNCTION DEFINITIONS *******************************/
 /************************************************************************************/
 
+
+
 //copy L_i-1 to L_i
-std::vector<std::vector<std::vector<int>>> maintainL(std::vector<std::vector<std::vector<int>>> L, int i)
+void maintainL(std::vector<std::vector<std::vector<int>>> *L, int i)
 {
 std::cout << "pos " << i << " has been flagged" << std::endl;
-std::vector<std::vector<int>> &Li = L[i];
-std::vector<std::vector<int>> &Li_1 = L[i-1];
+//std::vector<std::vector<int>> Li = (*L)[i]; ////////
+//std::vector<std::vector<int>> Li_1 = (*L)[i-1]; ////////
+//std::vector<std::vector<std::vector<int>>>::iterator Li = *L->end()-1;
+//std::vector<std::vector<std::vector<int>>>::iterator Li_1 = *L->end()-2;
+for (std::vector<std::vector<int>>::iterator j = (*L)[i].begin(); j != (*L)[i].end(); j++){
+	std::vector<int> S_j_i = *j;
+	for (std::vector<std::vector<int>>::iterator k = (*L)[i-1].begin(); k != (*L)[i-1].end(); k++){
+		std::vector<int> S_j_i_1 = *k;
+		std::cout << "copying" << std::endl;
+		printVector(S_j_i_1);
+		std::cout << "to" << std::endl;
+		printVector(S_j_i);
+		//S_j_i.insert(S_j_i.end(), S_j_i_1.begin(), S_j_i_1.end());
+		for (std::vector<int>::iterator it = S_j_i_1.begin(); it != S_j_i_1.end(); it++) (*j).push_back(*it);
+		std::cout << "resulting in" << std::endl;
+		printVector(S_j_i);
+	}
+}
+std::cout << "printing L inside function" << std::endl;
+//printL(L);
+//return L;
+}
+
+/*
+//copy L_i-1 to L_i
+void maintainL(std::vector<std::vector<std::vector<int>>> *L, int i)
+{
+std::cout << "pos " << i << " has been flagged" << std::endl;
+std::vector<std::vector<int>> Li = (*L)[i]; ////////
+std::vector<std::vector<int>> Li_1 = (*L)[i-1]; ////////
+//std::vector<std::vector<std::vector<int>>>::iterator Li = *L->end()-1;
+//std::vector<std::vector<std::vector<int>>>::iterator Li_1 = *L->end()-2;
 for (std::vector<std::vector<int>>::iterator j = Li.begin(); j != Li.end(); j++){
 	std::vector<int> S_j_i = *j;
 	for (std::vector<std::vector<int>>::iterator k = Li_1.begin(); k != Li_1.end(); k++){
@@ -251,9 +282,10 @@ for (std::vector<std::vector<int>>::iterator j = Li.begin(); j != Li.end(); j++)
 	}
 }
 std::cout << "printing L inside function" << std::endl;
-printL(L);
-return L;
+//printL(L);
+//return L;
 }
+*/
 
 
 /*********************                 Print L             **************************/
