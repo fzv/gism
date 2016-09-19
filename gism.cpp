@@ -230,62 +230,17 @@ return 0;
 /************************************************************************************/
 
 
-
-//copy L_i-1 to L_i
+/*********************              Copy L[i-1] to L[i-1]          **************************/
 void maintainL(std::vector<std::vector<std::vector<int>>> *L, int i)
 {
-std::cout << "pos " << i << " has been flagged" << std::endl;
-//std::vector<std::vector<int>> Li = (*L)[i]; ////////
-//std::vector<std::vector<int>> Li_1 = (*L)[i-1]; ////////
-//std::vector<std::vector<std::vector<int>>>::iterator Li = *L->end()-1;
-//std::vector<std::vector<std::vector<int>>>::iterator Li_1 = *L->end()-2;
+//std::cout << "pos " << i << " has been flagged" << std::endl;
 for (std::vector<std::vector<int>>::iterator j = (*L)[i].begin(); j != (*L)[i].end(); j++){
-	std::vector<int> S_j_i = *j;
 	for (std::vector<std::vector<int>>::iterator k = (*L)[i-1].begin(); k != (*L)[i-1].end(); k++){
-		std::vector<int> S_j_i_1 = *k;
-		std::cout << "copying" << std::endl;
-		printVector(S_j_i_1);
-		std::cout << "to" << std::endl;
-		printVector(S_j_i);
-		//S_j_i.insert(S_j_i.end(), S_j_i_1.begin(), S_j_i_1.end());
-		for (std::vector<int>::iterator it = S_j_i_1.begin(); it != S_j_i_1.end(); it++) (*j).push_back(*it);
-		std::cout << "resulting in" << std::endl;
-		printVector(S_j_i);
+		(*j).insert((*j).end(), (*k).begin(), (*k).end());
 	}
 }
-std::cout << "printing L inside function" << std::endl;
-//printL(L);
-//return L;
 }
 
-/*
-//copy L_i-1 to L_i
-void maintainL(std::vector<std::vector<std::vector<int>>> *L, int i)
-{
-std::cout << "pos " << i << " has been flagged" << std::endl;
-std::vector<std::vector<int>> Li = (*L)[i]; ////////
-std::vector<std::vector<int>> Li_1 = (*L)[i-1]; ////////
-//std::vector<std::vector<std::vector<int>>>::iterator Li = *L->end()-1;
-//std::vector<std::vector<std::vector<int>>>::iterator Li_1 = *L->end()-2;
-for (std::vector<std::vector<int>>::iterator j = Li.begin(); j != Li.end(); j++){
-	std::vector<int> S_j_i = *j;
-	for (std::vector<std::vector<int>>::iterator k = Li_1.begin(); k != Li_1.end(); k++){
-		std::vector<int> S_j_i_1 = *k;
-		std::cout << "copying" << std::endl;
-		printVector(S_j_i_1);
-		std::cout << "to" << std::endl;
-		printVector(S_j_i);
-		//S_j_i.insert(S_j_i.end(), S_j_i_1.begin(), S_j_i_1.end());
-		for (std::vector<int>::iterator it = S_j_i_1.begin(); it != S_j_i_1.end(); it++) S_j_i.push_back(*it);
-		std::cout << "resulting in" << std::endl;
-		printVector(S_j_i);
-	}
-}
-std::cout << "printing L inside function" << std::endl;
-//printL(L);
-//return L;
-}
-*/
 
 
 /*********************                 Print L             **************************/
