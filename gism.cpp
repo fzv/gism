@@ -29,6 +29,7 @@ bool checkL(int value, std::vector<std::vector<std::vector<int>>> L, int i);
 void printL(std::vector<std::vector<std::vector<int>>> L);
 std::vector<std::vector<std::vector<int>>> insertL(int value, std::vector<std::vector<std::vector<int>>> L, int i, int S_j);
 void maintainL(std::vector<std::vector<std::vector<int>>> *L, int i);
+void printSeqs(std::list<std::vector<std::string>> *T, std::string *P);
 
 /***********************************************************************************/
 /************************************ GISM *****************************************/
@@ -44,7 +45,7 @@ std::cout << "GISM - Generalised Indeterminate String Matching" << std::endl << 
 std::string P;
 std::list<std::vector<std::string>> T;
 
-{
+{ //block
 
 std::string line;
 std::vector<std::string> lines;
@@ -81,55 +82,42 @@ for (int i=0; i<t.length(); i++){ //loop through text string
 		tempString.clear(); //clear string stream to hold all a in s[j]
 	} else { //if next a in s
 		tempString << t[i]; //add a to string stream
-	}
-}
+	} //end_if
+} //end_for
 
-}
+} //end_block
 
 /*********************            Print input sequences         **************************/
-std::cout << "string T:" << std::endl;
-for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++){
-	std::vector<std::string> tempVector = *i;
-	for (std::vector<std::string>::iterator j=tempVector.begin(); j!=tempVector.end(); j++){
-		std::cout << *j << " ";
-	}
-	std::cout << std::endl;
-}
-std::cout << std::endl << "string P:" << std::endl;
-std::cout << P << std::endl << std::endl;
+printSeqs(&T, &P);
 
 /*********************                       GISM                  **************************/
 
 std::vector<int> report;
 std::vector<std::vector<std::vector<int>>> L; //as defined in paper
 
-{ //gism
-std::stringstream x;
-std::string X; // concatenation of P and all S_j, separated by unique chars
-std::vector<int> B; // border table
-std::vector<int> Bprime; //B'[j] = i s.t. i is ending pos of S_j in X
-
-
-
 for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++){ //for each pos T[i] in T 
-	bool flag = false;
-	std::vector<std::string> tempVector = *i; //tempVector holds list of all S_j in T[i]
+	std::stringstream x; //stringstream used to create string X
+	std::vector<int> B; // border table
+	std::vector<int> Bprime; //B'[j] = i s.t. i is ending pos of S_j in X
+	bool epsilon = false;
 	x << P << "$"; //concatenate unique symbol to P to form string X
-	for (std::vector<std::string>::iterator j=tempVector.begin(); j!=tempVector.end(); j++){ //for each S_j in T[i]
-		std::string S_j = *j;
-		if (S_j == "E") flag=true;
-		x << S_j << "$"; //concatenate S_j and unique letter to string X
-		if (S_j.length() >= P.length()){ //then P could occur in S_j
-			if (KMP(P, S_j)==1) report.push_back(std::distance(T.begin(),i)); //if P occurs in S_j, report pos T[i]
+	for (std::vector<std::string>::iterator j=(*i).begin(); j!=(*i).end(); j++){ //for each S_j in T[i]
+		if ((*j) == "E") epsilon=true;
+		x << (*j) << "$"; //concatenate S_j and unique letter to string X
+		if ((*j).length() >= P.length()){ //then P could occur in S_j
+			if (KMP(P, (*j))){
+				report.push_back(std::distance(T.begin(),i)); //if P occurs in S_j, report pos T[i]
+				///break;
+			}
 		}
 		Bprime.push_back(x.str().length()-2); //in B': store ending pos of S_j in X
 	}
-	X = x.str(); //convert stringstream x into string X
+	std::string X = x.str(); // concatenation of P and all S_j, separated by unique chars
 	X.pop_back(); //remove unecessary unique letter at end pos of X
 	std::cout << "String X: " << X << std::endl; //print string X
-	for (int b = 0; b<Bprime.size(); b++) std::cout << Bprime[b] << " "; //print vector B'
-	std::cout << std::endl << "check above indexes of below border table" << std::endl;
-	if (i==T.begin())
+	printVector(Bprime); //print vector B'
+	std::cout << "check above indexes of below border table" << std::endl;
+	if (i==T.begin()) //only for T[0]
 		{
 		B = computeBorderTable(X, B);
 		L = computeBps(L, B, Bprime, P);
@@ -198,20 +186,12 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 			}
 		}
 		} //break after reporting!!!!!!!!!!!!!!!!!!!11
-	if (flag==true){
-		maintainL(&L, std::distance(T.begin(),i));
-	}
+	if (epsilon==true) maintainL(&L, std::distance(T.begin(),i));
 	std::cout << std::endl << "printing L outside function" << std::endl;
 	printL(L);
-	//** clean up **//
-	Bprime.clear();
-	B.clear();
-	x.str("");
-	x.clear();
 	std::cout << std::endl << std::endl;
 }
 
-} //end_gism
 
 //** report **//
 std::cout << "pattern occurs in text, ending at the following positions" << std::endl;
@@ -228,6 +208,20 @@ return 0;
 /************************************************************************************/
 /******************************* FUNCTION DEFINITIONS *******************************/
 /************************************************************************************/
+
+/*******************           Print (T)ext and (P)attern       ************************/
+void printSeqs(std::list<std::vector<std::string>> *T, std::string *P)
+{
+std::cout << "string T:" << std::endl;
+for (std::list<std::vector<std::string>>::iterator i=(*T).begin(); i!=(*T).end(); i++){
+	for (std::vector<std::string>::iterator j=(*i).begin(); j!=(*i).end(); j++){
+		std::cout << *j << " ";
+	}
+	std::cout << std::endl;
+}
+std::cout << std::endl << "string P:" << std::endl;
+std::cout << (*P) << std::endl << std::endl;
+}
 
 
 /*********************              Copy L[i-1] to L[i-1]          **************************/
