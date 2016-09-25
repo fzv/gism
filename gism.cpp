@@ -15,11 +15,11 @@
 /******************************* FUNCTION DECLARATIONS ******************************/
 /************************************************************************************/
 
-std::vector<int> computeBorderTable(std::string X, std::vector<int> B);
+void computeBorderTable(std::string *X, std::vector<int> *B);
 std::vector<int> computeBorder(std::string temp, std::vector<int> B);
 void preKMP(std::string pattern, int f[]);
 bool KMP(std::string needle, std::string haystack);
-std::vector<std::vector<std::vector<int>>> computeBps(std::vector<std::vector<std::vector<int>>> L, std::vector<int> B, std::vector<int> Bprime, std::string P);
+void computeBps(std::vector<std::vector<std::vector<int>>> *L, std::vector<int> *B, std::vector<int> *Bprime, std::string *P);
 sdsl::csa_bitcompressed<> computeSuffixArray(std::string s);
 void printSuffixArray(sdsl::csa_bitcompressed<> SA);
 void printVector(std::vector<int> vector);
@@ -97,50 +97,50 @@ std::vector<std::vector<std::vector<int>>> L; //as defined in paper
 
 for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++){ //for each pos T[i] in T 
 	std::stringstream x; //stringstream used to create string X
-	std::vector<int> B; // border table
+	std::vector<int> B; //border table
 	std::vector<int> Bprime; //B'[j] = i s.t. i is ending pos of S_j in X
-	bool epsilon = false;
-	x << P << "$"; //concatenate unique symbol to P to form string X
+	bool epsilon = false; //flag empty string in T[i]
+	x << P << "$"; //concatenate unique symbol to P to initiaise string X
 	for (std::vector<std::string>::iterator j=(*i).begin(); j!=(*i).end(); j++){ //for each S_j in T[i]
-		if ((*j) == "E") epsilon=true;
+		if ((*j) == "E") epsilon=true; //if S_j is empty string, set flag to true 
 		x << (*j) << "$"; //concatenate S_j and unique letter to string X
-		if ((*j).length() >= P.length()){ //then P could occur in S_j
-			if (KMP(P, (*j))){
-				report.push_back(std::distance(T.begin(),i)); //if P occurs in S_j, report pos T[i]
-				///break;
+		if ((*j).length() >= P.length()){ //if P could occur in S_j
+			if (KMP(P, (*j))){ //if P occurs in S_j
+				report.push_back(std::distance(T.begin(),i)); //report pos T[i]
+				//////////////////////////////////////////////////////////////////////////break;
 			}
 		}
 		Bprime.push_back(x.str().length()-2); //in B': store ending pos of S_j in X
 	}
-	std::string X = x.str(); // concatenation of P and all S_j, separated by unique chars
+	std::string X = x.str(); //concatenation of P and all S_j, separated by unique chars
 	X.pop_back(); //remove unecessary unique letter at end pos of X
 	std::cout << "String X: " << X << std::endl; //print string X
 	printVector(Bprime); //print vector B'
 	std::cout << "check above indexes of below border table" << std::endl;
-	if (i==T.begin()) //only for T[0]
+	if (i==T.begin()) //only for T[0] do:
 		{
-		B = computeBorderTable(X, B);
-		L = computeBps(L, B, Bprime, P);
+		computeBorderTable(&X, &B);
+		computeBps(&L, &B, &Bprime, &P);
 		}
 	else
 		{
-		B = computeBorderTable(X, B);
-		L = computeBps(L, B, Bprime, P);
-		//
+		computeBorderTable(&X, &B);
+		computeBps(&L, &B, &Bprime, &P);
+		//construct suffix array of X
 		sdsl::csa_bitcompressed<> SA = computeSuffixArray(X);
 		printSuffixArray(SA);
 		int size = SA.size();
+		//construct inverse suffix array of X
 		std::vector<int> iSA(size, 0);
 		for (int i = 0; i != size; i ++) iSA[SA[i]] = i;
 		std::cout << "inverse suffix array" << std::endl; printVector(iSA);
+		//construct longest common prefix array of X
 		std::vector<int> LCP(size, 0);
 		LCP = computeLCParray(X, SA, iSA, LCP);
-		//
 		sdsl::rmq_succinct_sct<> rmq;
 		rmq = sdsl::rmq_succinct_sct<>(&LCP);
-		//
 		std::cout << "longest common prefix array" << std::endl; printVector(LCP);
-		//
+		// initialise bitvector A
 		std::vector<bool> A(P.length(),true);
 		//
 		int len;
@@ -245,17 +245,14 @@ void printL(std::vector<std::vector<std::vector<int>>> L)
 	for (std::vector<std::vector<std::vector<int>>>::iterator i = L.begin(); i != L.end(); i++)
 	{
 		std::cout << std::endl << "L[" << inti << "]" << std::endl;
-		std::vector<std::vector<int>> tempVecVec = *i;
 		inti++;
-		for (std::vector<std::vector<int>>::iterator j = tempVecVec.begin(); j != tempVecVec.end(); j++)
+		for (std::vector<std::vector<int>>::iterator j = (*i).begin(); j != (*i).end(); j++)
 		{
 			std::cout << "  S_" << intj << " : ";
-			std::vector<int> tempVec = *j;
 			intj++;
-			for (std::vector<int>::iterator k = tempVec.begin(); k != tempVec.end(); k++)
+			for (std::vector<int>::iterator k = (*j).begin(); k != (*j).end(); k++)
 			{
-				int tempInt = *k;
-				std::cout << tempInt << " "; //ending pos of pref(P) = suff(Sj)
+				std::cout << (*k) << " "; //ending pos of pref(P) = suff(Sj)
 			}
 		}
 	}
@@ -353,17 +350,17 @@ std::cout << std::endl << std::endl;
 // B: border table
 // B': B'[j] = i s.t. i is ending pos of S_j in X
 // P: pattern string
-std::vector<std::vector<std::vector<int>>> computeBps(std::vector<std::vector<std::vector<int>>> L, std::vector<int> B, std::vector<int> Bprime, std::string P)
+void computeBps(std::vector<std::vector<std::vector<int>>> *L, std::vector<int> *B, std::vector<int> *Bprime, std::string *P)
 {	
 	std::vector<int> Sj;
 	std::vector<std::vector<int>> Bps;
-	for (int i = 0; i != Bprime.size(); i++)
+	for (int i = 0; i != (*Bprime).size(); i++)
 	{
-		int Bi = Bprime[i];
-		if (B[Bi] != 0)
+		int Bi = (*Bprime)[i];
+		if ((*B)[Bi] != 0)
 		{
-			std::cout << "looking at " << Bi << "th pos in B: " << B[Bi] << std::endl;
-			for(int x = B[Bi]; x != 0; x = B[x-1]){
+			std::cout << "looking at " << Bi << "th pos in B: " << (*B)[Bi] << std::endl;
+			for(int x = (*B)[Bi]; x != 0; x = (*B)[x-1]){
 				Sj.push_back(x-1);
 			}
 		}
@@ -374,45 +371,39 @@ std::vector<std::vector<std::vector<int>>> computeBps(std::vector<std::vector<st
 		Bps.push_back(Sj);
 		Sj.clear();
 	}
-	L.push_back(Bps);
-
-	printL(L);
-
-	return L;
+	(*L).push_back(Bps);
 }
 
 /*********************                     Compute border table               **************************/
 // given parameters:
 // X: string formed from concatenation of P and all S_j in T[i], separated by unique chars
 // B: vector to hold border table
-std::vector<int> computeBorderTable(std::string X, std::vector<int> B)
+void computeBorderTable(std::string *X, std::vector<int> *B)
 {
-	int m = X.length();
+	int m = (*X).length();
 
-	for (int b = 0; b < m; b++) B.push_back(0);
+	for (int b = 0; b < m; b++) (*B).push_back(0);
 
 	//** algorithm from Maxime's book **//
 	int p = 0;
 	for (int q = 1; q < m; q++){
-		B[q-1] = p;
-		while (p >= 0 & X[q]!=X[p]){ 
+		(*B)[q-1] = p;
+		while (p >= 0 & (*X)[q]!=(*X)[p]){ 
 			if (p==0){
 				p = -1;
 			} else {
-				p = B[p-1];
+				p = (*B)[p-1];
 			}
 		}
 		p++;
 	}
-	B[m-1] = p;
+	(*B)[m-1] = p;
 
 	//** print border table **//
-	for (std::vector<int>::iterator it = B.begin(); it != B.end(); it++){
+	for (std::vector<int>::iterator it = (*B).begin(); it != (*B).end(); it++){
 		std::cout << *it << " ";
 	}
 	std::cout << std::endl << std::endl;
-
-	return B;
 }
 
 /*********************                    KMP string matching algorithm              **************************/
