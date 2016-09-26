@@ -25,7 +25,7 @@ void printSuffixArray(sdsl::csa_bitcompressed<> SA);
 void printVector(std::vector<int> vector);
 std::vector<int> computeLCParray(std::string s, sdsl::csa_bitcompressed<> SA, std::vector<int> iSA, std::vector<int> LCP);
 int getlcp(int suffx, int suffy, std::vector<int> iSA, std::vector<int> LCP, sdsl::rmq_succinct_sct<> rmq);
-bool checkL(int value, std::vector<std::vector<std::vector<int>>> L, int i);
+bool checkL(int value, std::vector<std::vector<std::vector<int>>> *L, int i);
 void printL(std::vector<std::vector<std::vector<int>>> L);
 std::vector<std::vector<std::vector<int>>> insertL(int value, std::vector<std::vector<std::vector<int>>> L, int i, int S_j);
 void maintainL(std::vector<std::vector<std::vector<int>>> *L, int i);
@@ -95,18 +95,20 @@ printSeqs(&T, &P);
 std::vector<int> report;
 std::vector<std::vector<std::vector<int>>> L; //as defined in paper
 
-for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++){ //for each pos T[i] in T 
+for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it++){ //for each pos T[i] in T 
+	int i = std::distance(T.begin(),it);
 	std::stringstream x; //stringstream used to create string X
 	std::vector<int> B; //border table
 	std::vector<int> Bprime; //B'[j] = i s.t. i is ending pos of S_j in X
 	bool epsilon = false; //flag empty string in T[i]
 	x << P << "$"; //concatenate unique symbol to P to initiaise string X
-	for (std::vector<std::string>::iterator j=(*i).begin(); j!=(*i).end(); j++){ //for each S_j in T[i]
+	for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ //for each S_j in T[i]
 		if ((*j) == "E") epsilon=true; //if S_j is empty string, set flag to true 
 		x << (*j) << "$"; //concatenate S_j and unique letter to string X
 		if ((*j).length() >= P.length()){ //if P could occur in S_j
 			if (KMP(P, (*j))){ //if P occurs in S_j
-				report.push_back(std::distance(T.begin(),i)); //report pos T[i]
+				report.push_back(i); //report pos T[i]
+				std::cout << "reporting " << i << std::endl;
 				//////////////////////////////////////////////////////////////////////////break;
 			}
 		}
@@ -117,7 +119,7 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 	std::cout << "String X: " << X << std::endl; //print string X
 	printVector(Bprime); //print vector B'
 	std::cout << "check above indexes of below border table" << std::endl;
-	if (i==T.begin()) //only for T[0] do:
+	if (it==T.begin()) //only for T[0] do:
 		{
 		computeBorderTable(&X, &B);
 		computeBps(&L, &B, &Bprime, &P);
@@ -132,70 +134,68 @@ for (std::list<std::vector<std::string>>::iterator i=T.begin(); i!=T.end(); i++)
 		int size = SA.size();
 		//construct inverse suffix array of X
 		std::vector<int> iSA(size, 0);
-		for (int i = 0; i != size; i ++) iSA[SA[i]] = i;
+		for (int r = 0; r != size; r ++) iSA[SA[r]] = r;
 		std::cout << "inverse suffix array" << std::endl; printVector(iSA);
-		//construct longest common prefix array of X
+		//construct longest common prefix array of X + prepare for rmq
 		std::vector<int> LCP(size, 0);
 		LCP = computeLCParray(X, SA, iSA, LCP);
 		sdsl::rmq_succinct_sct<> rmq;
 		rmq = sdsl::rmq_succinct_sct<>(&LCP);
 		std::cout << "longest common prefix array" << std::endl; printVector(LCP);
-		// initialise bitvector A
+		// initialise bitvector A to aid extension of prefixes of P
 		std::vector<bool> A(P.length(),true);
 		//
-		int len;
-		int cumulative_len = 0;
+		int len; //to store length of S_j
+		int cumulative_len = 0; //length of X minus length of S_j
 		for (int b = 0; b<Bprime.size(); b++){ //for all S_j in T[i]
-			len = Bprime[b] - P.length() - cumulative_len - b;
-			int suffs = Bprime[b]-len+1;
-			std::cout << std::endl << X.substr(suffs,len) << std::endl;
+			len = Bprime[b] - P.length() - cumulative_len - b; //length of S_j
 			std::cout << "is of length " << len << std::endl;
-			cumulative_len += len;
-			if (len < P.length()){
+			int suffs = Bprime[b]-len+1; //start pos of S_j in X
+			std::cout << std::endl << X.substr(suffs,len) << std::endl; //extract+print S_j from X
+			cumulative_len += len; //update cum. length in preparation for next S_j
+			if (len < P.length()){ //if S_j could occur in P
 				std::cout << "length of S_j is less than P" << std::endl;
 				for (int suffp = 0; suffp < P.length(); suffp++){ //for each suffix of P
-					int lcp = getlcp(suffp, suffs, iSA, LCP, rmq);
+					int lcp = getlcp(suffp, suffs, iSA, LCP, rmq); //lcp of S_j and suffix of P
 					std::cout << "lcp of suffixes " << suffp << " and " << suffs << " is " << lcp << std::endl;
 					if (lcp == 0){
 						//do nothing
 						std::cout << "lcp is 0" << std::endl;
 					} else if (lcp >= len){ //S_j occurs in P
 						std::cout << "S_j occurs in P" << std::endl;
-						lcp = len;
-						int Li = std::distance(T.begin(),i);
-						if (checkL(suffp-1, L, Li-1)){
+						lcp = len; //reset lcp to max lcp length i.e. len(S_j)
+						if (checkL(suffp-1, &L, i-1)){ //check if can extend prefix of P from L[i-1]
 							std::cout << "can extend to pos ";
-							int endpos = suffp+lcp-1;
+							int endpos = suffp+lcp-1; //can be extended to endpos in P
 							std::cout << endpos << std::endl;
-							if (A[endpos]==true){
+							if (A[endpos]==true){ //if endpos not in L[i]
 								std::cout << "not already added to L" << std::endl;
-								A[endpos]=false;
-								L[Li][b].push_back(endpos);
+								A[endpos]=false; //do not allow to add endpos to L[i] again
+								L[i][b].push_back(endpos); //add endpos to L[i]
 							}
 						}
-					} else { //prefix of S_j is a suffix of P
-						std::cout << "prefix of S_j is suffix of P" << std::endl;
-						int Li = std::distance(T.begin(),i);
-						int p = P.length() - lcp - 3; //j = lcp - 1
-						if (checkL(p, L, Li-1)){
-							std::cout << "reporting " << Li << std::endl;
-							report.push_back(Li);
+					} else { //lcp < len(S_j) so prefix of S_j is a prefix of a suffix of P
+						std::cout << "prefix of S_j is prefix of suffix of P" << std::endl;
+						int p = P.length() - lcp - 1; // m - 1 = p + lcp
+						if (checkL(p, &L, i-1)){ //if p occurs in L[i-1]
+							std::cout << "reporting " << i << std::endl;
+							report.push_back(i); //report T[i]
 						}
-					}
-				}
-			}
+					} //end_if
+				} //end_for each suffix of P
+			} //end_if S_j could occur in P
+		} //end_for all S_j in T[i]
 		}
-		} //break after reporting!!!!!!!!!!!!!!!!!!!11
-	if (epsilon==true) maintainL(&L, std::distance(T.begin(),i));
+	if (epsilon==true) maintainL(&L, i);
 	std::cout << std::endl << "printing L outside function" << std::endl;
 	printL(L);
 	std::cout << std::endl << std::endl;
-}
+} //end_GISM
 
 
 //** report **//
-std::cout << "pattern occurs in text, ending at the following positions" << std::endl;
-for(std::vector<int>::iterator it = report.begin(); it != report.end(); it++) std::cout << *it << " ";
+std::cout << std::endl <<"pattern occurs in text, ending at the following positions" << std::endl;
+printVector(report);
 std::cout << std::endl;
 
 return 0;
@@ -258,17 +258,14 @@ void printL(std::vector<std::vector<std::vector<int>>> L)
 	}
 }
 
-/*********************          Return true if int exists in L_i          **************************/
-bool checkL(int value, std::vector<std::vector<std::vector<int>>> L, int i)
+/*********************          Return true if value exists in L_i          **************************/
+bool checkL(int value, std::vector<std::vector<std::vector<int>>> *L, int i)
 {
-	std::vector<std::vector<int>> tempVecVec = L[i];
-	for (std::vector<std::vector<int>>::iterator j = tempVecVec.begin(); j != tempVecVec.end(); j++)
+	for (std::vector<std::vector<int>>::iterator j = (*L)[i].begin(); j != (*L)[i].end(); j++)
 	{
-		std::vector<int> tempVec = *j;
-		for (std::vector<int>::iterator k = tempVec.begin(); k != tempVec.end(); k++)
+		for (std::vector<int>::iterator k = (*j).begin(); k != (*j).end(); k++)
 		{
-			int tempInt = *k;
-			if (tempInt==value) return 1;
+			if ((*k)==value) return 1;
 		}
 	}
 return 0;
@@ -366,7 +363,7 @@ void computeBps(std::vector<std::vector<std::vector<int>>> *L, std::vector<int> 
 		}
 		else
 		{
-			Sj.push_back(-10);
+			Sj.push_back(-1000);
 		}
 		Bps.push_back(Sj);
 		Sj.clear();
