@@ -157,13 +157,14 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 				std::cout << "length of S_j is less than P" << std::endl;
 				for (int suffp = 0; suffp < P.length(); suffp++){ //for each suffix of P
 					int lcp = getlcp(suffp, suffs, iSA, LCP, rmq); //lcp of S_j and suffix of P
-					std::cout << "lcp of suffixes " << suffp << " and " << suffs << " is " << lcp << std::endl;
+					std::cout << "\nlcp of suffixes " << suffp << " and " << suffs << " is " << lcp << std::endl;
 					if (lcp == 0){
 						//do nothing
 						std::cout << "lcp is 0" << std::endl;
 					} else if (lcp >= len){ //S_j occurs in P
 						std::cout << "S_j occurs in P" << std::endl;
 						lcp = len; //reset lcp to max lcp length i.e. len(S_j)
+						std::cout << "lcp is " << lcp << std::endl;
 						if (checkL(suffp-1, &L, i-1)){ //check if can extend prefix of P from L[i-1]
 							std::cout << "can extend to pos ";
 							int endpos = suffp+lcp-1; //can be extended to endpos in P
@@ -176,6 +177,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 						}
 					} else { //lcp < len(S_j) so prefix of S_j is a prefix of a suffix of P
 						std::cout << "prefix of S_j is prefix of suffix of P" << std::endl;
+						std::cout << "lcp is " << lcp << std::endl;
 						int p = P.length() - lcp - 1; // m - 1 = p + lcp
 						if (checkL(p, &L, i-1)){ //if p occurs in L[i-1]
 							std::cout << "reporting " << i << std::endl;
