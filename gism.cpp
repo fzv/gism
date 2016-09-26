@@ -49,7 +49,7 @@ std::list<std::vector<std::string>> T;
 
 std::string line;
 std::vector<std::string> lines;
-std::ifstream inputFile("testdata1");
+std::ifstream inputFile("testdata3");
 
 if (inputFile.is_open()){
 	if (inputFile.good()){
@@ -96,7 +96,8 @@ std::vector<int> report;
 std::vector<std::vector<std::vector<int>>> L; //as defined in paper
 
 for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it++){ //for each pos T[i] in T 
-	int i = std::distance(T.begin(),it);
+	int i = std::distance(T.begin(),it); //we are in T[i]
+	std::cout << "\n\nwe are in pos " << i << " of T......" << std::endl;
 	std::stringstream x; //stringstream used to create string X
 	std::vector<int> B; //border table
 	std::vector<int> Bprime; //B'[j] = i s.t. i is ending pos of S_j in X
@@ -109,7 +110,6 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 			if (KMP(P, (*j))){ //if P occurs in S_j
 				report.push_back(i); //report pos T[i]
 				std::cout << "reporting " << i << std::endl;
-				//////////////////////////////////////////////////////////////////////////break;
 			}
 		}
 		Bprime.push_back(x.str().length()-2); //in B': store ending pos of S_j in X
@@ -149,9 +149,9 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 		int cumulative_len = 0; //length of X minus length of S_j
 		for (int b = 0; b<Bprime.size(); b++){ //for all S_j in T[i]
 			len = Bprime[b] - P.length() - cumulative_len - b; //length of S_j
-			std::cout << "is of length " << len << std::endl;
 			int suffs = Bprime[b]-len+1; //start pos of S_j in X
 			std::cout << std::endl << X.substr(suffs,len) << std::endl; //extract+print S_j from X
+			std::cout << "is of length " << len << std::endl;
 			cumulative_len += len; //update cum. length in preparation for next S_j
 			if (len < P.length()){ //if S_j could occur in P
 				std::cout << "length of S_j is less than P" << std::endl;
@@ -173,6 +173,10 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 								std::cout << "not already added to L" << std::endl;
 								A[endpos]=false; //do not allow to add endpos to L[i] again
 								L[i][b].push_back(endpos); //add endpos to L[i]
+								if ( endpos == (P.length()-1) ){
+									std::cout << "reporting " << i << std::endl;
+									report.push_back(i); //report T[i]
+								}
 							}
 						}
 					} else { //lcp < len(S_j) so prefix of S_j is a prefix of a suffix of P
