@@ -50,7 +50,7 @@ std::list<std::vector<std::string>> T;
 
 std::string line;
 std::vector<std::string> lines;
-std::ifstream inputFile("testdata3");
+std::ifstream inputFile("testdata5");
 
 if (inputFile.is_open()){
 	if (inputFile.good()){
