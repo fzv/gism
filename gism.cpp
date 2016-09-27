@@ -50,7 +50,7 @@ std::list<std::vector<std::string>> T;
 
 std::string line;
 std::vector<std::string> lines;
-std::ifstream inputFile("testdata2");
+std::ifstream inputFile("testdata3");
 
 if (inputFile.is_open()){
 	if (inputFile.good()){
@@ -193,6 +193,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 			for (int suffp = 1; suffp < P.length(); suffp++){ //for each suffix of P
 				int lcp = getlcp(suffp, suffs, iSA, LCP, rmq); //lcp of S_j and suffix of P
 				std::cout << "\nlcp of suffixes " << suffp << " and " << suffs << " is " << lcp << std::endl;
+				if (lcp > len) lcp = len;
 				if (R[suffp] && lcp == (P.length()-suffp) ){
 					std::cout << "reporting " << i << std::endl;
 					report.push_back(i); //report T[i]
