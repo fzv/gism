@@ -30,7 +30,7 @@ void printL(std::vector<std::vector<int>> *L);
 std::vector<std::vector<std::vector<int>>> insertL(int value, std::vector<std::vector<int>> L, int i, int S_j);
 void maintainL(std::vector<std::vector<int>> *L, int i);
 void printSeqs(std::list<std::vector<std::string>> *T, std::string *P);
-void updateR(std::vector<bool> *R, std::vector<std::vector<int>> *L, int m, int i);
+void updateBitVector(std::vector<bool> *BV, std::vector<std::vector<int>> *L, int m, int i);
 
 /***********************************************************************************/
 /************************************ GISM *****************************************/
@@ -141,12 +141,14 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 		rmq = sdsl::rmq_succinct_sct<>(&LCP);
 		std::cout << "longest common prefix array" << std::endl; printVector(&LCP);
 		// initialise bitvector (E)xtend to aid extension of prefixes of P
-		std::vector<bool> E(P.length(),true);
+		std::vector<bool> E(P.length(),false);
+		updateBitVector(&E, &L, P.length(), i);
+		// initialise bitvector (PREV)iously extended to aid extension of prefixes of P
+		std::vector<bool> PREV(P.length(),true);
 		//
-		int len; //to store length of S_j
 		int cumulative_len = 0; //length of X minus length of S_j
 		for (int b = 0; b<Bprime.size(); b++){ //for all S_j in T[i]
-			len = Bprime[b] - P.length() - cumulative_len - b; //length of S_j
+			int len = Bprime[b] - P.length() - cumulative_len - b; //length of S_j
 			int suffs = Bprime[b]-len+1; //start pos of S_j in X
 			std::cout << std::endl << X.substr(suffs,len) << std::endl; //extract+print S_j from X
 			std::cout << "is of length " << len << std::endl;
@@ -159,25 +161,25 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 					if (lcp >= len){
 						std::cout << "S_j occurs in P" << std::endl;
 						std::cout << "checking previous pos of P in L[i-1]" << std::endl;
-						if (checkL(suffp-1, &L, i-1)){ //check if can extend prefix of P from L[i-1]
+						if (E[suffp]){ //check if can extend prefix of P from L[i-1]
 							std::cout << "can extend to pos ";
 							int endpos = suffp+len-1; //can be extended to endpos in P
 							std::cout << endpos << std::endl;
-							if (E[endpos]==true){ //if endpos not in L[i]
+							if (PREV[endpos]){ //if endpos not in L[i]
 								std::cout << "not already added to L" << std::endl;
-								E[endpos]=false; //do not allow to add endpos to L[i] again
+								PREV[endpos]=false; //do not allow to add endpos to L[i] again
 								L[i].push_back(endpos); //add endpos to L[i]
 							}
 						} else { std::cout << "unable to extend a bit" << std::endl; }
-					} //end_if lcp>=len
+					} else { std::cout << "lcp is less than length of S_j"; } //end_if lcp>=len
 				} //end_for each suffix of P
 			} //end_if S_j could occur in P
 		} //end_for all S_j in T[i]
 		std::vector<bool> R(P.length(),false); //bitvector (R)eport to aid reporting of occurences of P in T
-		updateR(&R, &L, P.length(), i);
+		updateBitVector(&R, &L, P.length(), i);
 		cumulative_len = 0; //length of X minus length of S_j
 		for (int b = 0; b<Bprime.size(); b++){ //for all S_j in T[i]
-			len = Bprime[b] - P.length() - cumulative_len - b; //length of S_j
+			int len = Bprime[b] - P.length() - cumulative_len - b; //length of S_j
 			int suffs = Bprime[b]-len+1; //start pos of S_j in X
 			std::cout << std::endl << X.substr(suffs,len) << std::endl; //extract+print S_j from X
 			std::cout << "is of length " << len << std::endl;
@@ -185,7 +187,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 			for (int suffp = 1; suffp < P.length(); suffp++){ //for each suffix of P
 				int lcp = getlcp(suffp, suffs, iSA, LCP, rmq); //lcp of S_j and suffix of P
 				std::cout << "\nlcp of suffixes " << suffp << " and " << suffs << " is " << lcp << std::endl;
-				if (R[suffp]==true){
+				if (R[suffp] && lcp == (P.length()-suffp) ){
 					std::cout << "reporting " << i << std::endl;
 					report.push_back(i); //report T[i]
 				} else { std::cout << "unable to extend to end" << std::endl; }
@@ -215,13 +217,13 @@ return 0;
 /******************************* FUNCTION DEFINITIONS *******************************/
 /************************************************************************************/
 
-void updateR(std::vector<bool> *R, std::vector<std::vector<int>> *L, int m, int i)
+void updateBitVector(std::vector<bool> *BV, std::vector<std::vector<int>> *L, int m, int i)
 {
-std::cout << std::endl << "inside updateR function" << std::endl;
+std::cout << std::endl << "inside updateBV function" << std::endl;
 for (std::vector<int>::iterator p = (*L)[i-1].begin(); p != (*L)[i-1].end(); p++){
 		std::cout << "for p=" << (*p) << " desired j is " << ((*p)+1) << std::endl;
 		if ((*p)!=-1000){
-			(*R)[((*p)+1)] = true;
+			(*BV)[((*p)+1)] = true;
 		}
 }
 }
