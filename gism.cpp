@@ -159,6 +159,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 					std::cout << "\nlcp of suffixes " << suffp << " and " << suffs << " is " << lcp << std::endl;
 					if (lcp >= len){
 						std::cout << "S_j occurs in P" << std::endl;
+						std::cout << "checking previous pos of P in L[i-1]" << std::endl;
 						if (checkL(suffp-1, &L, i-1)){ //check if can extend prefix of P from L[i-1]
 							std::cout << "can extend to pos ";
 							int endpos = suffp+len-1; //can be extended to endpos in P
@@ -168,7 +169,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 								A[endpos]=false; //do not allow to add endpos to L[i] again
 								L[i].push_back(endpos); //add endpos to L[i]
 							}
-						}
+						} else { std::cout << "unable to extend a bit" << std::endl; }
 					} //end_if lcp>=len
 				} //end_for each suffix of P
 			} //end_if S_j could occur in P
@@ -176,11 +177,12 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 			for (int suffp = 1; suffp < P.length(); suffp++){ //for each suffix of P
 				int lcp = getlcp(suffp, suffs, iSA, LCP, rmq); //lcp of S_j and suffix of P
 				std::cout << "\nlcp of suffixes " << suffp << " and " << suffs << " is " << lcp << std::endl;
-				int p = P.length() - lcp - 1 - 2;
+				int p = P.length() - lcp;
+				std::cout << "checking p = " << p << " in L[i-1]" << std::endl;
 				if (checkL(p, &L, i-1)){ //if p occurs in L[i-1]
 					std::cout << "reporting " << i << std::endl;
 					report.push_back(i); //report T[i]
-				}
+				} else { std::cout << "unable to extend to end" << std::endl; }
 			} //end_for each suffix of P
 		} //end_for all S_j in T[i]
 	} //end_if T[0]
@@ -258,8 +260,8 @@ if (iSA[suffx] < iSA[suffy]){
 	i = iSA[suffy];
 	j = iSA[suffx];
 }
-std::cout << "i = " << i << std::endl;
-std::cout << "j = " << j << std::endl;
+//std::cout << "i = " << i << std::endl;
+//std::cout << "j = " << j << std::endl;
 auto min_idx = rmq(i+1,j); 
 int lcp = LCP[min_idx];
 return lcp;
