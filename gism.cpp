@@ -50,7 +50,7 @@ std::list<std::vector<std::string>> T;
 
 std::string line;
 std::vector<std::string> lines;
-std::ifstream inputFile("testdata1");
+std::ifstream inputFile("testdata2");
 
 if (inputFile.is_open()){
 	if (inputFile.good()){
@@ -121,9 +121,12 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 	printVector(&Bprime); //print vector B'
 	std::cout << "check above indexes of below border table" << std::endl;
 	if (it==T.begin()) { //only for T[0] do:
+		/* STEP 1: FIND PREFIXES OF P */
+		std::cout << "/* STEP 1: FIND PREFIXES OF P */" << std::endl;
 		computeBorderTable(&X, &B);
 		computeBps(&L, &B, &Bprime, &P);
 	} else {
+		std::cout << "/* STEP 1: FIND PREFIXES OF P */" << std::endl;
 		computeBorderTable(&X, &B);
 		computeBps(&L, &B, &Bprime, &P);
 		//construct suffix array of X
@@ -145,7 +148,8 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 		updateBitVector(&E, &L, P.length(), i);
 		// initialise bitvector (PREV)iously extended to aid extension of prefixes of P
 		std::vector<bool> PREV(P.length(),true);
-		//
+		/* STEP 2: EXTEND PREFIXES OF P */
+		std::cout << "/* STEP 2: EXTEND PREFIXES OF P */" << std::endl;
 		int cumulative_len = 0; //length of X minus length of S_j
 		for (int b = 0; b<Bprime.size(); b++){ //for all S_j in T[i]
 			int len = Bprime[b] - P.length() - cumulative_len - b; //length of S_j
@@ -164,7 +168,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 						if (E[suffp]){ //check if can extend prefix of P from L[i-1]
 							std::cout << "can extend to pos ";
 							int endpos = suffp+len-1; //can be extended to endpos in P
-							std::cout << endpos << std::endl;
+							std::cout << endpos << " of P" << std::endl;
 							if (PREV[endpos]){ //if endpos not in L[i]
 								std::cout << "not already added to L" << std::endl;
 								PREV[endpos]=false; //do not allow to add endpos to L[i] again
@@ -175,6 +179,8 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 				} //end_for each suffix of P
 			} //end_if S_j could occur in P
 		} //end_for all S_j in T[i]
+		/* STEP 3: EXTEND PREFIXES OF P TO END OF P*/
+		std::cout << "/* STEP 3: EXTEND PREFIXES OF P TO END OF P*/" << std::endl;
 		std::vector<bool> R(P.length(),false); //bitvector (R)eport to aid reporting of occurences of P in T
 		updateBitVector(&R, &L, P.length(), i);
 		cumulative_len = 0; //length of X minus length of S_j
