@@ -140,21 +140,17 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 		sdsl::rmq_succinct_sct<> rmq;
 		rmq = sdsl::rmq_succinct_sct<>(&LCP);
 		std::cout << "longest common prefix array" << std::endl; printVector(&LCP);
-		// initialise bitvector A to aid extension of prefixes of P
-		std::vector<bool> A(P.length(),true);
-		// initialise bitvector R to aid reporting of occurences of P in T
-		std::vector<bool> R(P.length(),false);
+		// initialise bitvector (E)xtend to aid extension of prefixes of P
+		std::vector<bool> E(P.length(),true);
 		//
 		int len; //to store length of S_j
 		int cumulative_len = 0; //length of X minus length of S_j
 		for (int b = 0; b<Bprime.size(); b++){ //for all S_j in T[i]
-
 			len = Bprime[b] - P.length() - cumulative_len - b; //length of S_j
 			int suffs = Bprime[b]-len+1; //start pos of S_j in X
 			std::cout << std::endl << X.substr(suffs,len) << std::endl; //extract+print S_j from X
 			std::cout << "is of length " << len << std::endl;
 			cumulative_len += len; //update cum. length in preparation for next S_j
-
 			if (len < P.length()) { //if S_j could occur in P
 				std::cout << "length of S_j is less than P" << std::endl;
 				for (int suffp = 1; suffp < P.length(); suffp++){ //for each suffix of P
@@ -167,29 +163,33 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 							std::cout << "can extend to pos ";
 							int endpos = suffp+len-1; //can be extended to endpos in P
 							std::cout << endpos << std::endl;
-							if (A[endpos]==true){ //if endpos not in L[i]
+							if (E[endpos]==true){ //if endpos not in L[i]
 								std::cout << "not already added to L" << std::endl;
-								A[endpos]=false; //do not allow to add endpos to L[i] again
+								E[endpos]=false; //do not allow to add endpos to L[i] again
 								L[i].push_back(endpos); //add endpos to L[i]
 							}
 						} else { std::cout << "unable to extend a bit" << std::endl; }
 					} //end_if lcp>=len
 				} //end_for each suffix of P
 			} //end_if S_j could occur in P
-			//for all S_j in T[i]:
-			updateR(&R, &L, P.length(), i);
-/*
+		} //end_for all S_j in T[i]
+		std::vector<bool> R(P.length(),false); //bitvector (R)eport to aid reporting of occurences of P in T
+		updateR(&R, &L, P.length(), i);
+		cumulative_len = 0; //length of X minus length of S_j
+		for (int b = 0; b<Bprime.size(); b++){ //for all S_j in T[i]
+			len = Bprime[b] - P.length() - cumulative_len - b; //length of S_j
+			int suffs = Bprime[b]-len+1; //start pos of S_j in X
+			std::cout << std::endl << X.substr(suffs,len) << std::endl; //extract+print S_j from X
+			std::cout << "is of length " << len << std::endl;
+			cumulative_len += len; //update cum. length in preparation for next S_j
 			for (int suffp = 1; suffp < P.length(); suffp++){ //for each suffix of P
 				int lcp = getlcp(suffp, suffs, iSA, LCP, rmq); //lcp of S_j and suffix of P
 				std::cout << "\nlcp of suffixes " << suffp << " and " << suffs << " is " << lcp << std::endl;
-				int p = P.length() - lcp - 1; // 
-				std::cout << "checking p = " << p << " in L[i-1]" << std::endl;
-				if (checkL(p, &L, i-1)){ //if p occurs in L[i-1]
+				if (R[suffp]==true){
 					std::cout << "reporting " << i << std::endl;
 					report.push_back(i); //report T[i]
 				} else { std::cout << "unable to extend to end" << std::endl; }
 			} //end_for each suffix of P
-*/
 		} //end_for all S_j in T[i]
 	} //end_if T[0]
 	if (epsilon==true) L[i].insert(L[i].end(), L[i-1].begin(), L[i-1].end());
@@ -217,11 +217,11 @@ return 0;
 
 void updateR(std::vector<bool> *R, std::vector<std::vector<int>> *L, int m, int i)
 {
-std::cout << "inside updateR function" << std::endl;
+std::cout << std::endl << "inside updateR function" << std::endl;
 for (std::vector<int>::iterator p = (*L)[i-1].begin(); p != (*L)[i-1].end(); p++){
-		std::cout << "for p=" << (*p) << "desired j is " << m-(*p)-2 << std::endl;
+		std::cout << "for p=" << (*p) << " desired j is " << ((*p)+1) << std::endl;
 		if ((*p)!=-1000){
-			(*R)[m-(*p)-2] = true;
+			(*R)[((*p)+1)] = true;
 		}
 }
 }
