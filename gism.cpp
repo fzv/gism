@@ -177,7 +177,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 			for (int suffp = 1; suffp < P.length(); suffp++){ //for each suffix of P
 				int lcp = getlcp(suffp, suffs, iSA, LCP, rmq); //lcp of S_j and suffix of P
 				std::cout << "\nlcp of suffixes " << suffp << " and " << suffs << " is " << lcp << std::endl;
-				int p = P.length() - lcp;
+				int p = P.length() - lcp - 1; // m-1-lcp = p
 				std::cout << "checking p = " << p << " in L[i-1]" << std::endl;
 				if (checkL(p, &L, i-1)){ //if p occurs in L[i-1]
 					std::cout << "reporting " << i << std::endl;
