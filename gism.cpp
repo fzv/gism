@@ -16,6 +16,7 @@
 /************************************************************************************/
 
 void parseInput(std::string *P, std::list<std::vector<std::string>> *T);
+void prepareX(&x, &Bprime, &epsilon, &P, &report, &i, &X);
 void computeBorderTable(std::string *X, std::vector<int> *B);
 std::vector<int> computeBorder(std::string temp, std::vector<int> B);
 void preKMP(std::string pattern, int f[]);
@@ -38,32 +39,36 @@ void updateBitVector(std::vector<bool> *BV, std::vector<std::vector<int>> *L, in
 /***********************************************************************************/
 int main()
 {
-/*********************            Welcome message         **************************/
+
+/* Welcome Message */
 
 std::cout << "GISM - Generalised Indeterminate String Matching" << std::endl << std::endl;
 
-/*********************            Parse input file          **************************/
+/* Declare & Assign Seq Variables */
 
 std::string P;
 std::list<std::vector<std::string>> T;
 
 parseInput(&P, &T);
 
-/*********************            Print input sequences         **************************/
 printSeqs(&T, &P);
 
-/*********************                       GISM                  **************************/
+/* GISM */
 
-std::vector<int> report;
+std::vector<int> report; //vector storing all reported i of T
 std::vector<std::vector<int>> L; //as defined in paper
 
-for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it++){ //for each pos T[i] in T 
-	int i = std::distance(T.begin(),it); //we are in T[i]
+/* Loop Through Each T[i] */
+for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it++){
+	/* declare i */
+	int i = std::distance(T.begin(),it);
 	std::cout << "\n\nwe are in pos " << i << " of T......" << std::endl;
+	/* prepare all S_j in T[i] */
 	std::stringstream x; //stringstream used to create string X
-	std::vector<int> B; //border table
 	std::vector<int> Bprime; //B'[j] = i s.t. i is ending pos of S_j in X
 	bool epsilon = false; //flag empty string in T[i]
+//////////////////////
+	std::string X; prepareX(&x, &Bprime, &epsilon, &P, &report, &i, &X);
 	x << P << "$"; //concatenate unique symbol to P to initiaise string X
 	for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ //for each S_j in T[i]
 		if ((*j) == "E") epsilon=true; //if S_j is empty string, set flag to true 
@@ -76,11 +81,14 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 		}
 		Bprime.push_back(x.str().length()-2); //in B': store ending pos of S_j in X
 	}
-	std::string X = x.str(); //concatenation of P and all S_j, separated by unique chars
+	X = x.str(); //concatenation of P and all S_j, separated by unique chars
 	X.pop_back(); //remove unecessary unique letter at end pos of X
 	std::cout << "String X: " << X << std::endl; //print string X
 	printVector(&Bprime); //print vector B'
 	std::cout << "check above indexes of below border table" << std::endl;
+//////////////////////
+	std::vector<int> B; //border table
+	/* begin GISM algorithm */
 	if (it==T.begin()) { //only for T[0] do:
 		/* STEP 1: FIND PREFIXES OF P */
 		std::cout << "/* STEP 1: FIND PREFIXES OF P */" << std::endl;
