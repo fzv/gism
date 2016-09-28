@@ -15,6 +15,7 @@
 /******************************* FUNCTION DECLARATIONS ******************************/
 /************************************************************************************/
 
+void parseInput(std::string *P, std::list<std::vector<std::string>> *T);
 void computeBorderTable(std::string *X, std::vector<int> *B);
 std::vector<int> computeBorder(std::string temp, std::vector<int> B);
 void preKMP(std::string pattern, int f[]);
@@ -46,47 +47,7 @@ std::cout << "GISM - Generalised Indeterminate String Matching" << std::endl << 
 std::string P;
 std::list<std::vector<std::string>> T;
 
-{ //block
-
-std::string line;
-std::vector<std::string> lines;
-std::ifstream inputFile("testdata5");
-
-if (inputFile.is_open()){
-	if (inputFile.good()){
-		while (getline(inputFile, line)){
-			lines.push_back(line);
-		}
-	}
-	inputFile.close();
-} else {
-	std::cout << "Unable to open file." << std::endl;
-}
-
-P = lines[1];
-std::string t = lines[3];
-
-std::vector<std::string> tempVector;
-std::stringstream tempString;
-
-for (int i=0; i<t.length(); i++){ //loop through text string
-	if (t[i]=='{'){ //if new pos in T
-		tempVector.clear(); //clear vector to hold all s in t[i]
-		tempString.str(""); //clear string stream to hold all a in s[j]
-		tempString.clear();//clear string stream to hold all a in s[j]
-	} else if (t[i]=='}'){ //if reach end of t[i]
-		tempVector.push_back(tempString.str()); //add previous s to tempVector
-		T.push_back(tempVector); //fill current pos in T with tempVector
-	} else if (t[i]==','){ //if new s in t[i]
-		tempVector.push_back(tempString.str()); //add previous s to tempVector
-		tempString.str(""); //clear string stream to hold all a in s[j]
-		tempString.clear(); //clear string stream to hold all a in s[j]
-	} else { //if next a in s
-		tempString << t[i]; //add a to string stream
-	} //end_if
-} //end_for
-
-} //end_block
+parseInput(&P, &T);
 
 /*********************            Print input sequences         **************************/
 printSeqs(&T, &P);
@@ -224,6 +185,49 @@ return 0;
 /******************************* FUNCTION DEFINITIONS *******************************/
 /************************************************************************************/
 
+/*******************           parse input file       ************************/
+void parseInput(std::string *P, std::list<std::vector<std::string>> *T)
+{
+std::string line;
+std::vector<std::string> lines;
+std::ifstream inputFile("testdata1");
+
+if (inputFile.is_open()){
+	if (inputFile.good()){
+		while (getline(inputFile, line)){
+			lines.push_back(line);
+		}
+	}
+	inputFile.close();
+} else {
+	std::cout << "Unable to open file." << std::endl;
+}
+
+(*P) = lines[1];
+std::string t = lines[3];
+
+std::vector<std::string> tempVector;
+std::stringstream tempString;
+
+for (int i=0; i<t.length(); i++){ //loop through text string
+	if (t[i]=='{'){ //if new pos in T
+		tempVector.clear(); //clear vector to hold all s in t[i]
+		tempString.str(""); //clear string stream to hold all a in s[j]
+		tempString.clear();//clear string stream to hold all a in s[j]
+	} else if (t[i]=='}'){ //if reach end of t[i]
+		tempVector.push_back(tempString.str()); //add previous s to tempVector
+		(*T).push_back(tempVector); //fill current pos in T with tempVector
+	} else if (t[i]==','){ //if new s in t[i]
+		tempVector.push_back(tempString.str()); //add previous s to tempVector
+		tempString.str(""); //clear string stream to hold all a in s[j]
+		tempString.clear(); //clear string stream to hold all a in s[j]
+	} else { //if next a in s
+		tempString << t[i]; //add a to string stream
+	} //end_if
+} //end_for
+}
+
+/*******************           Update bit vector       ************************/
 void updateBitVector(std::vector<bool> *BV, std::vector<std::vector<int>> *L, int m, int i)
 {
 std::cout << std::endl << "inside updateBV function" << std::endl;
