@@ -16,7 +16,7 @@
 /************************************************************************************/
 
 void parseInput(std::string *P, std::list<std::vector<std::string>> *T);
-void prepareX(&x, &Bprime, &epsilon, &P, &report, &i, &X);
+void prepareX(std::stringstream *x, std::vector<int> *Bprime, bool *epsilon, std::string *P, std::vector<int> *report, int *i, std::string *X, std::list<std::vector<std::string>>::iterator it);
 void computeBorderTable(std::string *X, std::vector<int> *B);
 std::vector<int> computeBorder(std::string temp, std::vector<int> B);
 void preKMP(std::string pattern, int f[]);
@@ -48,9 +48,7 @@ std::cout << "GISM - Generalised Indeterminate String Matching" << std::endl << 
 
 std::string P;
 std::list<std::vector<std::string>> T;
-
 parseInput(&P, &T);
-
 printSeqs(&T, &P);
 
 /* GISM */
@@ -67,27 +65,9 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 	std::stringstream x; //stringstream used to create string X
 	std::vector<int> Bprime; //B'[j] = i s.t. i is ending pos of S_j in X
 	bool epsilon = false; //flag empty string in T[i]
-//////////////////////
-	std::string X; prepareX(&x, &Bprime, &epsilon, &P, &report, &i, &X);
-	x << P << "$"; //concatenate unique symbol to P to initiaise string X
-	for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ //for each S_j in T[i]
-		if ((*j) == "E") epsilon=true; //if S_j is empty string, set flag to true 
-		x << (*j) << "$"; //concatenate S_j and unique letter to string X
-		if ((*j).length() >= P.length()){ //if P could occur in S_j
-			if (KMP(P, (*j))){ //if P occurs in S_j
-				report.push_back(i); //report pos T[i]
-				std::cout << "reporting " << i << std::endl;
-			}
-		}
-		Bprime.push_back(x.str().length()-2); //in B': store ending pos of S_j in X
-	}
-	X = x.str(); //concatenation of P and all S_j, separated by unique chars
-	X.pop_back(); //remove unecessary unique letter at end pos of X
-	std::cout << "String X: " << X << std::endl; //print string X
-	printVector(&Bprime); //print vector B'
-	std::cout << "check above indexes of below border table" << std::endl;
-//////////////////////
 	std::vector<int> B; //border table
+	std::string X;
+	prepareX(&x, &Bprime, &epsilon, &P, &report, &i, &X, it);
 	/* begin GISM algorithm */
 	if (it==T.begin()) { //only for T[0] do:
 		/* STEP 1: FIND PREFIXES OF P */
@@ -95,6 +75,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 		computeBorderTable(&X, &B);
 		computeBps(&L, &B, &Bprime, &P);
 	} else {
+		/* STEP 1: FIND PREFIXES OF P */
 		std::cout << "/* STEP 1: FIND PREFIXES OF P */" << std::endl;
 		computeBorderTable(&X, &B);
 		computeBps(&L, &B, &Bprime, &P);
@@ -193,12 +174,34 @@ return 0;
 /******************************* FUNCTION DEFINITIONS *******************************/
 /************************************************************************************/
 
+/*******************           prepare X        ************************/
+void prepareX(std::stringstream *x, std::vector<int> *Bprime, bool *epsilon, std::string *P, std::vector<int> *report, int *i, std::string *X, std::list<std::vector<std::string>>::iterator it)
+{
+	(*x) << (*P) << "$"; //concatenate unique symbol to P to initiaise string X
+	for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ //for each S_j in T[i]
+		if ((*j) == "E") (*epsilon) = true; //if S_j is empty string, set flag to true 
+		(*x) << (*j) << "$"; //concatenate S_j and unique letter to string X
+		if ((*j).length() >= (*P).length()){ //if P could occur in S_j
+			if (KMP((*P), (*j))){ //if P occurs in S_j
+				(*report).push_back((*i)); //report pos T[i]
+				std::cout << "reporting " << (*i) << std::endl;
+			}
+		}
+		(*Bprime).push_back((*x).str().length()-2); //in B': store ending pos of S_j in X
+	}
+	(*X) = (*x).str(); //concatenation of P and all S_j, separated by unique chars
+	(*X).pop_back(); //remove unecessary unique letter at end pos of X
+	std::cout << "String X: " << (*X) << std::endl; //print string X
+	printVector(Bprime); //print vector B'
+	std::cout << "check above indexes of below border table" << std::endl;
+}
+
 /*******************           parse input file       ************************/
 void parseInput(std::string *P, std::list<std::vector<std::string>> *T)
 {
 std::string line;
 std::vector<std::string> lines;
-std::ifstream inputFile("testdata1");
+std::ifstream inputFile("testdata5");
 
 if (inputFile.is_open()){
 	if (inputFile.good()){
