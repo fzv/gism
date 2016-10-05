@@ -1,3 +1,17 @@
+//security of the program
+//emory consumption
+//speed of program
+
+//indentation style
+//blocks of code beginning with comments
+//consistent naming scheme
+//avoid deep nesting
+//limit line length
+//consistent names for temp variables e.g. i and j
+//SYMBOLIC_NAMES instead of numbers
+
+
+
 #include <iostream> //cout,endl
 #include <string> //string,
 #include <vector> //vector,push_back
