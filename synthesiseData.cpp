@@ -1,4 +1,7 @@
+// TO COMPILE
 // g++ synthesiseData.cpp -o synthesise -std=c++11
+// TO RUN
+//fatima@fatima-VirtualBox:~/gism$ ./synthesise -n 30 -d 10 -Smax 5 -Lmax 5
 
 #include <iostream> //cout,endl
 #include <string> //string,
