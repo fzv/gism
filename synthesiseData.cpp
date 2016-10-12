@@ -39,8 +39,17 @@ pickRandomBase():
 2. return DNA[x]
 */
 
+/************************************************************************************/
+/******************************* FUNCTION DECLARATIONS ******************************/
+/************************************************************************************/
+
 std::string pickRandomBase(std::vector<std::string> *dna);
 std::string createSet(int *Smax, int *Lmax, std::vector<std::string> *dna);
+bool check(std::string s, std::vector<std::string> sslist);
+
+/************************************************************************************/
+/*******************************         MAIN          ******************************/
+/************************************************************************************/
 
 int main(int argc, char* argv[])
 {
@@ -101,10 +110,64 @@ for (int x=0; x<n; x++){
 }
 file.close();
 
-
 return 0;
 }
 
+/************************************************************************************/
+/******************************* FUNCTION DEFINITIONS *******************************/
+/************************************************************************************/
+
+/******************************* CREATE DEG. POSITION *******************************/
+
+std::string createSet(int *Smax, int *Lmax, std::vector<std::string> *dna)
+{
+//set random s <= Smax (range begins from 2)
+int s = ( std::rand() % ( (*Smax) -1) ) + 2;
+if (s >= (*Smax)) s=(*Smax);
+//
+std::vector<std::string> sslist;
+std::stringstream Tistream;
+Tistream << "{";
+for (int i = 0; i<s; i++){
+	std::stringstream ss;
+	int l = std::rand() % (*Lmax);
+	if (l==0){
+		ss << "E";
+	} else {
+		for (int j = 0; j<l; j++) ss << pickRandomBase(dna);
+	}
+	if (check(ss.str(), sslist)==0){
+		sslist.push_back(ss.str());
+		Tistream << ss.str() << ",";
+	}
+}
+std::string Ti = Tistream.str();
+Ti.pop_back();
+Ti += "}";
+//
+return Ti;
+}
+
+/******************************* CHECK IF S_j ALREADY EXISTS *******************************/
+
+bool check(std::string s, std::vector<std::string> sslist)
+{
+for (std::vector<std::string>::iterator it = sslist.begin(); it!=sslist.end(); it++){
+	if (s==*it) return 1;
+}
+return 0;
+}
+
+/******************************* PICK RANDOM DNA BASE *******************************/
+
+std::string pickRandomBase(std::vector<std::string> *dna)
+{
+int number = ( std::rand() % 4 );
+return (*dna)[number];
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+/*
 std::string createSet(int *Smax, int *Lmax, std::vector<std::string> *dna)
 {
 //set random s <= Smax (range begins from 2)
@@ -127,9 +190,4 @@ Ti.pop_back();
 Ti += "}";
 return Ti;
 }
-
-std::string pickRandomBase(std::vector<std::string> *dna)
-{
-int number = ( std::rand() % 4 );
-return (*dna)[number];
-}
+*/
