@@ -8,6 +8,7 @@
 #include <ctime> //
 #include <cstdlib> //
 #include <math.h> //ceil
+#include <algorithm> //sort, find
 
 /*
 
@@ -28,7 +29,7 @@ This script takes parameters...
 ...where...
 createSet():
 1. set random s <= S_max (range begins from 2)
-2. for each s, set random l <= L_max (range begins from 0, where 0 is epsilon)
+2. for each i in s, set random l <= L_max (range begins from 0, where 0 is epsilon)
 3. pickRandomBase() l times, s times 
 pickRandomBase():
 1. randomNumberGenerator for int x = {0, 1, 2, 3}
@@ -36,7 +37,7 @@ pickRandomBase():
 */
 
 std::string pickRandomBase(std::vector<std::string> *dna);
-void createSet();
+std::string createSet(int *Smax, int *Lmax, std::vector<std::string> *dna);
 
 int main(int argc, char* argv[])
 {
@@ -61,51 +62,68 @@ std::vector<std::string> dna = {"A", "G", "C", "T"};
 // int vector D of random positions in T (totalling d% of T) which should be sets instead of singleton chars
 std::vector<int> D;
 
+/* set seed for random number generation */
+std::srand(std::time(NULL));
+
 /* build D */
 //convert % into number dprime out of n
-int dprime = n / 100;
-std::cout << "dprime is " << dprime << std::endl;
-dprime = dprime * d;
-std::cout << "dprime is " << dprime << std::endl;
-dprime = ceil(dprime);
+float dprime = ceil( ( float(n) / 100 ) * d );
 std::cout << "dprime is " << dprime << std::endl;
 //for 0 to dprime-1
 //...push back random number between 0 to n-1 to D
 for (int i=0; i<dprime; i++){
 	D.push_back( std::rand() % n );
 }
+//sort D
+std::sort(D.begin(), D.end());
 //print D
-std::cout << "printing vector D" << std::endl;
+std::cout << "vector D: ";
 for (std::vector<int>::iterator it=D.begin(); it!=D.end(); it++){
 	std::cout << *it << " ";
 }
 std::cout << std::endl;
 
-
-
-
-//set seed for pickRandomBase()
-std::srand(std::time(NULL));
-//test adding char to stringstream
-std::stringstream s;
-s << pickRandomBase(&dna);
-std::cout << s.str() << std::endl;
-
+/* build T */
+std::ofstream file;
+file.open("text");
+for (int x=0; x<n; x++){
+	if ( std::find(D.begin(), D.end(), x) != D.end() ){ //present in D
+		file << createSet(&Smax, &Lmax, &dna);
+	} else {
+		file << pickRandomBase(&dna);
+	}
+}
+file.close();
 
 
 return 0;
 }
 
-void createSet()
+std::string createSet(int *Smax, int *Lmax, std::vector<std::string> *dna)
 {
 //set random s <= Smax (range begins from 2)
-///int s = ( std::rand() % (Smax-2) ) + 2;
-
+int s = ( std::rand() % ( (*Smax) -1) ) + 2;
+if (s >= (*Smax)) s=(*Smax);
+//
+std::stringstream ss;
+ss << "{";
+for (int i = 0; i<s; i++){
+	int l = std::rand() % (*Lmax);
+	if (l==0){
+		ss << "E";
+	} else {
+		for (int j = 0; j<l; j++) ss << pickRandomBase(dna);
+	}
+	ss << ",";
+}
+std::string Ti = ss.str();
+Ti.pop_back();
+Ti += "}";
+return Ti;
 }
 
 std::string pickRandomBase(std::vector<std::string> *dna)
 {
 int number = ( std::rand() % 4 );
-std::cout << (*dna)[number] << std::endl;
 return (*dna)[number];
 }
