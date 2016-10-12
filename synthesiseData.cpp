@@ -1,7 +1,7 @@
 // TO COMPILE
 // g++ synthesiseData.cpp -o synthesise -std=c++11
 // TO RUN
-//fatima@fatima-VirtualBox:~/gism$ ./synthesise -n 30 -d 10 -Smax 5 -Lmax 5
+//fatima@fatima-VirtualBox:~/gism$ ./synthesise -n 30 -d 10 -Smax 5 -Lmax 5 -o text
 
 #include <iostream> //cout,endl
 #include <string> //string,
@@ -58,6 +58,9 @@ std::cout << "Smax is " << Smax << std::endl;
 //...- Lmax : upper bound on length of any string S_j in T[i]
 int Lmax = atoi(argv[8]); 
 std::cout << "Lmax is " << Lmax << std::endl;
+//...- o : name of output file
+std::string o = argv[10]; 
+std::cout << "output file name: " << o << std::endl;
 
 /* declare other variables */
 // a vector of strings holding the DNA alphabet
@@ -88,7 +91,7 @@ std::cout << std::endl;
 
 /* build T */
 std::ofstream file;
-file.open("text");
+file.open(o);
 for (int x=0; x<n; x++){
 	if ( std::find(D.begin(), D.end(), x) != D.end() ){ //present in D
 		file << createSet(&Smax, &Lmax, &dna);
