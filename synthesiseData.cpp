@@ -16,10 +16,12 @@
 /*
 
 This script takes parameters...
-- n : number of positions in text T
-- d% : percentage of positions in text T which are degenerate i.e. represent indels
+- n : number of positions in text T ---> 1MB
+- d% : percentage of positions in text T which are degenerate i.e. represent indels ---> 3% for example
 - S_max : maximum size of set at any position T[i] i.e. maximum number of S_j
-- L_max : upper bound on length of any string S_j in T[i]
+- L_max : upper bound on length of any string S_j in T[i] ---> 6 for example
+- o: desired name of output file
+///- m: pattern length ---> 8, 16, 32, 64, 128
 ...and makes use of...
 - DNA : a vector of chars holding the DNA alphabet
 ...in order to...
@@ -70,6 +72,9 @@ std::cout << "Lmax is " << Lmax << std::endl;
 //...- o : name of output file
 std::string o = argv[10]; 
 std::cout << "output file name: " << o << std::endl;
+//...- m: pattern length
+///int m = atoi(argv[12]); 
+///std::cout << "m is " << m << std::endl;
 
 /* declare other variables */
 // a vector of strings holding the DNA alphabet
@@ -128,7 +133,8 @@ if (s >= (*Smax)) s=(*Smax);
 std::vector<std::string> sslist;
 std::stringstream Tistream;
 Tistream << "{";
-for (int i = 0; i<s; i++){
+int i = 0;
+while (i != s){
 	std::stringstream ss;
 	int l = std::rand() % (*Lmax);
 	if (l==0){
@@ -139,6 +145,7 @@ for (int i = 0; i<s; i++){
 	if (check(ss.str(), sslist)==0){
 		sslist.push_back(ss.str());
 		Tistream << ss.str() << ",";
+		i++;
 	}
 }
 std::string Ti = Tistream.str();
