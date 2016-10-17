@@ -1,1 +1,21 @@
 Generalised Indeterminate String Matching (GISM)
+
+To download dependancies
+$ git clone https://github.com/simongog/sdsl-lite.git
+$ cd sdsl-lite
+$ ./install.sh 
+
+To compile GISM
+$ make
+
+To run GISM
+$ ./gism <input_file_name>
+
+Input file must be:
+- in same directory
+- in the following format
+
+Pattern
+AGCTAGCTG
+Text
+AGCTAG{AC,E,ACGT}AGCTGATCGATCG{AGTC,AGC}GACTAGCAT
