@@ -59,6 +59,7 @@ void maintainL(std::vector<std::vector<int>> *L, int i);
 void printSeqs(std::list<std::vector<std::string>> *T, std::string *P);
 void updateBitVector(std::vector<bool> *BV, std::vector<std::vector<int>> *L, int m, int i);
 
+
 /***********************************************************************************/
 /************************************ GISM *****************************************/
 /***********************************************************************************/
