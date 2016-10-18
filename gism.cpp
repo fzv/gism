@@ -46,18 +46,14 @@ void computeBorderTable(std::string *X, std::vector<int> *B);
 std::vector<int> computeBorder(std::string temp, std::vector<int> B);
 void preKMP(std::string pattern, int f[]);
 bool KMP(std::string needle, std::string haystack);
-void computeBps(std::vector<std::vector<int>> *L, std::vector<int> *B, std::vector<int> *Bprime, std::string *P);
+void computeBps(std::vector<int> *Li, std::vector<int> *B, std::vector<int> *Bprime, std::string *P);
 sdsl::csa_bitcompressed<> computeSuffixArray(std::string s);
 void printSuffixArray(sdsl::csa_bitcompressed<> SA);
 void printVector(std::vector<int> *vector);
 std::vector<int> computeLCParray(std::string s, sdsl::csa_bitcompressed<> SA, std::vector<int> iSA, std::vector<int> LCP);
 int getlcp(int suffx, int suffy, std::vector<int> iSA, std::vector<int> LCP, sdsl::rmq_succinct_sct<> rmq);
-bool checkL(int value, std::vector<std::vector<int>> *L, int i);
-void printL(std::vector<std::vector<int>> *L);
-std::vector<std::vector<std::vector<int>>> insertL(int value, std::vector<std::vector<int>> L, int i, int S_j);
-void maintainL(std::vector<std::vector<int>> *L, int i);
 void printSeqs(std::list<std::vector<std::string>> *T, std::string *P);
-void updateBitVector(std::vector<bool> *BV, std::vector<std::vector<int>> *L, int m, int i);
+void updateBitVector(std::vector<bool> *BV, std::vector<int> *Li_1, int m);
 void reporting(std::vector<int> *vector);
 
 
@@ -82,13 +78,14 @@ parseInput(&P, &T, myfile);
 /* GISM */
 
 std::vector<int> report; //vector storing all reported i of T
-std::vector<std::vector<int>> L; //as defined in paper
+std::vector<int> Li;
+std::vector<int> Li_1;
 
 /* Loop Through Each T[i] */
 for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it++){
 	/* declare i */
 	int i = std::distance(T.begin(),it);
-	///std::cout << "\n\nwe are in pos " << i << " of T......" << std::endl;
+	////////////std::cout << "\n\nwe are in pos " << i << " of T......" << std::endl;
 	/* prepare all S_j in T[i] */
 	std::stringstream x; //stringstream used to create string X
 	std::vector<int> Bprime; //B'[j] = i s.t. i is ending pos of S_j in X
@@ -101,12 +98,14 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 		/* STEP 1: FIND PREFIXES OF P */
 		///std::cout << "/* STEP 1: FIND PREFIXES OF P */" << std::endl;
 		computeBorderTable(&X, &B);
-		computeBps(&L, &B, &Bprime, &P);
+		computeBps(&Li, &B, &Bprime, &P);
 	} else {
+		Li_1 = Li;
+		Li.clear();
 		/* STEP 1: FIND PREFIXES OF P */
 		///std::cout << "/* STEP 1: FIND PREFIXES OF P */" << std::endl;
 		computeBorderTable(&X, &B);
-		computeBps(&L, &B, &Bprime, &P);
+		computeBps(&Li, &B, &Bprime, &P);
 		//construct suffix array of X
 		sdsl::csa_bitcompressed<> SA = computeSuffixArray(X);
 		///printSuffixArray(SA);
@@ -123,7 +122,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 		///std::cout << "longest common prefix array" << std::endl; printVector(&LCP);
 		// initialise bitvector (E)xtend to aid extension of prefixes of P
 		std::vector<bool> E(P.length(),false);
-		updateBitVector(&E, &L, P.length(), i);
+		updateBitVector(&E, &Li_1, P.length());
 		// initialise bitvector (PREV)iously extended to aid extension of prefixes of P
 		std::vector<bool> PREV(P.length(),true);
 		/* STEP 2: EXTEND PREFIXES OF P */
@@ -132,8 +131,6 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 		for (int b = 0; b<Bprime.size(); b++){ //for all S_j in T[i]
 			int len = Bprime[b] - P.length() - cumulative_len - b; //length of S_j
 			int suffs = Bprime[b]-len+1; //start pos of S_j in X
-			///std::cout << std::endl << X.substr(suffs,len) << std::endl; //extract+print S_j from X
-			///std::cout << "is of length " << len << std::endl;
 			cumulative_len += len; //update cum. length in preparation for next S_j
 			if (len < P.length()) { //if S_j could occur in P
 				///std::cout << "length of S_j is less than P" << std::endl;
@@ -150,7 +147,8 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 							if (PREV[endpos]){ //if endpos not in L[i]
 								///std::cout << "not already added to L" << std::endl;
 								PREV[endpos]=false; //do not allow to add endpos to L[i] again
-								L[i].push_back(endpos); //add endpos to L[i]
+								////L[i].push_back(endpos); //add endpos to L[i]
+								Li.push_back(endpos); //add endpos to L[i]
 							}
 						}
 					} //end_if lcp>=len
@@ -160,7 +158,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 		/* STEP 3: EXTEND PREFIXES OF P TO END OF P*/
 		///std::cout << "/* STEP 3: EXTEND PREFIXES OF P TO END OF P*/" << std::endl;
 		std::vector<bool> R(P.length(),false); //bitvector (R)eport to aid reporting of occurences of P in T
-		updateBitVector(&R, &L, P.length(), i);
+		updateBitVector(&R, &Li_1, P.length());
 		cumulative_len = 0; //length of X minus length of S_j
 		for (int b = 0; b<Bprime.size(); b++){ //for all S_j in T[i]
 			int len = Bprime[b] - P.length() - cumulative_len - b; //length of S_j
@@ -178,16 +176,17 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 				}
 			} //end_for each suffix of P
 		} //end_for all S_j in T[i]
+		if (epsilon==true) Li.insert(Li.end(), Li_1.begin(), Li_1.end());
+		//if (i >= 2) L.erase(L.begin(),L.begin()+1); would need to change L[i] to L.begin()+1
+		//std::cout << std::endl << "printing L outside function" << std::endl;
+		//printL(&L);
+		//std::cout << std::endl << std::endl;
 	} //end_if T[0]
-	if (epsilon==true) L[i].insert(L[i].end(), L[i-1].begin(), L[i-1].end());
-	///std::cout << std::endl << "printing L outside function" << std::endl;
-	///printL(&L);
-	///std::cout << std::endl << std::endl;
 } //end_GISM
 
 
 //** report **//
-std::cout << std::endl <<"pattern occurs in text, ending at the following positions" << std::endl;
+std::cout << std::endl << "pattern occurs in text, ending at the following positions" << std::endl;
 reporting(&report);
 std::cout << std::endl;
 
@@ -259,7 +258,7 @@ if (inputFile.is_open()){
 	}
 	inputFile.close();
 } else {
-	///std::cout << "Unable to open file." << std::endl;
+	std::cout << "Unable to open file." << std::endl;
 }
 
 (*P) = lines[1];
@@ -288,13 +287,12 @@ for (int i=0; i<t.length(); i++){ //loop through text string
 
 /*******************           Update bit vector       ************************/
 void updateBitVector(std::vector<bool> *BV,
-			std::vector<std::vector<int>> *L,
-			int m,
-			int i
+			std::vector<int> *Li_1,
+			int m
 			)
 {
 ///std::cout << std::endl << "inside updateBV function" << std::endl;
-for (std::vector<int>::iterator p = (*L)[i-1].begin(); p != (*L)[i-1].end(); p++){
+for (std::vector<int>::iterator p = (*Li_1).begin(); p != (*Li_1).end(); p++){
 	///std::cout << "for p=" << (*p) << " desired j is " << ((*p)+1) << std::endl;
 	if ((*p)!=-1000){
 		(*BV)[((*p)+1)] = true;
@@ -330,21 +328,6 @@ for (std::vector<std::vector<int>>::iterator i = (*L).begin(); i != (*L).end(); 
 	printVector(&tempVec);
 }
 }
-
-/*********************          Return true if value exists in L_i          **************************/
-bool checkL(int value,
-		std::vector<std::vector<int>> *L,
-		int i
-		)
-{
-for (std::vector<int>::iterator j = (*L)[i].begin(); j != (*L)[i].end(); j++)
-{
-	if ((*j)==value) return 1;
-}
-return 0;
-}
-
-
 
 /*********************          Compute lcp(suffix x, suffix y)          **************************/
 int getlcp(int suffx,
@@ -424,13 +407,13 @@ std::cout << std::endl << std::endl;
 }
 
 /*********************                     Compute B_p,s               **************************/
-void computeBps(std::vector<std::vector<int>> *L, //stores all B_p,s (for all pos in T)
+void computeBps(std::vector<int> *Li, //stores all B_p,s (for all pos in T)
 				std::vector<int> *B, //border table
 				std::vector<int> *Bprime, //B'[j] = i s.t. i is ending pos of S_j in X
 				std::string *P //pattern string
 				)
 {	
-std::vector<int> Bps; //stores all prefixes of pattern P that are suffixes of S_j
+///std::cout << "computing Bp,s" << std::endl;
 for (int i = 0; i != (*Bprime).size(); i++)
 {
 	int Bi = (*Bprime)[i];
@@ -438,16 +421,16 @@ for (int i = 0; i != (*Bprime).size(); i++)
 	{
 		///std::cout << "looking at " << Bi << "th pos in B: " << (*B)[Bi] << std::endl;
 		for(int x = (*B)[Bi]; x != 0; x = (*B)[x-1]){
-			Bps.push_back(x-1);
+			(*Li).push_back(x-1);
 		}
 	}
 	else
 	{
-		Bps.push_back(-1000);
+		(*Li).push_back(-1000);
 	}
 }
-(*L).push_back(Bps);
 }
+
 
 /*********************                     Compute border table               **************************/
 // given parameters:
@@ -478,6 +461,7 @@ for (int q = 1; q < m; q++){
 
 //** print border table **//
 /*
+std::cout << "border table" << std::endl;
 for (std::vector<int>::iterator it = (*B).begin(); it != (*B).end(); it++){
 	std::cout << *it << " ";
 }
@@ -636,34 +620,6 @@ if(it.visit()==1) //if we have not traversed the subtree rooted at v
 */
 
 
-/*********************            (C)oncatenate all strings         **************************/
-/*
-std::string C; 
-std::vector<int> Cprime;
-// C'[i] = k s.t. C[k] is starting pos of S_k, where max(k) = total number of S_j in all T 
-
-{ //concatenation
-
-std::stringstream Cstream;
-int k = 0;
-std::string unique = "bdfhijklmnopqrsuvwxyz"; //assumption: no more than 20 S_k in T
-
-Cstream << P;
-for (std::list<std::vector<std::string>>::iterator i = T.begin(); i != T.end(); i++){
-	std::vector<std::string> T_i = *i;
-	for (std::vector<std::string>::iterator j = T_i.begin(); j != T_i.end(); j++){
-		std::string S_j = *j;
-		Cprime.push_back(Cstream.str().length()+1);
-		Cstream << unique[k] << S_j;
-		k++;
-	}
-}
-C = Cstream.str();
-
-} //end_concatenation
-
-std::cout << C << std::endl;
-*/
 
 /*********************                     Print C'               **************************/
 /*
