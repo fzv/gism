@@ -58,6 +58,7 @@ std::vector<std::vector<std::vector<int>>> insertL(int value, std::vector<std::v
 void maintainL(std::vector<std::vector<int>> *L, int i);
 void printSeqs(std::list<std::vector<std::string>> *T, std::string *P);
 void updateBitVector(std::vector<bool> *BV, std::vector<std::vector<int>> *L, int m, int i);
+void reporting(std::vector<int> *vector);
 
 
 /***********************************************************************************/
@@ -126,7 +127,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 		// initialise bitvector (PREV)iously extended to aid extension of prefixes of P
 		std::vector<bool> PREV(P.length(),true);
 		/* STEP 2: EXTEND PREFIXES OF P */
-		std::cout << "/* STEP 2: EXTEND PREFIXES OF P */" << std::endl;
+		///std::cout << "/* STEP 2: EXTEND PREFIXES OF P */" << std::endl;
 		int cumulative_len = 0; //length of X minus length of S_j
 		for (int b = 0; b<Bprime.size(); b++){ //for all S_j in T[i]
 			int len = Bprime[b] - P.length() - cumulative_len - b; //length of S_j
@@ -187,7 +188,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 
 //** report **//
 std::cout << std::endl <<"pattern occurs in text, ending at the following positions" << std::endl;
-printVector(&report);
+reporting(&report);
 std::cout << std::endl;
 
 return 0;
@@ -200,6 +201,15 @@ return 0;
 /************************************************************************************/
 /******************************* FUNCTION DEFINITIONS *******************************/
 /************************************************************************************/
+
+/*******************           report        ************************/
+void reporting(std::vector<int> *vector)
+{
+std::cout << (*vector)[0] << " ";
+for (int i=1; i<(*vector).size(); i++){
+	if((*vector)[i] != (*vector)[i-1]) std::cout << (*vector)[i] << " ";
+}
+}
 
 /*******************           prepare X        ************************/
 void prepareX(std::stringstream *x,
