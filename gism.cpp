@@ -85,7 +85,7 @@ std::vector<int> Li_1;
 for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it++){
 	/* declare i */
 	int i = std::distance(T.begin(),it);
-	////////////std::cout << "\n\nwe are in pos " << i << " of T......" << std::endl;
+	std::cout << "\n\nwe are in pos " << i << " of T......" << std::endl;
 	/* prepare all S_j in T[i] */
 	std::stringstream x; //stringstream used to create string X
 	std::vector<int> Bprime; //B'[j] = i s.t. i is ending pos of S_j in X
