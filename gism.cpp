@@ -203,6 +203,7 @@ return 0;
 /************************************************************************************/
 
 /*******************           report        ************************/
+// post-processing
 void reporting(std::vector<int> *vector)
 {
 if ( (*vector).size()==0 ){
@@ -216,6 +217,7 @@ if ( (*vector).size()==0 ){
 }
 
 /*******************           prepare X        ************************/
+// O(X)
 void prepareX(std::stringstream *x,
 		std::vector<int> *Bprime,
 		bool *epsilon,
@@ -246,6 +248,7 @@ for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ /
 }
 
 /*******************           parse input file       ************************/
+// pre-processing
 void parseInput(std::string *P,
 		std::list<std::vector<std::string>> *T,
 		std::string myfile
@@ -329,6 +332,7 @@ for (int i=0; i<t.length(); i++){ //loop through text string
 }
 
 /*******************           Update bit vector       ************************/
+// O(Li_1)
 void updateBitVector(std::vector<bool> *BV,
 			std::vector<int> *Li_1,
 			int m
@@ -344,6 +348,7 @@ for (std::vector<int>::iterator p = (*Li_1).begin(); p != (*Li_1).end(); p++){
 }
 
 /*******************           Print (T)ext and (P)attern       ************************/
+// pre-processing
 void printSeqs(std::list<std::vector<std::string>> *T,
 		std::string *P
 		)
@@ -363,6 +368,7 @@ std::cout << (*P) << std::endl << std::endl;
 
 
 /*********************                 Print L             **************************/
+// post-processing
 void printL(std::vector<std::vector<int>> *L)
 {
 for (std::vector<std::vector<int>>::iterator i = (*L).begin(); i != (*L).end(); i++)
@@ -374,6 +380,7 @@ for (std::vector<std::vector<int>>::iterator i = (*L).begin(); i != (*L).end(); 
 }
 
 /*********************          Compute lcp(suffix x, suffix y)          **************************/
+// O(1)
 int getlcp(int suffx,
 	int suffy,
 	std::vector<int> iSA,
@@ -397,6 +404,9 @@ return lcp;
 }
 
 /*********************          Compute LCP array of string s         **************************/
+// Kasai's algorithm
+// O(n)
+
 std::vector<int> computeLCParray(std::string s,
 				sdsl::csa_bitcompressed<> SA,
 				std::vector<int> iSA,
@@ -451,6 +461,7 @@ std::cout << std::endl << std::endl;
 }
 
 /*********************                     Compute B_p,s               **************************/
+//O( B' log(B) )
 void computeBps(std::vector<int> *Li, //stores all B_p,s (for all pos in T)
 				std::vector<int> *B, //border table
 				std::vector<int> *Bprime, //B'[j] = i s.t. i is ending pos of S_j in X
@@ -477,6 +488,7 @@ for (int i = 0; i != (*Bprime).size(); i++)
 
 
 /*********************                     Compute border table               **************************/
+// O(X)
 // given parameters:
 // X: string formed from concatenation of P and all S_j in T[i], separated by unique chars
 // B: vector to hold border table
@@ -514,6 +526,7 @@ std::cout << std::endl << std::endl;
 }
 
 /*********************                    KMP string matching algorithm              **************************/
+// O(haystack)
 //credit to http://www.sanfoundry.com/cpp-program-implement-kruth-morris-patt-algorithm-kmp/
 //returns 1 if needle found in haystack, else returns 0
 
