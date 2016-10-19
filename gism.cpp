@@ -73,7 +73,8 @@ std::string P;
 std::list<std::vector<std::string>> T;
 std::string myfile = argv[1];
 parseInput(&P, &T, myfile);
-///printSeqs(&T, &P);
+std::cout << "there are " << T.size() << " positions in T" << std::endl;
+//printSeqs(&T, &P);
 
 /* GISM */
 
@@ -204,9 +205,13 @@ return 0;
 /*******************           report        ************************/
 void reporting(std::vector<int> *vector)
 {
-std::cout << (*vector)[0] << " ";
-for (int i=1; i<(*vector).size(); i++){
-	if((*vector)[i] != (*vector)[i-1]) std::cout << (*vector)[i] << " ";
+if ( (*vector).size()==0 ){
+	std::cout << "Nothing to report." << std::endl;
+} else {
+	std::cout << (*vector)[0] << " ";
+	for (int i=1; i<(*vector).size(); i++){
+		if((*vector)[i] != (*vector)[i-1]) std::cout << (*vector)[i] << " ";
+	}
 }
 }
 
@@ -268,6 +273,43 @@ std::vector<std::string> tempVector;
 std::stringstream tempString;
 
 for (int i=0; i<t.length(); i++){ //loop through text string
+	if (t[i]=='{'){ 
+		if (i!=0 && t[i-1] != '}'){
+			tempVector.push_back(tempString.str());
+			(*T).push_back(tempVector);
+			tempVector.clear();
+			tempString.str("");
+			tempString.clear();
+		}
+	} else if (t[i]=='}'){ //if reach end of t[i]
+		tempVector.push_back(tempString.str());
+		(*T).push_back(tempVector);
+		tempVector.clear();
+		tempString.str("");
+		tempString.clear();
+	} else if (t[i]==','){ //if new s in t[i]
+		tempVector.push_back(tempString.str());
+		tempString.str("");
+		tempString.clear();
+	} else { //if t[i] == a 
+		tempString << t[i]; //add a to string stream
+	} //end_if
+} //end_for
+
+
+if (t[t.length()-1] != '}'){
+		tempVector.push_back(tempString.str());
+		(*T).push_back(tempVector);
+		tempVector.clear();
+		tempString.str("");
+		tempString.clear();
+}
+
+
+
+
+/*
+for (int i=0; i<t.length(); i++){ //loop through text string
 	if (t[i]=='{'){ //if new pos in T
 		tempVector.clear(); //clear vector to hold all s in t[i]
 		tempString.str(""); //clear string stream to hold all a in s[j]
@@ -283,6 +325,7 @@ for (int i=0; i<t.length(); i++){ //loop through text string
 		tempString << t[i]; //add a to string stream
 	} //end_if
 } //end_for
+*/
 }
 
 /*******************           Update bit vector       ************************/
@@ -307,6 +350,7 @@ void printSeqs(std::list<std::vector<std::string>> *T,
 {
 std::cout << "string T:" << std::endl;
 for (std::list<std::vector<std::string>>::iterator i=(*T).begin(); i!=(*T).end(); i++){
+	std::cout << "pos " << std::distance((*T).begin(),i) << std::endl;
 	for (std::vector<std::string>::iterator j=(*i).begin(); j!=(*i).end(); j++){
 		std::cout << *j << " ";
 	}
