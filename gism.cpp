@@ -140,19 +140,17 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 				for (int suffp = 1; suffp < P.length(); suffp++){ //for each suffix of P
 					int lcp = getlcp(&suffp, &suffs, &iSA, &LCP, &rmq); //lcp of S_j and suffix of P
 					///std::cout << "\nlcp of suffixes " << suffp << " and " << suffs << " is " << lcp << std::endl;
-					if (lcp >= len){
+					if (lcp >= len && E[suffp]){ //check if can extend prefix of P from L[i-1]
 						///std::cout << "S_j occurs in P" << std::endl;
 						///std::cout << "checking previous pos of P in L[i-1]" << std::endl;
-						if (E[suffp]){ //check if can extend prefix of P from L[i-1]
-							///std::cout << "can extend to pos ";
-							int endpos = suffp+len-1; //can be extended to endpos in P
-							///std::cout << endpos << " of P" << std::endl;
-							if (PREV[endpos]){ //if endpos not in L[i]
-								///std::cout << "not already added to L" << std::endl;
-								PREV[endpos]=false; //do not allow to add endpos to L[i] again
-								////L[i].push_back(endpos); //add endpos to L[i]
-								Li.push_back(endpos); //add endpos to L[i]
-							}
+						///std::cout << "can extend to pos ";
+						int endpos = suffp+len-1; //can be extended to endpos in P
+						///std::cout << endpos << " of P" << std::endl;
+						if (PREV[endpos]){ //if endpos not in L[i]
+							///std::cout << "not already added to L" << std::endl;
+							PREV[endpos]=false; //do not allow to add endpos to L[i] again
+							////L[i].push_back(endpos); //add endpos to L[i]
+							Li.push_back(endpos); //add endpos to L[i]
 						}
 					} //end_if lcp>=len
 				} //end_for each suffix of P
