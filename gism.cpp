@@ -47,7 +47,7 @@ void preKMP(std::string pattern, int f[]);
 bool KMP(std::string needle, std::string haystack);
 void computeBps(std::vector<int> *Li, std::vector<int> *B, std::vector<int> *Bprime, std::string *P);
 sdsl::csa_bitcompressed<> computeSuffixArray(std::string s);
-std::vector<int> computeLCParray(std::string s, sdsl::csa_bitcompressed<> SA, std::vector<int> iSA, std::vector<int> LCP);
+void computeLCParray(std::string *s, sdsl::csa_bitcompressed<> *SA, std::vector<int> *iSA, std::vector<int> *LCP);
 int getlcp(int *suffx, int *suffy, std::vector<int> *iSA, std::vector<int> *LCP, sdsl::rmq_succinct_sct<> *rmq);
 void updateBitVector(std::vector<bool> *BV, std::vector<int> *Li_1, int m);
 void reporting(std::vector<int> *vector);
@@ -119,7 +119,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 		///std::cout << "inverse suffix array" << std::endl; printVector(&iSA);
 		//construct longest common prefix array of X + prepare for rmq
 		std::vector<int> LCP(size, 0);
-		LCP = computeLCParray(X, SA, iSA, LCP);
+		computeLCParray(&X, &SA, &iSA, &LCP);
 		sdsl::rmq_succinct_sct<> rmq;
 		rmq = sdsl::rmq_succinct_sct<>(&LCP);
 		///std::cout << "longest common prefix array" << std::endl; printVector(&LCP);
@@ -407,30 +407,29 @@ return lcp;
 // Kasai's algorithm
 // O(n)
 
-std::vector<int> computeLCParray(std::string s,
-				sdsl::csa_bitcompressed<> SA,
-				std::vector<int> iSA,
-				std::vector<int> LCP
+void computeLCParray(std::string *s,
+				sdsl::csa_bitcompressed<> *SA,
+				std::vector<int> *iSA,
+				std::vector<int> *LCP
 				)
 {
-s = s.append("$");
-int n = s.length(); 
+(*s) = (*s).append("$");
+int n = (*s).length(); 
 int lcp = 0;
 for (int i = 0; i < n; i++){
-	if (iSA[i] == n-1){
+	if ((*iSA)[i] == n-1){
 		lcp = 0;
 		continue;
 	}
-	int j = SA[iSA[i]+1];
-	while ( ( (i+lcp) < n ) && ( (j+lcp) < n ) && ( s[i+lcp]==s[j+lcp] ) ) lcp++;
-	LCP[iSA[i]] = lcp;
+	int j = (*SA)[(*iSA)[i]+1];
+	while ( ( (i+lcp) < n ) && ( (j+lcp) < n ) && ( (*s)[i+lcp]==(*s)[j+lcp] ) ) lcp++;
+	(*LCP)[(*iSA)[i]] = lcp;
 	if (lcp > 0) lcp--;
 }
-std::vector<int>::iterator it = LCP.begin();
-LCP.insert(it, 0);
-LCP.pop_back();
+std::vector<int>::iterator it = (*LCP).begin();
+(*LCP).insert(it, 0);
+(*LCP).pop_back();
 
-return LCP;
 }
 
 /*********************          Print any int vector         **************************/
