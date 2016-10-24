@@ -51,7 +51,7 @@ sdsl::csa_bitcompressed<> computeSuffixArray(std::string s);
 void printSuffixArray(sdsl::csa_bitcompressed<> SA);
 void printVector(std::vector<int> *vector);
 std::vector<int> computeLCParray(std::string s, sdsl::csa_bitcompressed<> SA, std::vector<int> iSA, std::vector<int> LCP);
-int getlcp(int suffx, int suffy, std::vector<int> iSA, std::vector<int> LCP, sdsl::rmq_succinct_sct<> rmq);
+int getlcp(int *suffx, int *suffy, std::vector<int> *iSA, std::vector<int> *LCP, sdsl::rmq_succinct_sct<> *rmq);
 void printSeqs(std::list<std::vector<std::string>> *T, std::string *P);
 void updateBitVector(std::vector<bool> *BV, std::vector<int> *Li_1, int m);
 void reporting(std::vector<int> *vector);
@@ -86,26 +86,26 @@ std::vector<int> Li_1;
 for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it++){
 	/* declare i */
 	int i = std::distance(T.begin(),it);
-	std::cout << "\n\nwe are in pos " << i << " of T......" << std::endl;
+	/////////////////////////////std::cout << "\n\nwe are in pos " << i << " of T......" << std::endl;
 	/* prepare all S_j in T[i] */
 	std::stringstream x; //stringstream used to create string X
 	std::vector<int> Bprime; //B'[j] = i s.t. i is ending pos of S_j in X
 	bool epsilon = false; //flag empty string in T[i]
 	std::vector<int> B; //border table
 	std::string X; //as defined in paper
-	prepareX(&x, &Bprime, &epsilon, &P, &report, &i, &X, it);
+	prepareX(&x, &Bprime, &epsilon, &P, &report, &i, &X, it); // O(X + S_j)
 	/* begin GISM algorithm */
 	if (it==T.begin()) { //only for T[0] do:
 		/* STEP 1: FIND PREFIXES OF P */
 		///std::cout << "/* STEP 1: FIND PREFIXES OF P */" << std::endl;
-		computeBorderTable(&X, &B);
+		computeBorderTable(&X, &B); // O(X)
 		computeBps(&Li, &B, &Bprime, &P);
 	} else {
 		Li_1 = Li;
 		Li.clear();
 		/* STEP 1: FIND PREFIXES OF P */
 		///std::cout << "/* STEP 1: FIND PREFIXES OF P */" << std::endl;
-		computeBorderTable(&X, &B);
+		computeBorderTable(&X, &B); // O(X)
 		computeBps(&Li, &B, &Bprime, &P);
 		//construct suffix array of X
 		sdsl::csa_bitcompressed<> SA = computeSuffixArray(X);
@@ -136,7 +136,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 			if (len < P.length()) { //if S_j could occur in P
 				///std::cout << "length of S_j is less than P" << std::endl;
 				for (int suffp = 1; suffp < P.length(); suffp++){ //for each suffix of P
-					int lcp = getlcp(suffp, suffs, iSA, LCP, rmq); //lcp of S_j and suffix of P
+					int lcp = getlcp(&suffp, &suffs, &iSA, &LCP, &rmq); //lcp of S_j and suffix of P
 					///std::cout << "\nlcp of suffixes " << suffp << " and " << suffs << " is " << lcp << std::endl;
 					if (lcp >= len){
 						///std::cout << "S_j occurs in P" << std::endl;
@@ -168,7 +168,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 			///std::cout << "is of length " << len << std::endl;
 			cumulative_len += len; //update cum. length in preparation for next S_j
 			for (int suffp = 1; suffp < P.length(); suffp++){ //for each suffix of P
-				int lcp = getlcp(suffp, suffs, iSA, LCP, rmq); //lcp of S_j and suffix of P
+				int lcp = getlcp(&suffp, &suffs, &iSA, &LCP, &rmq); //lcp of S_j and suffix of P
 				///std::cout << "\nlcp of suffixes " << suffp << " and " << suffs << " is " << lcp << std::endl;
 				if (lcp > len) lcp = len;
 				if (R[suffp] && lcp == (P.length()-suffp) ){
@@ -381,25 +381,25 @@ for (std::vector<std::vector<int>>::iterator i = (*L).begin(); i != (*L).end(); 
 
 /*********************          Compute lcp(suffix x, suffix y)          **************************/
 // O(1)
-int getlcp(int suffx,
-	int suffy,
-	std::vector<int> iSA,
-	std::vector<int> LCP,
-	sdsl::rmq_succinct_sct<> rmq)
+int getlcp(int *suffx,
+	int *suffy,
+	std::vector<int> *iSA,
+	std::vector<int> *LCP,
+	sdsl::rmq_succinct_sct<> *rmq)
 {
 int i;
 int j;
-if (iSA[suffx] < iSA[suffy]){
-	i = iSA[suffx];
-	j = iSA[suffy];
+if ((*iSA)[(*suffx)] < (*iSA)[(*suffy)]){
+	i = (*iSA)[(*suffx)];
+	j = (*iSA)[(*suffy)];
 } else {
-	i = iSA[suffy];
-	j = iSA[suffx];
+	i = (*iSA)[(*suffy)];
+	j = (*iSA)[(*suffx)];
 }
 //std::cout << "i = " << i << std::endl;
 //std::cout << "j = " << j << std::endl;
-auto min_idx = rmq(i+1,j); 
-int lcp = LCP[min_idx];
+auto min_idx = (*rmq)(i+1,j); 
+int lcp = (*LCP)[min_idx];
 return lcp;
 }
 
