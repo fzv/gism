@@ -43,18 +43,20 @@ install SDSL lite library
 void parseInput(std::string *P, std::list<std::vector<std::string>> *T, std::string myfile);
 void prepareX(std::stringstream *x, std::vector<int> *Bprime, bool *epsilon, std::string *P, std::vector<int> *report, int *i, std::string *X, std::list<std::vector<std::string>>::iterator it);
 void computeBorderTable(std::string *X, std::vector<int> *B);
-std::vector<int> computeBorder(std::string temp, std::vector<int> B);
 void preKMP(std::string pattern, int f[]);
 bool KMP(std::string needle, std::string haystack);
 void computeBps(std::vector<int> *Li, std::vector<int> *B, std::vector<int> *Bprime, std::string *P);
 sdsl::csa_bitcompressed<> computeSuffixArray(std::string s);
-void printSuffixArray(sdsl::csa_bitcompressed<> SA);
-void printVector(std::vector<int> *vector);
 std::vector<int> computeLCParray(std::string s, sdsl::csa_bitcompressed<> SA, std::vector<int> iSA, std::vector<int> LCP);
 int getlcp(int *suffx, int *suffy, std::vector<int> *iSA, std::vector<int> *LCP, sdsl::rmq_succinct_sct<> *rmq);
-void printSeqs(std::list<std::vector<std::string>> *T, std::string *P);
 void updateBitVector(std::vector<bool> *BV, std::vector<int> *Li_1, int m);
 void reporting(std::vector<int> *vector);
+
+// testing purposes only //
+void printSeqs(std::list<std::vector<std::string>> *T, std::string *P);
+void printVector(std::vector<int> *vector);
+void printSuffixArray(sdsl::csa_bitcompressed<> SA);
+
 
 
 /***********************************************************************************/
