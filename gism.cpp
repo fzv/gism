@@ -43,8 +43,8 @@ install SDSL lite library
 void parseInput(std::string *P, std::list<std::vector<std::string>> *T, std::string myfile);
 void prepareX(std::stringstream *x, std::vector<int> *Bprime, bool *epsilon, std::string *P, std::vector<int> *report, int *i, std::string *X, std::list<std::vector<std::string>>::iterator it);
 void computeBorderTable(std::string *X, std::vector<int> *B);
-void preKMP(std::string pattern, int f[]);
-bool KMP(std::string needle, std::string haystack);
+void preKMP(std::string *pattern, int *f[]);
+bool KMP(std::string *needle, std::string *haystack);
 void computeBps(std::vector<int> *Li, std::vector<int> *B, std::vector<int> *Bprime, std::string *P);
 sdsl::csa_bitcompressed<> computeSuffixArray(std::string s);
 void computeLCParray(std::string *s, sdsl::csa_bitcompressed<> *SA, std::vector<int> *iSA, std::vector<int> *LCP);
@@ -233,7 +233,7 @@ for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ /
 	if ((*j) == "E") (*epsilon) = true; //if S_j is empty string, set flag to true 
 	(*x) << (*j) << "$"; //concatenate S_j and unique letter to string X
 	if ((*j).length() >= (*P).length()){ //if P could occur in S_j
-		if (KMP((*P), (*j))){ //if P occurs in S_j
+		if (KMP(P, &(*j))){ //if P occurs in S_j
 			(*report).push_back((*i)); //report pos T[i]
 			///std::cout << "reporting " << (*i) << std::endl;
 		}
@@ -529,9 +529,9 @@ std::cout << std::endl << std::endl;
 //credit to http://www.sanfoundry.com/cpp-program-implement-kruth-morris-patt-algorithm-kmp/
 //returns 1 if needle found in haystack, else returns 0
 
-void preKMP(std::string pattern, int f[])
+void preKMP(std::string *pattern, int f[])
 {
-	int m = pattern.length();
+	int m = (*pattern).length();
 	int k;
 	f[0] = -1;
 	for (int i = 1; i < m; i++)
@@ -539,7 +539,7 @@ void preKMP(std::string pattern, int f[])
 		k = f[i - 1];
 		while (k >= 0)
 		{
-			if (pattern[k] == pattern[i - 1])
+			if ((*pattern)[k] == (*pattern)[i - 1])
 			{
 				break;
 			}
@@ -553,10 +553,10 @@ void preKMP(std::string pattern, int f[])
 
 }
 
-bool KMP(std::string needle, std::string haystack)
+bool KMP(std::string *needle, std::string *haystack)
 {
-	int m = needle.length();
-	int n = haystack.length();
+	int m = (*needle).length();
+	int n = (*haystack).length();
 	int f[m];
 	preKMP(needle, f);
 	int i = 0;
@@ -568,7 +568,7 @@ bool KMP(std::string needle, std::string haystack)
 			i++;
 			k = 0;
 		}
-        	else if (haystack[i] == needle[k])
+        	else if ((*haystack)[i] == (*needle)[k])
 		{
 			i++;
 			k++;
