@@ -43,7 +43,7 @@ install SDSL lite library
 void parseInput(std::string *P, std::list<std::vector<std::string>> *T, std::string myfile);
 void prepareX(std::stringstream *x, std::vector<int> *Bprime, bool *epsilon, std::string *P, std::vector<int> *report, int *i, std::string *X, std::list<std::vector<std::string>>::iterator it);
 void computeBorderTable(std::string *X, std::vector<int> *B);
-void preKMP(std::string *pattern, int *f[]);
+void preKMP(std::string *pattern, int f[]);
 bool KMP(std::string *needle, std::string *haystack);
 void computeBps(std::vector<int> *Li, std::vector<int> *B, std::vector<int> *Bprime, std::string *P);
 sdsl::csa_bitcompressed<> computeSuffixArray(std::string s);
