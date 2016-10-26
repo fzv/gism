@@ -44,11 +44,13 @@ void parseInput(std::string *P, std::list<std::vector<std::string>> *T, std::str
 void prepareX(std::stringstream *x, std::vector<int> *Bprime, bool *epsilon, std::string *P, std::vector<int> *report, int *i, std::string *X, std::list<std::vector<std::string>>::iterator it);
 void computeBorderTable(std::string *X, std::vector<int> *B);
 void preKMP(std::string *pattern, int f[]);
-bool KMP(std::string *needle, std::string *haystack);
+//bool KMP(std::string *needle, std::string *haystack);
+int KMP(std::string *needle, std::string *haystack);
 void computeBps(std::vector<int> *Li, std::vector<int> *B, std::vector<int> *Bprime, std::string *P);
 sdsl::csa_bitcompressed<> computeSuffixArray(std::string s);
 void computeLCParray(std::string *s, sdsl::csa_bitcompressed<> *SA, std::vector<int> *iSA, std::vector<int> *LCP);
 int getlcp(int *suffx, int *suffy, std::vector<int> *iSA, std::vector<int> *LCP, sdsl::rmq_succinct_sct<> *rmq);
+//////////////////////int getlcp(int *suffx, int *suffy, std::vector<int> *iSA, std::vector<int> *LCP);
 void updateBitVector(std::vector<bool> *BV, std::vector<int> *Li_1, int m);
 void reporting(std::vector<int> *vector);
 
@@ -120,8 +122,8 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 		//construct longest common prefix array of X + prepare for rmq
 		std::vector<int> LCP(size, 0);
 		computeLCParray(&X, &SA, &iSA, &LCP);
-		sdsl::rmq_succinct_sct<> rmq;
-		rmq = sdsl::rmq_succinct_sct<>(&LCP);
+		sdsl::rmq_succinct_sct<> rmq; ////////////////////////////////////////////////////////////////////////////////////////////
+		rmq = sdsl::rmq_succinct_sct<>(&LCP); ////////////////////////////////////////////////////////////////////////////////////////////
 		///std::cout << "longest common prefix array" << std::endl; printVector(&LCP);
 		// initialise bitvector (E)xtend to aid extension of prefixes of P
 		std::vector<bool> E(P.length(),false);
@@ -130,6 +132,32 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 		std::vector<bool> PREV(P.length(),true);
 		/* STEP 2: EXTEND PREFIXES OF P */
 		///std::cout << "/* STEP 2: EXTEND PREFIXES OF P */" << std::endl;
+
+
+		int cumulative_len = 0;
+		for (int b = 0; b<Bprime.size(); b++){ //for all S_j in T[i]
+			int len = Bprime[b] - P.length() - cumulative_len - b; //length of S_j
+			int sj = Bprime[b]-len+1; //start pos of S_j in X
+			cumulative_len += len; //update cum. length in preparation for next S_j
+			if (len < P.length()) { //if S_j could occur in P
+				std::string S_j = X.substr(sj,len);
+				std::cout << std::endl << "following string can occur inside P " << S_j << std::endl;
+				int endpos = KMP(&S_j, &P);// return either -1 or pos in P where S_j ends
+				std::cout << "result of KMP = " << endpos << std::endl;
+				if ( endpos != -1 && E[endpos]==true ){
+					if (PREV[endpos]){ //if endpos not in L[i]
+						PREV[endpos]=false;
+						Li.push_back(endpos); //add endpos to L[i]
+					}
+				}
+			} //end_if S_j could occur in P
+		} //end_for all S_j in T[i]
+
+
+
+
+
+		/*****************************
 		int cumulative_len = 0; //length of X minus length of S_j
 		for (int b = 0; b<Bprime.size(); b++){ //for all S_j in T[i]
 			int len = Bprime[b] - P.length() - cumulative_len - b; //length of S_j
@@ -138,6 +166,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 			if (len < P.length()) { //if S_j could occur in P
 				///std::cout << "length of S_j is less than P" << std::endl;
 				for (int suffp = 1; suffp < P.length(); suffp++){ //for each suffix of P
+					//////////////////////////////////////////////////////////////////int lcp = getlcp(&suffp, &suffs, &iSA, &LCP);
 					int lcp = getlcp(&suffp, &suffs, &iSA, &LCP, &rmq); //lcp of S_j and suffix of P
 					///std::cout << "\nlcp of suffixes " << suffp << " and " << suffs << " is " << lcp << std::endl;
 					if (lcp >= len && E[suffp]){ //check if can extend prefix of P from L[i-1]
@@ -156,6 +185,9 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 				} //end_for each suffix of P
 			} //end_if S_j could occur in P
 		} //end_for all S_j in T[i]
+		*********************************/
+
+
 		/* STEP 3: EXTEND PREFIXES OF P TO END OF P*/
 		///std::cout << "/* STEP 3: EXTEND PREFIXES OF P TO END OF P*/" << std::endl;
 		std::vector<bool> R(P.length(),false); //bitvector (R)eport to aid reporting of occurences of P in T
@@ -168,6 +200,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 			///std::cout << "is of length " << len << std::endl;
 			cumulative_len += len; //update cum. length in preparation for next S_j
 			for (int suffp = 1; suffp < P.length(); suffp++){ //for each suffix of P
+				//////////////////////////////////////////////////////////////////int lcp = getlcp(&suffp, &suffs, &iSA, &LCP);
 				int lcp = getlcp(&suffp, &suffs, &iSA, &LCP, &rmq); //lcp of S_j and suffix of P
 				///std::cout << "\nlcp of suffixes " << suffp << " and " << suffs << " is " << lcp << std::endl;
 				if (lcp > len) lcp = len;
@@ -233,7 +266,8 @@ for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ /
 	if ((*j) == "E") (*epsilon) = true; //if S_j is empty string, set flag to true 
 	(*x) << (*j) << "$"; //concatenate S_j and unique letter to string X
 	if ((*j).length() >= (*P).length()){ //if P could occur in S_j
-		if (KMP(P, &(*j))){ //if P occurs in S_j
+		////////////////////////////////////////////////////////////////if (KMP(P, &(*j))){ //if P occurs in S_j
+		if ( KMP(P, &(*j)) != -1){
 			(*report).push_back((*i)); //report pos T[i]
 			///std::cout << "reporting " << (*i) << std::endl;
 		}
@@ -379,7 +413,9 @@ for (std::vector<std::vector<int>>::iterator i = (*L).begin(); i != (*L).end(); 
 }
 }
 
+
 /*********************          Compute lcp(suffix x, suffix y)          **************************/
+
 // O(1)
 int getlcp(int *suffx,
 	int *suffy,
@@ -403,6 +439,35 @@ int lcp = (*LCP)[min_idx];
 return lcp;
 }
 
+
+/*********************          Compute lcp(suffix x, suffix y)          **************************/
+/*
+// O(1)
+int getlcp(int *suffx,
+	int *suffy,
+	std::vector<int> *iSA,
+	std::vector<int> *LCP
+	)
+{
+int i;
+int j;
+int lcp;
+if ((*iSA)[(*suffx)] < (*iSA)[(*suffy)]){
+	i = (*iSA)[(*suffx)];
+	j = (*iSA)[(*suffy)];
+} else {
+	i = (*iSA)[(*suffy)];
+	j = (*iSA)[(*suffx)];
+}
+
+lcp = (*LCP)[i+1];
+for (int k = i+2; k <= j; k++){
+	if ((*LCP)[k] < lcp) lcp = (*LCP)[k];
+}
+return lcp;
+
+}
+*/
 /*********************          Compute LCP array of string s         **************************/
 // Kasai's algorithm
 // O(n)
@@ -553,6 +618,7 @@ void preKMP(std::string *pattern, int f[])
 
 }
 
+/*
 bool KMP(std::string *needle, std::string *haystack)
 {
 	int m = (*needle).length();
@@ -570,9 +636,9 @@ bool KMP(std::string *needle, std::string *haystack)
 		}
         	else if ((*haystack)[i] == (*needle)[k])
 		{
-			i++;
 			k++;
 			if (k==m) return 1;
+			i++;
 		}
 		else
 		{
@@ -580,6 +646,36 @@ bool KMP(std::string *needle, std::string *haystack)
 		}
 	}
 	return 0;
+}
+*/
+
+int KMP(std::string *needle, std::string *haystack)
+{
+	int m = (*needle).length();
+	int n = (*haystack).length();
+	int f[m];
+	preKMP(needle, f);
+	int i = 0;
+	int k = 0;
+	while (i<n)
+	{
+		if (k==-1)
+		{
+			i++;
+			k = 0;
+		}
+        	else if ((*haystack)[i] == (*needle)[k])
+		{
+			k++;
+			if (k==m) return i;
+			i++;
+		}
+		else
+		{
+			k = f[k];
+		}
+	}
+	return -1;
 }
 
 
