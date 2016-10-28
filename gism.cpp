@@ -91,6 +91,38 @@ sdsl::cst_sada<> cst;
 construct(cst, file, 1);
 
 
+
+
+
+// search for CTA inside ST(P)
+std::string test_sj = "CTA";
+std::vector<bool> test_occ( test_sj.length() , false );
+for (int i = 0; i < test_sj.length(); i++) std::cout << test_occ[i];
+//bitwise AND bool vector of same length, all true > sj found in p if all true
+int test_int=0;
+
+sdsl::cst_sada<>::node_type v;
+sdsl::cst_sada<>::char_type a;
+for (sdsl::cst_sada<>::const_iterator it = cst.begin(); it!=cst.end(); it++)
+{
+if(it.visit()==1) //if we have not traversed the subtree rooted at v
+{
+
+	v = *it;
+
+	a = cst.edge(v,1);
+	std::cout << "First letter on edge label from root to v: " << a << std::endl;
+
+	if (a == test_sj[test_int]){
+		test_occ[test_int] = true;
+		test_int++;
+	}
+
+}
+}
+
+
+/********************************************************************************************
 //Do stuff with STp
 std::cout << "number of nodes in suffix tree " << cst.nodes() << std::endl << std::endl;
 
@@ -145,16 +177,25 @@ if(it.visit()==1) //if we have not traversed the subtree rooted at v
 }
 }
 
-// spell AGCT
-auto testv = cst.select_child( cst.child( cst.root(),'A' ),1 );
-testv = cst.select_child( cst.child( testv,'G' ),1 );
-testv = cst.select_child( cst.child( testv,'C' ),1 );
-testv = cst.select_child( cst.child( testv,'T' ),1 );
+auto testv = cst.select_child( cst.child( cst.root(),'A' ),2 );
 std::cout << "TESTING TRAVERSAL ";
 for (int i = 1; i <= cst.depth(testv); i++){
 	std::cout << cst.edge(testv,i);
 }
 std::cout << std::endl;
+
+std::cout << "I am a leaf: " << cst.is_leaf(testv) << std::endl;
+
+auto testvv = cst.select_child( cst.child( testv,'T' ),1 );
+
+std::cout << "TESTING TRAVERSAL ";
+for (int i = 1; i <= cst.depth(testv); i++){
+	std::cout << cst.edge(testv,i);
+}
+std::cout << std::endl;
+**************************************************************************/
+
+
 
 
 
