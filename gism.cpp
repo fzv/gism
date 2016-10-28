@@ -48,11 +48,13 @@ void preKMP(std::string *pattern, int f[]);
 int KMP(std::string *needle, std::string *haystack);
 void computeBps(std::vector<int> *Li, std::vector<int> *B, std::vector<int> *Bprime, std::string *P);
 sdsl::csa_bitcompressed<> computeSuffixArray(std::string s);
-void computeLCParray(std::string *s, sdsl::csa_bitcompressed<> *SA, std::vector<int> *iSA, std::vector<int> *LCP);
-int getlcp(int *suffx, int *suffy, std::vector<int> *iSA, std::vector<int> *LCP, sdsl::rmq_succinct_sct<> *rmq);
+//void computeLCParray(std::string *s, sdsl::csa_bitcompressed<> *SA, std::vector<int> *iSA, std::vector<int> *LCP);
+//int getlcp(int *suffx, int *suffy, std::vector<int> *iSA, std::vector<int> *LCP, sdsl::rmq_succinct_sct<> *rmq);
 //////////////////////int getlcp(int *suffx, int *suffy, std::vector<int> *iSA, std::vector<int> *LCP);
 void updateBitVector(std::vector<bool> *BV, std::vector<int> *Li_1, int m);
 void reporting(std::vector<int> *vector);
+void extend(std::string *sj, sdsl::cst_sada<> *stp, sdsl::csa_bitcompressed<> *sap, std::vector<int> *Li, std::vector<bool> *E, std::vector<bool> *PREV, int *len);
+void extendToEnd(std::string *sj, sdsl::cst_sada<> *stp, sdsl::csa_bitcompressed<> *sap, std::vector<int> *Li, std::vector<bool> *R, int *len, std::vector<int> *report, int *tpos, std::string *P);
 
 // testing purposes only //
 void printSeqs(std::list<std::vector<std::string>> *T, std::string *P);
@@ -81,179 +83,13 @@ std::cout << "there are " << T.size() << " positions in T" << std::endl;
 //printSeqs(&T, &P);
 
 
-
-
-
-
 //Construct Suffix Tree of pattern P
 std::string file = "pattern";
 sdsl::cst_sada<> stp; //documentation says construction is slow but fast operations, compared to other = vice versa
 construct(stp, file, 1);
 //Construct Suffix Array of pattern P
 sdsl::csa_bitcompressed<> sap = computeSuffixArray(P);
-printSuffixArray(sap);
-
-//////////
-std::string pat = "CTA";
-int occ = 0;
-sdsl::cst_sada<>::size_type lb;
-sdsl::cst_sada<>::size_type rb;
-sdsl::cst_sada<>::node_type v = stp.root();
-auto it = pat.begin();
-for (uint64_t char_pos = 0; it != pat.end(); ++it){
-	if ( forward_search(stp, v, it-pat.begin(), *it, char_pos) > 0 ){
-		std::cout << it-pat.begin() << "-[" << stp.lb(v) << "," << stp.rb(v) << "]" << std::endl;
-		std::cout << "matched " << *it << std::endl;
-		occ = it-pat.begin();
-		lb = stp.lb(v);
-		rb = stp.rb(v);
-	} else {
-		break;
-	}
-}
-lb--;
-rb--;
-if (occ == pat.length()-1){ // sj found in P, but where?
-	for (int i = lb; i < rb+1; i++){
-		std::cout << "sj occurs at pos " << sap[i] << " in pattern" << std::endl;
-	}
-} else {
-	std::cout << "sj DOES NOT occur in p" << std::endl;
-}
-
-
-/*
-// search for CTA inside ST(P)
-std::string test_sj = "CTA";
-std::vector<bool> test_occ( test_sj.length() , false ); //if all on then sj occurs in P
-std::cout << "printing bool vector" << std::endl;
-for (int i = 0; i < test_sj.length(); i++) std::cout << test_occ[i];
-std::cout << std::endl;
-//bitwise AND bool vector of same length, all true > sj found in p if all true
-int test_int=0; //????????
-
-sdsl::cst_sada<>::node_type v;
-sdsl::cst_sada<>::char_type a;
-//traversing entire ST
-for (sdsl::cst_sada<>::const_iterator it = cst.begin(); it!=cst.end(); it++)
-{
-if(it.visit()==1) //if we have not traversed the subtree rooted at v
-{
-
-	v = *it; //node
-
-	a = cst.edge(v,1);
-	std::cout << "First letter on edge label from root to v: " << a << std::endl;
-
-	if (a == test_sj[test_int]){ //if letter is letter of sj
-		test_occ[test_int] = true; //set bit to on
-		test_int++; //now look for next letter in sj
-		for (int i = 1; i <= cst.depth(v); i++) //check rest of edge label
-		{
-			if ( cst.edge(v,i) == test_sj[test_int] ){
-				test_occ[test_int] = true;
-				test_int++;
-			} else {
-				continue;
-			}
-		}
-		std::cout << std::endl;
-	} else {
-		std::cout << "failed to find - moving to next node" << std::endl;
-	}
-
-}
-}
-
-std::cout << "printing bool vector" << std::endl;
-for (int i = 0; i < test_sj.length(); i++) std::cout << test_occ[i];
-std::cout << std::endl;
-
-if (test_occ) std::cout << "found!" << std::endl;
-
-
-/********************************************************************************************
-//Do stuff with STp
-std::cout << "number of nodes in suffix tree " << cst.nodes() << std::endl << std::endl;
-
-sdsl::cst_sada<>::size_type d;
-sdsl::cst_sada<>::node_type v;
-sdsl::cst_sada<>::size_type s;
-sdsl::cst_sada<>::size_type sn;
-bool l;
-sdsl::cst_sada<>::size_type lb;
-sdsl::cst_sada<>::size_type rb;
-sdsl::cst_sada<>::size_type c;
-sdsl::cst_sada<>::char_type a;
-
-for (sdsl::cst_sada<>::const_iterator it = cst.begin(); it!=cst.end(); it++)
-{
-if(it.visit()==1) //if we have not traversed the subtree rooted at v
-{
-	v = *it;
-
-	sn = cst.sn(v);
-	std::cout << "Suffix number " << sn << std::endl;
-
-	d = cst.node_depth(v);
-	std::cout << "Node depth " << d << std::endl;
-
-	s = cst.size(v);
-	std::cout << s << " leaves in subtree rooted at v" << std::endl;
-
-	l = cst.is_leaf(v);
-	std::cout << "I am a leaf: " << l << std::endl;
-
-	lb = cst.lb(v);
-	std::cout << "Index of leftmost leaf in SA " << lb << std::endl;
-
-	rb = cst.rb(v);
-	std::cout << "Index of rightmost leaf in SA " << rb << std::endl;
-
-	c = cst.degree(v);
-	std::cout << "Number of children " << c << std::endl;
-	
-	a = cst.edge(v,1);
-	std::cout << "First letter on edge label from root to v: " << a << std::endl;
-
-	std::cout << "L(v) : ";
-	for (int i = 1; i <= cst.depth(v); i++)
-	{
-		std::cout << cst.edge(v,i);
-	}
-	std::cout << std::endl;
-
-	std::cout << std::endl;
-}
-}
-
-auto testv = cst.select_child( cst.child( cst.root(),'A' ),2 );
-std::cout << "TESTING TRAVERSAL ";
-for (int i = 1; i <= cst.depth(testv); i++){
-	std::cout << cst.edge(testv,i);
-}
-std::cout << std::endl;
-
-std::cout << "I am a leaf: " << cst.is_leaf(testv) << std::endl;
-
-auto testvv = cst.select_child( cst.child( testv,'T' ),1 );
-
-std::cout << "TESTING TRAVERSAL ";
-for (int i = 1; i <= cst.depth(testv); i++){
-	std::cout << cst.edge(testv,i);
-}
-std::cout << std::endl;
-**************************************************************************/
-
-
-
-
-
-
-
-
-
-
+//printSuffixArray(sap);
 
 
 /* GISM */
@@ -287,20 +123,6 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 		///std::cout << "/* STEP 1: FIND PREFIXES OF P */" << std::endl;
 		computeBorderTable(&X, &B); // O(X)
 		computeBps(&Li, &B, &Bprime, &P);
-		//construct suffix array of X
-		sdsl::csa_bitcompressed<> SA = computeSuffixArray(X);
-		///printSuffixArray(SA);
-		int size = SA.size();
-		//construct inverse suffix array of X
-		std::vector<int> iSA(size, 0);
-		for (int r = 0; r != size; r ++) iSA[SA[r]] = r;
-		///std::cout << "inverse suffix array" << std::endl; printVector(&iSA);
-		//construct longest common prefix array of X + prepare for rmq
-		std::vector<int> LCP(size, 0);
-		computeLCParray(&X, &SA, &iSA, &LCP);
-		sdsl::rmq_succinct_sct<> rmq; ////////////////////////////////////////////////////////////////////////////////////////////
-		rmq = sdsl::rmq_succinct_sct<>(&LCP); ////////////////////////////////////////////////////////////////////////////////////////////
-		///std::cout << "longest common prefix array" << std::endl; printVector(&LCP);
 		// initialise bitvector (E)xtend to aid extension of prefixes of P
 		std::vector<bool> E(P.length(),false);
 		updateBitVector(&E, &Li_1, P.length());
@@ -308,42 +130,16 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 		std::vector<bool> PREV(P.length(),true);
 		/* STEP 2: EXTEND PREFIXES OF P */
 		///std::cout << "/* STEP 2: EXTEND PREFIXES OF P */" << std::endl;
-
-
-
-
-
 		int cumulative_len = 0; //length of X minus length of S_j
 		for (int b = 0; b<Bprime.size(); b++){ //for all S_j in T[i]
 			int len = Bprime[b] - P.length() - cumulative_len - b; //length of S_j
-			int suffs = Bprime[b]-len+1; //start pos of S_j in X
+			int startpos = Bprime[b]-len+1; //start pos of S_j in X
 			cumulative_len += len; //update cum. length in preparation for next S_j
 			if (len < P.length()) { //if S_j could occur in P
-				///std::cout << "length of S_j is less than P" << std::endl;
-				for (int suffp = 1; suffp < P.length(); suffp++){ //for each suffix of P
-					//////////////////////////////////////////////////////////////////int lcp = getlcp(&suffp, &suffs, &iSA, &LCP);
-					int lcp = getlcp(&suffp, &suffs, &iSA, &LCP, &rmq); //lcp of S_j and suffix of P
-					///std::cout << "\nlcp of suffixes " << suffp << " and " << suffs << " is " << lcp << std::endl;
-					if (lcp >= len && E[suffp]){ //check if can extend prefix of P from L[i-1]
-						///std::cout << "S_j occurs in P" << std::endl;
-						///std::cout << "checking previous pos of P in L[i-1]" << std::endl;
-						///std::cout << "can extend to pos ";
-						int endpos = suffp+len-1; //can be extended to endpos in P
-						///std::cout << endpos << " of P" << std::endl;
-						if (PREV[endpos]){ //if endpos not in L[i]
-							///std::cout << "not already added to L" << std::endl;
-							PREV[endpos]=false; //do not allow to add endpos to L[i] again
-							////L[i].push_back(endpos); //add endpos to L[i]
-							Li.push_back(endpos); //add endpos to L[i]
-						}
-					} //end_if lcp>=len
-				} //end_for each suffix of P
+				std::string sj = X.substr(startpos,len);
+				extend(&sj, &stp, &sap, &Li, &E, &PREV, &len);
 			} //end_if S_j could occur in P
 		} //end_for all S_j in T[i]
-
-
-
-
 		/* STEP 3: EXTEND PREFIXES OF P TO END OF P*/
 		///std::cout << "/* STEP 3: EXTEND PREFIXES OF P TO END OF P*/" << std::endl;
 		std::vector<bool> R(P.length(),false); //bitvector (R)eport to aid reporting of occurences of P in T
@@ -351,20 +147,10 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 		cumulative_len = 0; //length of X minus length of S_j
 		for (int b = 0; b<Bprime.size(); b++){ //for all S_j in T[i]
 			int len = Bprime[b] - P.length() - cumulative_len - b; //length of S_j
-			int suffs = Bprime[b]-len+1; //start pos of S_j in X
-			///std::cout << std::endl << X.substr(suffs,len) << std::endl; //extract+print S_j from X
-			///std::cout << "is of length " << len << std::endl;
+			int startpos = Bprime[b]-len+1; //start pos of S_j in X
 			cumulative_len += len; //update cum. length in preparation for next S_j
-			for (int suffp = 1; suffp < P.length(); suffp++){ //for each suffix of P
-				//////////////////////////////////////////////////////////////////int lcp = getlcp(&suffp, &suffs, &iSA, &LCP);
-				int lcp = getlcp(&suffp, &suffs, &iSA, &LCP, &rmq); //lcp of S_j and suffix of P
-				///std::cout << "\nlcp of suffixes " << suffp << " and " << suffs << " is " << lcp << std::endl;
-				if (lcp > len) lcp = len;
-				if (R[suffp] && lcp == (P.length()-suffp) ){
-					///std::cout << "reporting " << i << std::endl;
-					report.push_back(i); //report T[i]
-				}
-			} //end_for each suffix of P
+			std::string sj = X.substr(startpos,len);
+			extendToEnd(&sj, &stp, &sap, &Li, &R, &len, &report, &i, &P);
 		} //end_for all S_j in T[i]
 		if (epsilon==true) Li.insert(Li.end(), Li_1.begin(), Li_1.end());
 		//if (i >= 2) L.erase(L.begin(),L.begin()+1); would need to change L[i] to L.begin()+1
@@ -390,6 +176,88 @@ return 0;
 /************************************************************************************/
 /******************************* FUNCTION DEFINITIONS *******************************/
 /************************************************************************************/
+
+/*******************           extend to end       ************************/
+
+
+void extendToEnd(std::string *sj, sdsl::cst_sada<> *stp, sdsl::csa_bitcompressed<> *sap, std::vector<int> *Li, std::vector<bool> *R, int *len, std::vector<int> *report, int *tpos, std::string *P)
+{
+
+std::string pat = (*sj);
+int occ = 0;
+sdsl::cst_sada<>::size_type lb;
+sdsl::cst_sada<>::size_type rb;
+sdsl::cst_sada<>::node_type v = (*stp).root();
+auto it = pat.begin();
+for (uint64_t char_pos = 0; it != pat.end(); ++it){
+	if ( forward_search( (*stp), v, it-pat.begin(), *it, char_pos) > 0 ){
+		occ = it-pat.begin();
+		lb = (*stp).lb(v);
+		rb = (*stp).rb(v);
+	} else {
+		break;
+	}
+}
+lb--;
+rb--;
+if (occ == pat.length()-1){ // sj found in P, but where?
+	for (int i = lb; i < rb+1; i++){
+		//std::cout << "sj occurs at pos " << sap[i] << " in pattern" << std::endl;	
+		int startpos = (*sap)[i];
+		int endpos = startpos+(*len)-1; //can be extended to P[endpos]
+		//if ((*R)[startpos] && endpos==(*P).length()){
+		if ((*R)[startpos] && (*stp).is_leaf(v)){
+			(*report).push_back((*tpos));
+		}
+
+	}
+
+
+} else {
+	//std::cout << "sj DOES NOT occur in p" << std::endl;
+}
+
+}
+
+/*******************           extend        ************************/
+
+
+void extend(std::string *sj, sdsl::cst_sada<> *stp, sdsl::csa_bitcompressed<> *sap, std::vector<int> *Li, std::vector<bool> *E, std::vector<bool> *PREV, int *len)
+{
+
+std::string pat = (*sj);
+int occ = 0;
+sdsl::cst_sada<>::size_type lb;
+sdsl::cst_sada<>::size_type rb;
+sdsl::cst_sada<>::node_type v = (*stp).root();
+auto it = pat.begin();
+for (uint64_t char_pos = 0; it != pat.end(); ++it){
+	if ( forward_search( (*stp), v, it-pat.begin(), *it, char_pos) > 0 ){
+		occ = it-pat.begin();
+		lb = (*stp).lb(v);
+		rb = (*stp).rb(v);
+	} else {
+		break;
+	}
+}
+lb--;
+rb--;
+if (occ == pat.length()-1){ // sj found in P, but where?
+	for (int i = lb; i < rb+1; i++){
+		//std::cout << "sj occurs at pos " << sap[i] << " in pattern" << std::endl;	
+		int startpos = (*sap)[i];
+		int endpos = startpos+(*len)-1; //can be extended to P[endpos]
+		if ((*E)[startpos] && (*PREV)[endpos]){
+			(*PREV)[endpos]=false;
+			(*Li).push_back(endpos);
+		}
+
+	}
+} else {
+	//std::cout << "sj DOES NOT occur in p" << std::endl;
+}
+
+}
 
 /*******************           report        ************************/
 // post-processing
@@ -846,6 +714,223 @@ int KMP(std::string *needle, std::string *haystack)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+		//construct suffix array of X
+		sdsl::csa_bitcompressed<> SA = computeSuffixArray(X);
+		///printSuffixArray(SA);
+		int size = SA.size();
+		//construct inverse suffix array of X
+		std::vector<int> iSA(size, 0);
+		for (int r = 0; r != size; r ++) iSA[SA[r]] = r;
+		///std::cout << "inverse suffix array" << std::endl; printVector(&iSA);
+		//construct longest common prefix array of X + prepare for rmq
+		std::vector<int> LCP(size, 0);
+		computeLCParray(&X, &SA, &iSA, &LCP);
+		sdsl::rmq_succinct_sct<> rmq; ////////////////////////////////////////////////////////////////////////////////////////////
+		rmq = sdsl::rmq_succinct_sct<>(&LCP); ////////////////////////////////////////////////////////////////////////////////////////////
+		///std::cout << "longest common prefix array" << std::endl; printVector(&LCP);
+*/
+
+//old step 3
+/*
+			for (int suffp = 1; suffp < P.length(); suffp++){ //for each suffix of P
+				//////////////////////////////////////////////////////////////////int lcp = getlcp(&suffp, &suffs, &iSA, &LCP);
+				int lcp = getlcp(&suffp, &suffs, &iSA, &LCP, &rmq); //lcp of S_j and suffix of P
+				///std::cout << "\nlcp of suffixes " << suffp << " and " << suffs << " is " << lcp << std::endl;
+				if (lcp > len) lcp = len;
+				if (R[suffp] && lcp == (P.length()-suffp) ){
+					///std::cout << "reporting " << i << std::endl;
+					report.push_back(i); //report T[i]
+				}
+			} //end_for each suffix of P
+*/
+
+
+
+/*
+// search for CTA inside ST(P)
+std::string test_sj = "CTA";
+std::vector<bool> test_occ( test_sj.length() , false ); //if all on then sj occurs in P
+std::cout << "printing bool vector" << std::endl;
+for (int i = 0; i < test_sj.length(); i++) std::cout << test_occ[i];
+std::cout << std::endl;
+//bitwise AND bool vector of same length, all true > sj found in p if all true
+int test_int=0; //????????
+
+sdsl::cst_sada<>::node_type v;
+sdsl::cst_sada<>::char_type a;
+//traversing entire ST
+for (sdsl::cst_sada<>::const_iterator it = cst.begin(); it!=cst.end(); it++)
+{
+if(it.visit()==1) //if we have not traversed the subtree rooted at v
+{
+
+	v = *it; //node
+
+	a = cst.edge(v,1);
+	std::cout << "First letter on edge label from root to v: " << a << std::endl;
+
+	if (a == test_sj[test_int]){ //if letter is letter of sj
+		test_occ[test_int] = true; //set bit to on
+		test_int++; //now look for next letter in sj
+		for (int i = 1; i <= cst.depth(v); i++) //check rest of edge label
+		{
+			if ( cst.edge(v,i) == test_sj[test_int] ){
+				test_occ[test_int] = true;
+				test_int++;
+			} else {
+				continue;
+			}
+		}
+		std::cout << std::endl;
+	} else {
+		std::cout << "failed to find - moving to next node" << std::endl;
+	}
+
+}
+}
+
+std::cout << "printing bool vector" << std::endl;
+for (int i = 0; i < test_sj.length(); i++) std::cout << test_occ[i];
+std::cout << std::endl;
+
+if (test_occ) std::cout << "found!" << std::endl;
+
+
+/********************************************************************************************
+//Do stuff with STp
+std::cout << "number of nodes in suffix tree " << cst.nodes() << std::endl << std::endl;
+
+sdsl::cst_sada<>::size_type d;
+sdsl::cst_sada<>::node_type v;
+sdsl::cst_sada<>::size_type s;
+sdsl::cst_sada<>::size_type sn;
+bool l;
+sdsl::cst_sada<>::size_type lb;
+sdsl::cst_sada<>::size_type rb;
+sdsl::cst_sada<>::size_type c;
+sdsl::cst_sada<>::char_type a;
+
+for (sdsl::cst_sada<>::const_iterator it = cst.begin(); it!=cst.end(); it++)
+{
+if(it.visit()==1) //if we have not traversed the subtree rooted at v
+{
+	v = *it;
+
+	sn = cst.sn(v);
+	std::cout << "Suffix number " << sn << std::endl;
+
+	d = cst.node_depth(v);
+	std::cout << "Node depth " << d << std::endl;
+
+	s = cst.size(v);
+	std::cout << s << " leaves in subtree rooted at v" << std::endl;
+
+	l = cst.is_leaf(v);
+	std::cout << "I am a leaf: " << l << std::endl;
+
+	lb = cst.lb(v);
+	std::cout << "Index of leftmost leaf in SA " << lb << std::endl;
+
+	rb = cst.rb(v);
+	std::cout << "Index of rightmost leaf in SA " << rb << std::endl;
+
+	c = cst.degree(v);
+	std::cout << "Number of children " << c << std::endl;
+	
+	a = cst.edge(v,1);
+	std::cout << "First letter on edge label from root to v: " << a << std::endl;
+
+	std::cout << "L(v) : ";
+	for (int i = 1; i <= cst.depth(v); i++)
+	{
+		std::cout << cst.edge(v,i);
+	}
+	std::cout << std::endl;
+
+	std::cout << std::endl;
+}
+}
+
+auto testv = cst.select_child( cst.child( cst.root(),'A' ),2 );
+std::cout << "TESTING TRAVERSAL ";
+for (int i = 1; i <= cst.depth(testv); i++){
+	std::cout << cst.edge(testv,i);
+}
+std::cout << std::endl;
+
+std::cout << "I am a leaf: " << cst.is_leaf(testv) << std::endl;
+
+auto testvv = cst.select_child( cst.child( testv,'T' ),1 );
+
+std::cout << "TESTING TRAVERSAL ";
+for (int i = 1; i <= cst.depth(testv); i++){
+	std::cout << cst.edge(testv,i);
+}
+std::cout << std::endl;
+**************************************************************************/
+
+
+//old step 2
+/*
+				///std::cout << "length of S_j is less than P" << std::endl;
+				for (int suffp = 1; suffp < P.length(); suffp++){ //for each suffix of P
+					//////////////////////////////////////////////////////////////////int lcp = getlcp(&suffp, &suffs, &iSA, &LCP);
+					int lcp = getlcp(&suffp, &suffs, &iSA, &LCP, &rmq); //lcp of S_j and suffix of P
+					///std::cout << "\nlcp of suffixes " << suffp << " and " << suffs << " is " << lcp << std::endl;
+					if (lcp >= len && E[suffp]){ //check if can extend prefix of P from L[i-1]
+						///std::cout << "S_j occurs in P" << std::endl;
+						///std::cout << "checking previous pos of P in L[i-1]" << std::endl;
+						///std::cout << "can extend to pos ";
+						int endpos = suffp+len-1; //can be extended to endpos in P
+						///std::cout << endpos << " of P" << std::endl;
+						if (PREV[endpos]){ //if endpos not in L[i]
+							///std::cout << "not already added to L" << std::endl;
+							PREV[endpos]=false; //do not allow to add endpos to L[i] again
+							////L[i].push_back(endpos); //add endpos to L[i]
+							Li.push_back(endpos); //add endpos to L[i]
+						}
+					} //end_if lcp>=len
+				} //end_for each suffix of P
+*/
 
 /*
 		int endpos;
