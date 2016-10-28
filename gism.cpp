@@ -87,39 +87,89 @@ std::cout << "there are " << T.size() << " positions in T" << std::endl;
 
 //Construct Suffix Tree of pattern P
 std::string file = "pattern";
-sdsl::cst_sada<> cst;
-construct(cst, file, 1);
+sdsl::cst_sada<> stp; //documentation says construction is slow but fast operations, compared to other = vice versa
+construct(stp, file, 1);
+//Construct Suffix Array of pattern P
+sdsl::csa_bitcompressed<> sap = computeSuffixArray(P);
+printSuffixArray(sap);
+
+//////////
+std::string pat = "CTA";
+int occ = 0;
+sdsl::cst_sada<>::size_type lb;
+sdsl::cst_sada<>::size_type rb;
+sdsl::cst_sada<>::node_type v = stp.root();
+auto it = pat.begin();
+for (uint64_t char_pos = 0; it != pat.end(); ++it){
+	if ( forward_search(stp, v, it-pat.begin(), *it, char_pos) > 0 ){
+		std::cout << it-pat.begin() << "-[" << stp.lb(v) << "," << stp.rb(v) << "]" << std::endl;
+		std::cout << "matched " << *it << std::endl;
+		occ = it-pat.begin();
+		lb = stp.lb(v);
+		rb = stp.rb(v);
+	} else {
+		break;
+	}
+}
+lb--;
+rb--;
+if (occ == pat.length()-1){ // sj found in P, but where?
+	for (int i = lb; i < rb+1; i++){
+		std::cout << "sj occurs at pos " << sap[i] << " in pattern" << std::endl;
+	}
+} else {
+	std::cout << "sj DOES NOT occur in p" << std::endl;
+}
 
 
-
-
-
+/*
 // search for CTA inside ST(P)
 std::string test_sj = "CTA";
-std::vector<bool> test_occ( test_sj.length() , false );
+std::vector<bool> test_occ( test_sj.length() , false ); //if all on then sj occurs in P
+std::cout << "printing bool vector" << std::endl;
 for (int i = 0; i < test_sj.length(); i++) std::cout << test_occ[i];
+std::cout << std::endl;
 //bitwise AND bool vector of same length, all true > sj found in p if all true
-int test_int=0;
+int test_int=0; //????????
 
 sdsl::cst_sada<>::node_type v;
 sdsl::cst_sada<>::char_type a;
+//traversing entire ST
 for (sdsl::cst_sada<>::const_iterator it = cst.begin(); it!=cst.end(); it++)
 {
 if(it.visit()==1) //if we have not traversed the subtree rooted at v
 {
 
-	v = *it;
+	v = *it; //node
 
 	a = cst.edge(v,1);
 	std::cout << "First letter on edge label from root to v: " << a << std::endl;
 
-	if (a == test_sj[test_int]){
-		test_occ[test_int] = true;
-		test_int++;
+	if (a == test_sj[test_int]){ //if letter is letter of sj
+		test_occ[test_int] = true; //set bit to on
+		test_int++; //now look for next letter in sj
+		for (int i = 1; i <= cst.depth(v); i++) //check rest of edge label
+		{
+			if ( cst.edge(v,i) == test_sj[test_int] ){
+				test_occ[test_int] = true;
+				test_int++;
+			} else {
+				continue;
+			}
+		}
+		std::cout << std::endl;
+	} else {
+		std::cout << "failed to find - moving to next node" << std::endl;
 	}
 
 }
 }
+
+std::cout << "printing bool vector" << std::endl;
+for (int i = 0; i < test_sj.length(); i++) std::cout << test_occ[i];
+std::cout << std::endl;
+
+if (test_occ) std::cout << "found!" << std::endl;
 
 
 /********************************************************************************************
