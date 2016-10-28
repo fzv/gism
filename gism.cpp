@@ -80,6 +80,91 @@ parseInput(&P, &T, myfile);
 std::cout << "there are " << T.size() << " positions in T" << std::endl;
 //printSeqs(&T, &P);
 
+
+
+
+
+
+//Construct Suffix Tree of pattern P
+std::string file = "pattern";
+sdsl::cst_sada<> cst;
+construct(cst, file, 1);
+
+
+//Do stuff with STp
+std::cout << "number of nodes in suffix tree " << cst.nodes() << std::endl << std::endl;
+
+sdsl::cst_sada<>::size_type d;
+sdsl::cst_sada<>::node_type v;
+sdsl::cst_sada<>::size_type s;
+sdsl::cst_sada<>::size_type sn;
+bool l;
+sdsl::cst_sada<>::size_type lb;
+sdsl::cst_sada<>::size_type rb;
+sdsl::cst_sada<>::size_type c;
+sdsl::cst_sada<>::char_type a;
+
+for (sdsl::cst_sada<>::const_iterator it = cst.begin(); it!=cst.end(); it++)
+{
+if(it.visit()==1) //if we have not traversed the subtree rooted at v
+{
+	v = *it;
+
+	sn = cst.sn(v);
+	std::cout << "Suffix number " << sn << std::endl;
+
+	d = cst.node_depth(v);
+	std::cout << "Node depth " << d << std::endl;
+
+	s = cst.size(v);
+	std::cout << s << " leaves in subtree rooted at v" << std::endl;
+
+	l = cst.is_leaf(v);
+	std::cout << "I am a leaf: " << l << std::endl;
+
+	lb = cst.lb(v);
+	std::cout << "Index of leftmost leaf in SA " << lb << std::endl;
+
+	rb = cst.rb(v);
+	std::cout << "Index of rightmost leaf in SA " << rb << std::endl;
+
+	c = cst.degree(v);
+	std::cout << "Number of children " << c << std::endl;
+	
+	a = cst.edge(v,1);
+	std::cout << "First letter on edge label from root to v: " << a << std::endl;
+
+	std::cout << "L(v) : ";
+	for (int i = 1; i <= cst.depth(v); i++)
+	{
+		std::cout << cst.edge(v,i);
+	}
+	std::cout << std::endl;
+
+	std::cout << std::endl;
+}
+}
+
+// spell AGCT
+auto testv = cst.select_child( cst.child( cst.root(),'A' ),1 );
+testv = cst.select_child( cst.child( testv,'G' ),1 );
+testv = cst.select_child( cst.child( testv,'C' ),1 );
+testv = cst.select_child( cst.child( testv,'T' ),1 );
+std::cout << "TESTING TRAVERSAL ";
+for (int i = 1; i <= cst.depth(testv); i++){
+	std::cout << cst.edge(testv,i);
+}
+std::cout << std::endl;
+
+
+
+
+
+
+
+
+
+
 /* GISM */
 
 std::vector<int> report; //vector storing all reported i of T
@@ -134,30 +219,9 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 		///std::cout << "/* STEP 2: EXTEND PREFIXES OF P */" << std::endl;
 
 
-		int cumulative_len = 0;
-		for (int b = 0; b<Bprime.size(); b++){ //for all S_j in T[i]
-			int len = Bprime[b] - P.length() - cumulative_len - b; //length of S_j
-			int sj = Bprime[b]-len+1; //start pos of S_j in X
-			cumulative_len += len; //update cum. length in preparation for next S_j
-			if (len < P.length()) { //if S_j could occur in P
-				std::string S_j = X.substr(sj,len);
-				std::cout << std::endl << "following string can occur inside P " << S_j << std::endl;
-				int endpos = KMP(&S_j, &P);// return either -1 or pos in P where S_j ends
-				std::cout << "result of KMP = " << endpos << std::endl;
-				if ( endpos != -1 && E[endpos]==true ){
-					if (PREV[endpos]){ //if endpos not in L[i]
-						PREV[endpos]=false;
-						Li.push_back(endpos); //add endpos to L[i]
-					}
-				}
-			} //end_if S_j could occur in P
-		} //end_for all S_j in T[i]
 
 
 
-
-
-		/*****************************
 		int cumulative_len = 0; //length of X minus length of S_j
 		for (int b = 0; b<Bprime.size(); b++){ //for all S_j in T[i]
 			int len = Bprime[b] - P.length() - cumulative_len - b; //length of S_j
@@ -185,7 +249,8 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 				} //end_for each suffix of P
 			} //end_if S_j could occur in P
 		} //end_for all S_j in T[i]
-		*********************************/
+
+
 
 
 		/* STEP 3: EXTEND PREFIXES OF P TO END OF P*/
@@ -691,7 +756,33 @@ int KMP(std::string *needle, std::string *haystack)
 
 
 
+/*
+		int endpos;
+		int cumulative_len = 0;
+		for (int b = 0; b<Bprime.size(); b++){ //for all S_j in T[i]
+			int len = Bprime[b] - P.length() - cumulative_len - b; //length of S_j
+			int sj = Bprime[b]-len+1; //start pos of S_j in X
+			cumulative_len += len; //update cum. length in preparation for next S_j
+			if (len < P.length()) { //if S_j could occur in P
+				std::string S_j = X.substr(sj,len);
+				std::cout << std::endl << "following string can occur inside P " << S_j << std::endl;
 
+				do {
+					endpos = KMP(&S_j, &P);// return either -1 or pos in P where S_j ends
+					std::cout << "result of KMP = " << endpos << std::endl;
+					if ( endpos != -1 && E[endpos]==true ){
+						if (PREV[endpos]){ //if endpos not in L[i]
+							PREV[endpos]=false;
+							Li.push_back(endpos); //add endpos to L[i]
+							std::cout << "adding endpos to Li" << std::endl;
+						}
+					}
+				} while ( (endpos != -1) || (endpos != (P.length()-1)) );
+
+			} //end_if S_j could occur in P
+		} //end_for all S_j in T[i]
+
+*/
 
 
 
