@@ -40,7 +40,7 @@ install SDSL lite library
 /******************************* FUNCTION DECLARATIONS ******************************/
 /************************************************************************************/
 
-void parseInput(std::string *P, std::list<std::vector<std::string>> *T, std::string myfile);
+void parseInput(std::string *P, std::list<std::vector<std::string>> *T, std::string textfile, std::string patfile);
 void prepareX(std::stringstream *x, std::vector<int> *Bprime, bool *epsilon, std::string *P, std::vector<int> *report, int *i, std::string *X, std::list<std::vector<std::string>>::iterator it);
 void computeBorderTable(std::string *X, std::vector<int> *B);
 void preKMP(std::string *pattern, int f[]);
@@ -77,16 +77,19 @@ std::cout << "GISM - Generalised Indeterminate String Matching" << std::endl << 
 
 std::string P;
 std::list<std::vector<std::string>> T;
-std::string myfile = argv[1];
-parseInput(&P, &T, myfile);
+std::string textfile = argv[1];
+std::cout << "Text file name: " << textfile << std::endl;
+std::string patfile = argv[2];
+std::cout << "Pattern file name: " << patfile << std::endl;
+parseInput(&P, &T, textfile, patfile);
 std::cout << "there are " << T.size() << " positions in T" << std::endl;
 //printSeqs(&T, &P);
 
 
 //Construct Suffix Tree of pattern P
-std::string file = "pattern";
+//std::string file = "pattern";
 sdsl::cst_sada<> stp; //documentation says construction is slow but fast operations, compared to other = vice versa
-construct(stp, file, 1);
+construct(stp, patfile, 1);
 //Construct Suffix Array of pattern P
 sdsl::csa_bitcompressed<> sap = computeSuffixArray(P);
 //printSuffixArray(sap);
@@ -309,26 +312,28 @@ for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ /
 // pre-processing
 void parseInput(std::string *P,
 		std::list<std::vector<std::string>> *T,
-		std::string myfile
+		std::string textfile,
+		std::string patfile
 		)
 {
-std::string line;
-std::vector<std::string> lines;
-std::ifstream inputFile(myfile);
+//text
+std::string tline;
+std::vector<std::string> tlines;
+std::ifstream tFile(textfile);
 
-if (inputFile.is_open()){
-	if (inputFile.good()){
-		while (getline(inputFile, line)){
-			lines.push_back(line);
+if (tFile.is_open()){
+	if (tFile.good()){
+		while (getline(tFile, tline)){
+			tlines.push_back(tline);
 		}
 	}
-	inputFile.close();
+	tFile.close();
 } else {
 	std::cout << "Unable to open file." << std::endl;
 }
 
-(*P) = lines[1];
-std::string t = lines[3];
+std::string t = tlines[0];
+
 
 std::vector<std::string> tempVector;
 std::stringstream tempString;
@@ -365,6 +370,28 @@ if (t[t.length()-1] != '}'){
 		tempString.str("");
 		tempString.clear();
 }
+
+
+
+//pattern
+std::string pline;
+std::vector<std::string> plines;
+std::ifstream pFile(patfile);
+
+if (pFile.is_open()){
+	if (pFile.good()){
+		while (getline(pFile, pline)){
+			plines.push_back(pline);
+		}
+	}
+	pFile.close();
+} else {
+	std::cout << "Unable to open file." << std::endl;
+}
+
+(*P) = plines[0];
+
+
 
 
 
