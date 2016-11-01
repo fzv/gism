@@ -9,17 +9,8 @@ To compile GISM
 $ make
 
 To run GISM
-$ ./gism <input_file_name>
+$ ./gism <text_file_name> <pattern_file_name>
 
-Input file must be:
-- in same directory
-- in the following format
+Input files must be in same directory and must not contain any white spaces or meta data
 
-Pattern
-AGCTAGCTG
-Text
-AGCTAG{AC,E,ACGT}AGCTGATCGATCG{AGTC,AGC}GACTAGCAT
 
-In same directory must be file named 'pattern' in following format (no white spaces):
-
-AGCTAGCTG
