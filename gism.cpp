@@ -301,7 +301,7 @@ for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ /
 			////////////////////////////////////////////////////////////////if (KMP(P, &(*j))){ //if P occurs in S_j
 			if ( KMP(P, &(*j)) != -1){
 				(*report).push_back((*i)); //report pos T[i]
-				std::cout << "reporting " << (*i) << std::endl;
+				//std::cout << "reporting " << (*i) << std::endl;
 			}
 		}
 		(*Bprime).push_back((*x).str().length()-2); //in B': store ending pos of S_j in X
