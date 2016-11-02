@@ -83,7 +83,7 @@ std::string patfile = argv[2];
 std::cout << "Pattern file name: " << patfile << std::endl;
 parseInput(&P, &T, textfile, patfile);
 std::cout << "there are " << T.size() << " positions in T" << std::endl;
-//printSeqs(&T, &P);
+///printSeqs(&T, &P);
 
 
 //Construct Suffix Tree of pattern P
@@ -140,6 +140,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 			cumulative_len += len; //update cum. length in preparation for next S_j
 			if (len < P.length()) { //if S_j could occur in P
 				std::string sj = X.substr(startpos,len);
+				///std::cout << sj << std::endl;
 				extend(&sj, &stp, &sap, &Li, &E, &PREV, &len);
 			} //end_if S_j could occur in P
 		} //end_for all S_j in T[i]
@@ -153,6 +154,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 			int startpos = Bprime[b]-len+1; //start pos of S_j in X
 			cumulative_len += len; //update cum. length in preparation for next S_j
 			std::string sj = X.substr(startpos,len);
+			///std::cout << sj << std::endl;
 			extendToEnd(&sj, &stp, &sap, &Li, &R, &len, &report, &i, &P);
 		} //end_for all S_j in T[i]
 		if (epsilon==true) Li.insert(Li.end(), Li_1.begin(), Li_1.end());
@@ -186,15 +188,15 @@ return 0;
 void extendToEnd(std::string *sj, sdsl::cst_sada<> *stp, sdsl::csa_bitcompressed<> *sap, std::vector<int> *Li, std::vector<bool> *R, int *len, std::vector<int> *report, int *tpos, std::string *P)
 {
 
-std::string pat = (*sj);
-int occ = 0;
+std::string s = (*sj);
+int occ = -1;
 sdsl::cst_sada<>::size_type lb;
 sdsl::cst_sada<>::size_type rb;
 sdsl::cst_sada<>::node_type v = (*stp).root();
-auto it = pat.begin();
-for (uint64_t char_pos = 0; it != pat.end(); ++it){
-	if ( forward_search( (*stp), v, it-pat.begin(), *it, char_pos) > 0 ){
-		occ = it-pat.begin();
+auto it = s.begin();
+for (uint64_t char_pos = 0; it != s.end(); ++it){
+	if ( forward_search( (*stp), v, it-s.begin(), *it, char_pos) > 0 ){
+		occ = it-s.begin();
 		lb = (*stp).lb(v);
 		rb = (*stp).rb(v);
 	} else {
@@ -203,21 +205,22 @@ for (uint64_t char_pos = 0; it != pat.end(); ++it){
 }
 lb--;
 rb--;
-if (occ == pat.length()-1){ // sj found in P, but where?
+///std::cout <<  "occ = " << occ << std::endl;
+//if (occ == s.length()-1){ // sj found in P, but where in P?
+if (occ > -1){ //prefix of S_j found in P, but where in P? Must be suffix!
 	for (int i = lb; i < rb+1; i++){
-		//std::cout << "sj occurs at pos " << sap[i] << " in pattern" << std::endl;	
+		///std::cout << "sj occurs at pos " << (*sap)[i] << " in pattern" << std::endl;	
 		int startpos = (*sap)[i];
-		int endpos = startpos+(*len)-1; //can be extended to P[endpos]
-		//if ((*R)[startpos] && endpos==(*P).length()){
-		if ((*R)[startpos] && (*stp).is_leaf(v)){
+		int endpos = startpos+occ; //can be extended to P[endpos]
+		if ( (*R)[startpos] && endpos == ( (*P).length()-1 ) ){
+		//if ((*R)[startpos] && (*stp).is_leaf(v)){
 			(*report).push_back((*tpos));
+			///std::cout << "reporting pos " << (*tpos) << std::endl;
 		}
 
 	}
-
-
 } else {
-	//std::cout << "sj DOES NOT occur in p" << std::endl;
+	///std::cout << "sj is not suffix of p" << std::endl;
 }
 
 }
@@ -247,7 +250,7 @@ lb--;
 rb--;
 if (occ == pat.length()-1){ // sj found in P, but where?
 	for (int i = lb; i < rb+1; i++){
-		//std::cout << "sj occurs at pos " << sap[i] << " in pattern" << std::endl;	
+		///std::cout << "sj occurs at pos " << (*sap)[i] << " in pattern" << std::endl;	
 		int startpos = (*sap)[i];
 		int endpos = startpos+(*len)-1; //can be extended to P[endpos]
 		if ((*E)[startpos] && (*PREV)[endpos]){
@@ -257,7 +260,7 @@ if (occ == pat.length()-1){ // sj found in P, but where?
 
 	}
 } else {
-	//std::cout << "sj DOES NOT occur in p" << std::endl;
+	///std::cout << "sj DOES NOT occur in p" << std::endl;
 }
 
 }
@@ -290,16 +293,19 @@ void prepareX(std::stringstream *x,
 {
 (*x) << (*P) << "$"; //concatenate unique symbol to P to initiaise string X
 for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ //for each S_j in T[i]
-	if ((*j) == "E") (*epsilon) = true; //if S_j is empty string, set flag to true 
-	(*x) << (*j) << "$"; //concatenate S_j and unique letter to string X
-	if ((*j).length() >= (*P).length()){ //if P could occur in S_j
-		////////////////////////////////////////////////////////////////if (KMP(P, &(*j))){ //if P occurs in S_j
-		if ( KMP(P, &(*j)) != -1){
-			(*report).push_back((*i)); //report pos T[i]
-			///std::cout << "reporting " << (*i) << std::endl;
+	if ((*j) == "E"){
+		(*epsilon) = true; //if S_j is empty string, set flag to true 
+	} else {
+		(*x) << (*j) << "$"; //concatenate S_j and unique letter to string X
+		if ((*j).length() >= (*P).length()){ //if P could occur in S_j
+			////////////////////////////////////////////////////////////////if (KMP(P, &(*j))){ //if P occurs in S_j
+			if ( KMP(P, &(*j)) != -1){
+				(*report).push_back((*i)); //report pos T[i]
+				std::cout << "reporting " << (*i) << std::endl;
+			}
 		}
+		(*Bprime).push_back((*x).str().length()-2); //in B': store ending pos of S_j in X
 	}
-	(*Bprime).push_back((*x).str().length()-2); //in B': store ending pos of S_j in X
 }
 (*X) = (*x).str(); //concatenation of P and all S_j, separated by unique chars
 (*X).pop_back(); //remove unecessary unique letter at end pos of X
