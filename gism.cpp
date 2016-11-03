@@ -82,7 +82,7 @@ std::cout << "Text file name: " << textfile << std::endl;
 std::string patfile = argv[2];
 std::cout << "Pattern file name: " << patfile << std::endl;
 parseInput(&P, &T, textfile, patfile);
-std::cout << "there are " << T.size() << " positions in T" << std::endl;
+///std::cout << "there are " << T.size() << " positions in T" << std::endl;
 ///printSeqs(&T, &P);
 
 
@@ -105,7 +105,7 @@ std::vector<int> Li_1;
 for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it++){
 	/* declare i */
 	int i = std::distance(T.begin(),it);
-	/////////////////////////////std::cout << "\n\nwe are in pos " << i << " of T......" << std::endl;
+	///std::cout << "\n\nwe are in pos " << i << " of T......" << std::endl;
 	/* prepare all S_j in T[i] */
 	std::stringstream x; //stringstream used to create string X
 	std::vector<int> Bprime; //B'[j] = i s.t. i is ending pos of S_j in X
@@ -126,6 +126,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 		///std::cout << "/* STEP 1: FIND PREFIXES OF P */" << std::endl;
 		computeBorderTable(&X, &B); // O(X)
 		computeBps(&Li, &B, &Bprime, &P);
+		///printVector(&Li);
 		// initialise bitvector (E)xtend to aid extension of prefixes of P
 		std::vector<bool> E(P.length(),false);
 		updateBitVector(&E, &Li_1, P.length());
@@ -144,6 +145,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 				extend(&sj, &stp, &sap, &Li, &E, &PREV, &len);
 			} //end_if S_j could occur in P
 		} //end_for all S_j in T[i]
+		///printVector(&Li);
 		/* STEP 3: EXTEND PREFIXES OF P TO END OF P*/
 		///std::cout << "/* STEP 3: EXTEND PREFIXES OF P TO END OF P*/" << std::endl;
 		std::vector<bool> R(P.length(),false); //bitvector (R)eport to aid reporting of occurences of P in T
@@ -157,6 +159,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 			///std::cout << sj << std::endl;
 			extendToEnd(&sj, &stp, &sap, &Li, &R, &len, &report, &i, &P);
 		} //end_for all S_j in T[i]
+		///printVector(&Li);
 		if (epsilon==true) Li.insert(Li.end(), Li_1.begin(), Li_1.end());
 		//if (i >= 2) L.erase(L.begin(),L.begin()+1); would need to change L[i] to L.begin()+1
 		//std::cout << std::endl << "printing L outside function" << std::endl;
@@ -199,29 +202,34 @@ for (uint64_t char_pos = 0; it != s.end(); ++it){
 		occ = it-s.begin();
 		lb = (*stp).lb(v);
 		rb = (*stp).rb(v);
+
+		lb--;
+		rb--;
+		///std::cout <<  "occ = " << occ << std::endl;
+		//if (occ == s.length()-1){ // sj found in P, but where in P?
+		if (occ > -1){ //prefix of S_j found in P, but where in P? Must be suffix!
+			for (int i = lb; i < rb+1; i++){
+				///std::cout << "sj occurs at pos " << (*sap)[i] << " in pattern" << std::endl;	
+				int startpos = (*sap)[i];
+				int endpos = startpos+occ; //can be extended to P[endpos]
+				///std::cout << "sj ends at pos " << endpos << " in the pattern" << std::endl;
+				if ( (*R)[startpos] && endpos == ( (*P).length()-1 ) ){
+				//if ((*R)[startpos] && (*stp).is_leaf(v)){
+					(*report).push_back((*tpos));
+					///std::cout << "reporting pos " << (*tpos) << std::endl;
+				}
+
+			}
+		} else {
+			///std::cout << "sj is not suffix of p" << std::endl;
+		}
+
+
 	} else {
 		break;
 	}
 }
-lb--;
-rb--;
-///std::cout <<  "occ = " << occ << std::endl;
-//if (occ == s.length()-1){ // sj found in P, but where in P?
-if (occ > -1){ //prefix of S_j found in P, but where in P? Must be suffix!
-	for (int i = lb; i < rb+1; i++){
-		///std::cout << "sj occurs at pos " << (*sap)[i] << " in pattern" << std::endl;	
-		int startpos = (*sap)[i];
-		int endpos = startpos+occ; //can be extended to P[endpos]
-		if ( (*R)[startpos] && endpos == ( (*P).length()-1 ) ){
-		//if ((*R)[startpos] && (*stp).is_leaf(v)){
-			(*report).push_back((*tpos));
-			///std::cout << "reporting pos " << (*tpos) << std::endl;
-		}
 
-	}
-} else {
-	///std::cout << "sj is not suffix of p" << std::endl;
-}
 
 }
 
@@ -231,15 +239,15 @@ if (occ > -1){ //prefix of S_j found in P, but where in P? Must be suffix!
 void extend(std::string *sj, sdsl::cst_sada<> *stp, sdsl::csa_bitcompressed<> *sap, std::vector<int> *Li, std::vector<bool> *E, std::vector<bool> *PREV, int *len)
 {
 
-std::string pat = (*sj);
-int occ = 0;
+std::string s = (*sj);
+int occ = -1;
 sdsl::cst_sada<>::size_type lb;
 sdsl::cst_sada<>::size_type rb;
 sdsl::cst_sada<>::node_type v = (*stp).root();
-auto it = pat.begin();
-for (uint64_t char_pos = 0; it != pat.end(); ++it){
-	if ( forward_search( (*stp), v, it-pat.begin(), *it, char_pos) > 0 ){
-		occ = it-pat.begin();
+auto it = s.begin();
+for (uint64_t char_pos = 0; it != s.end(); ++it){
+	if ( forward_search( (*stp), v, it-s.begin(), *it, char_pos) > 0 ){
+		occ = it-s.begin();
 		lb = (*stp).lb(v);
 		rb = (*stp).rb(v);
 	} else {
@@ -248,7 +256,7 @@ for (uint64_t char_pos = 0; it != pat.end(); ++it){
 }
 lb--;
 rb--;
-if (occ == pat.length()-1){ // sj found in P, but where?
+if (occ == (*len)-1){ // whole sj found in P, but where?
 	for (int i = lb; i < rb+1; i++){
 		///std::cout << "sj occurs at pos " << (*sap)[i] << " in pattern" << std::endl;	
 		int startpos = (*sap)[i];
@@ -256,6 +264,7 @@ if (occ == pat.length()-1){ // sj found in P, but where?
 		if ((*E)[startpos] && (*PREV)[endpos]){
 			(*PREV)[endpos]=false;
 			(*Li).push_back(endpos);
+			///std::cout << "adding to Li" << std::endl;
 		}
 
 	}
