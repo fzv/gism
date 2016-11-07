@@ -40,7 +40,7 @@ install SDSL lite library
 /******************************* FUNCTION DECLARATIONS ******************************/
 /************************************************************************************/
 
-void parseInput(std::string *P, std::list<std::vector<std::string>> *T, std::string textfile, std::string patfile);
+void parseInput(std::string *P, std::list<std::vector<std::string>> *T, std::string textfile, std::string patfile, std::ofstream *tempfile);
 void prepareX(std::stringstream *x, std::vector<int> *Bprime, bool *epsilon, std::string *P, std::vector<int> *report, int *i, std::string *X, std::list<std::vector<std::string>>::iterator it);
 void computeBorderTable(std::string *X, std::vector<int> *B);
 void preKMP(std::string *pattern, int f[]);
@@ -76,12 +76,13 @@ std::cout << "GISM - Generalised Indeterminate String Matching" << std::endl << 
 /* Declare & Assign Seq Variables */
 
 std::string P;
+std::ofstream tempfile; 
 std::list<std::vector<std::string>> T;
 std::string textfile = argv[1];
-std::cout << "Text file name: " << textfile << std::endl;
+///std::cout << "Text file name: " << textfile << std::endl;
 std::string patfile = argv[2];
-std::cout << "Pattern file name: " << patfile << std::endl;
-parseInput(&P, &T, textfile, patfile);
+///std::cout << "Pattern file name: " << patfile << std::endl;
+parseInput(&P, &T, textfile, patfile, &tempfile);
 ///std::cout << "there are " << T.size() << " positions in T" << std::endl;
 ///printSeqs(&T, &P);
 
@@ -89,14 +90,73 @@ parseInput(&P, &T, textfile, patfile);
 //Construct Suffix Tree of pattern P
 //std::string file = "pattern";
 sdsl::cst_sada<> stp; //documentation says construction is slow but fast operations, compared to other = vice versa
-construct(stp, patfile, 1);
+construct(stp, "temporary.gism", 1); //build suffix tree using pattern file
+std::remove("temporary.gism");
+
+/*
+std::cout << "number of nodes in suffix tree " << stp.nodes() << std::endl << std::endl;
+
+sdsl::cst_sada<>::size_type d;
+sdsl::cst_sada<>::node_type v;
+sdsl::cst_sada<>::size_type s;
+sdsl::cst_sada<>::size_type sn;
+bool l;
+sdsl::cst_sada<>::size_type lb;
+sdsl::cst_sada<>::size_type rb;
+sdsl::cst_sada<>::size_type c;
+sdsl::cst_sada<>::char_type a;
+
+for (sdsl::cst_sada<>::const_iterator it = stp.begin(); it!=stp.end(); it++)
+{
+if(it.visit()==1) //if we have not traversed the subtree rooted at v
+{
+	v = *it;
+
+	sn = stp.sn(v);
+	std::cout << "Suffix number " << sn << std::endl;
+
+	d = stp.node_depth(v);
+	std::cout << "Node depth " << d << std::endl;
+
+	s = stp.size(v);
+	std::cout << s << " leaves in subtree rooted at v" << std::endl;
+
+	l = stp.is_leaf(v);
+	std::cout << "I am a leaf: " << l << std::endl;
+
+	lb = stp.lb(v);
+	std::cout << "Index of leftmost leaf in SA " << lb << std::endl;
+
+	rb = stp.rb(v);
+	std::cout << "Index of rightmost leaf in SA " << rb << std::endl;
+
+	c = stp.degree(v);
+	std::cout << "Number of children " << c << std::endl;
+	
+	a = stp.edge(v,1);
+	std::cout << "First letter on edge label from root to v: " << a << std::endl;
+
+	std::cout << "L(v) : ";
+	for (int i = 1; i <= stp.depth(v); i++)
+	{
+		std::cout << stp.edge(v,i);
+	}
+	std::cout << std::endl;
+
+	std::cout << std::endl;
+}
+}
+*/
+
+
+
 //Construct Suffix Array of pattern P
 sdsl::csa_bitcompressed<> sap = computeSuffixArray(P);
-//printSuffixArray(sap);
+///std::cout << "printing suffix array" << std::endl;
+///printSuffixArray(sap);
 
 
 /* GISM */
-
 std::vector<int> report; //vector storing all reported i of T
 std::vector<int> Li;
 std::vector<int> Li_1;
@@ -119,6 +179,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 		///std::cout << "/* STEP 1: FIND PREFIXES OF P */" << std::endl;
 		computeBorderTable(&X, &B); // O(X)
 		computeBps(&Li, &B, &Bprime, &P);
+		///printVector(&Li);
 	} else {
 		Li_1 = Li;
 		Li.clear();
@@ -126,6 +187,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 		///std::cout << "/* STEP 1: FIND PREFIXES OF P */" << std::endl;
 		computeBorderTable(&X, &B); // O(X)
 		computeBps(&Li, &B, &Bprime, &P);
+		///std::cout << "printing Li after step 1" << std::endl;
 		///printVector(&Li);
 		// initialise bitvector (E)xtend to aid extension of prefixes of P
 		std::vector<bool> E(P.length(),false);
@@ -141,10 +203,11 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 			cumulative_len += len; //update cum. length in preparation for next S_j
 			if (len < P.length()) { //if S_j could occur in P
 				std::string sj = X.substr(startpos,len);
-				///std::cout << sj << std::endl;
+				///std::cout << "\nnow looking at sj = " << sj << std::endl;
 				extend(&sj, &stp, &sap, &Li, &E, &PREV, &len);
 			} //end_if S_j could occur in P
 		} //end_for all S_j in T[i]
+		///std::cout << "printing Li after step 2" << std::endl;
 		///printVector(&Li);
 		/* STEP 3: EXTEND PREFIXES OF P TO END OF P*/
 		///std::cout << "/* STEP 3: EXTEND PREFIXES OF P TO END OF P*/" << std::endl;
@@ -156,15 +219,12 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 			int startpos = Bprime[b]-len+1; //start pos of S_j in X
 			cumulative_len += len; //update cum. length in preparation for next S_j
 			std::string sj = X.substr(startpos,len);
-			///std::cout << sj << std::endl;
+			///std::cout << "now looking at sj = " << sj << std::endl;
 			extendToEnd(&sj, &stp, &sap, &Li, &R, &len, &report, &i, &P);
 		} //end_for all S_j in T[i]
+		///std::cout << "printing Li after step 3" << std::endl;
 		///printVector(&Li);
 		if (epsilon==true) Li.insert(Li.end(), Li_1.begin(), Li_1.end());
-		//if (i >= 2) L.erase(L.begin(),L.begin()+1); would need to change L[i] to L.begin()+1
-		//std::cout << std::endl << "printing L outside function" << std::endl;
-		//printL(&L);
-		//std::cout << std::endl << std::endl;
 	} //end_if T[0]
 } //end_GISM
 
@@ -200,19 +260,21 @@ auto it = s.begin();
 for (uint64_t char_pos = 0; it != s.end(); ++it){
 	if ( forward_search( (*stp), v, it-s.begin(), *it, char_pos) > 0 ){
 		occ = it-s.begin();
+		///std::cout << "occ = " << occ << std::endl;
 		lb = (*stp).lb(v);
 		rb = (*stp).rb(v);
 
-		lb--;
-		rb--;
-		///std::cout <<  "occ = " << occ << std::endl;
-		//if (occ == s.length()-1){ // sj found in P, but where in P?
+		//lb--;
+		///std::cout << "lb = " << lb << std::endl;
+		//rb--;
+		///std::cout << "rb = " << rb << std::endl;
+		///std::cout <<  "found " << (*sj).substr(0,occ+1) << std::endl;
 		if (occ > -1){ //prefix of S_j found in P, but where in P? Must be suffix!
 			for (int i = lb; i < rb+1; i++){
-				///std::cout << "sj occurs at pos " << (*sap)[i] << " in pattern" << std::endl;	
+				///std::cout << "occurs at pos " << (*sap)[i] << " in pattern" << std::endl;	
 				int startpos = (*sap)[i];
 				int endpos = startpos+occ; //can be extended to P[endpos]
-				///std::cout << "sj ends at pos " << endpos << " in the pattern" << std::endl;
+				///std::cout << "ends at pos " << endpos << " in the pattern" << std::endl;
 				if ( (*R)[startpos] && endpos == ( (*P).length()-1 ) ){
 				//if ((*R)[startpos] && (*stp).is_leaf(v)){
 					(*report).push_back((*tpos));
@@ -221,9 +283,8 @@ for (uint64_t char_pos = 0; it != s.end(); ++it){
 
 			}
 		} else {
-			///std::cout << "sj is not suffix of p" << std::endl;
+			///std::cout << "not suffix of p" << std::endl;
 		}
-
 
 	} else {
 		break;
@@ -254,13 +315,14 @@ for (uint64_t char_pos = 0; it != s.end(); ++it){
 		break;
 	}
 }
-lb--;
-rb--;
+//lb--;
+//rb--;
 if (occ == (*len)-1){ // whole sj found in P, but where?
 	for (int i = lb; i < rb+1; i++){
 		///std::cout << "sj occurs at pos " << (*sap)[i] << " in pattern" << std::endl;	
 		int startpos = (*sap)[i];
-		int endpos = startpos+(*len)-1; //can be extended to P[endpos]
+		//int endpos = startpos+(*len)-1; //can be extended to P[endpos]
+		int endpos = startpos+occ;
 		if ((*E)[startpos] && (*PREV)[endpos]){
 			(*PREV)[endpos]=false;
 			(*Li).push_back(endpos);
@@ -310,7 +372,7 @@ for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ /
 			////////////////////////////////////////////////////////////////if (KMP(P, &(*j))){ //if P occurs in S_j
 			if ( KMP(P, &(*j)) != -1){
 				(*report).push_back((*i)); //report pos T[i]
-				//std::cout << "reporting " << (*i) << std::endl;
+				std::cout << "reporting " << (*i) << std::endl;
 			}
 		}
 		(*Bprime).push_back((*x).str().length()-2); //in B': store ending pos of S_j in X
@@ -328,7 +390,8 @@ for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ /
 void parseInput(std::string *P,
 		std::list<std::vector<std::string>> *T,
 		std::string textfile,
-		std::string patfile
+		std::string patfile,
+		std::ofstream *tempfile
 		)
 {
 //text
@@ -405,6 +468,10 @@ if (pFile.is_open()){
 }
 
 (*P) = plines[0];
+
+(*tempfile).open("temporary.gism");
+(*tempfile) << (*P);
+(*tempfile).close();
 
 
 
