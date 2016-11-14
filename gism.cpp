@@ -41,11 +41,11 @@ install SDSL lite library
 /************************************************************************************/
 
 void parseInput(std::string *P, std::list<std::vector<std::string>> *T, std::string textfile, std::string patfile, std::ofstream *tempfile);
-void prepareX(std::stringstream *x, std::vector<int> *Bprime, bool *epsilon, std::string *P, std::vector<int> *report, int *i, std::string *X, std::list<std::vector<std::string>>::iterator it);
+void prepareX(std::stringstream *x, std::vector<int> *Bprime, bool *epsilon, std::string *P, std::vector<int> *report, int *i, std::string *X, std::list<std::vector<std::string>>::iterator it, std::vector<int> *f);
 void computeBorderTable(std::string *X, std::vector<int> *B);
-void preKMP(std::string *pattern, int *f[]);
+void preKMP(std::string *pattern, std::vector<int> *f);
 //bool KMP(std::string *needle, std::string *haystack);
-int KMP(std::string *needle, std::string *haystack, int *f[]);
+int KMP(std::string *needle, std::string *haystack, std::vector<int> *f);
 void computeBps(std::vector<int> *Li, std::vector<int> *B, std::vector<int> *Bprime, std::string *P);
 sdsl::csa_bitcompressed<> computeSuffixArray(std::string s);
 //void computeLCParray(std::string *s, sdsl::csa_bitcompressed<> *SA, std::vector<int> *iSA, std::vector<int> *LCP);
@@ -84,9 +84,10 @@ std::string patfile = argv[2];
 ///std::cout << "Pattern file name: " << patfile << std::endl;
 parseInput(&P, &T, textfile, patfile, &tempfile);
 ///std::cout << "there are " << T.size() << " positions in T" << std::endl;
-printSeqs(&T, &P);
+//printSeqs(&T, &P);
 //pre-process pattern ready for KMPs
-int f[P.length()];
+std::vector<int> f(P.length(),0);
+//int f[P.length()];
 preKMP(&P, &f);
 
 
@@ -175,7 +176,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 	bool epsilon = false; //flag empty string in T[i]
 	std::vector<int> B; //border table
 	std::string X; //as defined in paper
-	prepareX(&x, &Bprime, &epsilon, &P, &report, &i, &X, it); // O(X + S_j)
+	prepareX(&x, &Bprime, &epsilon, &P, &report, &i, &X, it, &f); // O(X + S_j)
 	/* begin GISM algorithm */
 	if (it==T.begin()) { //only for T[0] do:
 		/* STEP 1: FIND PREFIXES OF P */
@@ -362,7 +363,8 @@ void prepareX(std::stringstream *x,
 		std::vector<int> *report,
 		int *i,
 		std::string *X,
-		std::list<std::vector<std::string>>::iterator it
+		std::list<std::vector<std::string>>::iterator it,
+		std::vector<int> *f
 		)
 {
 (*x) << (*P) << "$"; //concatenate unique symbol to P to initiaise string X
@@ -373,7 +375,7 @@ for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ /
 		(*x) << (*j) << "$"; //concatenate S_j and unique letter to string X
 		if ((*j).length() >= (*P).length()){ //if P could occur in S_j
 			////////////////////////////////////////////////////////////////if (KMP(P, &(*j))){ //if P occurs in S_j
-			if ( KMP(P, &(*j)) != -1){
+			if ( KMP( &(*P) , &(*j) , f) != -1){
 				(*report).push_back((*i)); //report pos T[i]
 				///std::cout << "reporting " << (*i) << std::endl;
 			}
@@ -730,7 +732,7 @@ std::cout << std::endl << std::endl;
 //credit to http://www.sanfoundry.com/cpp-program-implement-kruth-morris-patt-algorithm-kmp/
 //returns 1 if needle found in haystack, else returns 0
 
-void preKMP(std::string *pattern, int *f[])
+void preKMP(std::string *pattern, std::vector<int> *f)
 {
 	int m = (*pattern).length();
 	int k;
@@ -785,8 +787,9 @@ bool KMP(std::string *needle, std::string *haystack)
 }
 */
 
-int KMP(std::string *needle, std::string *haystack, int *f[])
+int KMP(std::string *needle, std::string *haystack, std::vector<int> *f)
 {
+//std::cout << "using kmp" << std::endl;
 	int m = (*needle).length();
 	int n = (*haystack).length();
 	//int f[m];
