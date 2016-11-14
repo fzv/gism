@@ -793,7 +793,7 @@ int KMP(std::string *needle, std::string *haystack, std::vector<int> *f)
 	int m = (*needle).length();
 	int n = (*haystack).length();
 	//int f[m];
-	//preKMP(needle, f);
+	/////////preKMP(needle, f);
 	int i = 0;
 	int k = 0;
 	while (i<n)
