@@ -43,9 +43,9 @@ install SDSL lite library
 void parseInput(std::string *P, std::list<std::vector<std::string>> *T, std::string textfile, std::string patfile, std::ofstream *tempfile);
 void prepareX(std::stringstream *x, std::vector<int> *Bprime, bool *epsilon, std::string *P, std::vector<int> *report, int *i, std::string *X, std::list<std::vector<std::string>>::iterator it);
 void computeBorderTable(std::string *X, std::vector<int> *B);
-void preKMP(std::string *pattern, int f[]);
+void preKMP(std::string *pattern, int *f[]);
 //bool KMP(std::string *needle, std::string *haystack);
-int KMP(std::string *needle, std::string *haystack);
+int KMP(std::string *needle, std::string *haystack, int *f[]);
 void computeBps(std::vector<int> *Li, std::vector<int> *B, std::vector<int> *Bprime, std::string *P);
 sdsl::csa_bitcompressed<> computeSuffixArray(std::string s);
 //void computeLCParray(std::string *s, sdsl::csa_bitcompressed<> *SA, std::vector<int> *iSA, std::vector<int> *LCP);
@@ -85,6 +85,9 @@ std::string patfile = argv[2];
 parseInput(&P, &T, textfile, patfile, &tempfile);
 ///std::cout << "there are " << T.size() << " positions in T" << std::endl;
 printSeqs(&T, &P);
+//pre-process pattern ready for KMPs
+int f[P.length()];
+preKMP(&P, &f);
 
 
 //Construct Suffix Tree of pattern P
@@ -727,14 +730,14 @@ std::cout << std::endl << std::endl;
 //credit to http://www.sanfoundry.com/cpp-program-implement-kruth-morris-patt-algorithm-kmp/
 //returns 1 if needle found in haystack, else returns 0
 
-void preKMP(std::string *pattern, int f[])
+void preKMP(std::string *pattern, int *f[])
 {
 	int m = (*pattern).length();
 	int k;
-	f[0] = -1;
+	(*f)[0] = -1;
 	for (int i = 1; i < m; i++)
 	{
-		k = f[i - 1];
+		k = (*f)[i - 1];
 		while (k >= 0)
 		{
 			if ((*pattern)[k] == (*pattern)[i - 1])
@@ -743,10 +746,10 @@ void preKMP(std::string *pattern, int f[])
 			}
 			else
 			{
-				k = f[k];
+				k = (*f)[k];
 			}
 		}
-		f[i] = k + 1;
+		(*f)[i] = k + 1;
 	}
 
 }
@@ -782,12 +785,12 @@ bool KMP(std::string *needle, std::string *haystack)
 }
 */
 
-int KMP(std::string *needle, std::string *haystack)
+int KMP(std::string *needle, std::string *haystack, int *f[])
 {
 	int m = (*needle).length();
 	int n = (*haystack).length();
-	int f[m];
-	preKMP(needle, f);
+	//int f[m];
+	//preKMP(needle, f);
 	int i = 0;
 	int k = 0;
 	while (i<n)
@@ -805,7 +808,7 @@ int KMP(std::string *needle, std::string *haystack)
 		}
 		else
 		{
-			k = f[k];
+			k = (*f)[k];
 		}
 	}
 	return -1;
