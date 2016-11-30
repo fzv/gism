@@ -42,7 +42,7 @@ install SDSL lite library
 /************************************************************************************/
 
 void parseInput(std::string *P, std::list<std::vector<std::string>> *T, std::string textfile, std::string patfile, std::ofstream *tempfile);
-void prepareX(std::stringstream *x, std::vector<int> *Bprime, bool *epsilon, std::string *P, std::vector<int> *report, int *i, std::string *X, std::list<std::vector<std::string>>::iterator it, std::vector<int> *f);
+void prepareX(std::stringstream *x, std::vector<int> *Bprime, bool *epsilon, std::string *P, std::vector<int> *report, int *i, std::string *X, std::list<std::vector<std::string>>::iterator it, std::vector<int> *f, int *prev_position, bool *deg);
 void computeBorderTable(std::string *X, std::vector<int> *B);
 void preKMP(std::string *pattern, std::vector<int> *f);
 //bool KMP(std::string *needle, std::string *haystack);
@@ -55,7 +55,7 @@ sdsl::csa_bitcompressed<> computeSuffixArray(std::string s);
 void updateBitVector(std::vector<bool> *BV, std::vector<int> *Li_1, int m);
 void reporting(std::vector<int> *vector, std::ofstream *outfile);
 void extend(std::string *sj, sdsl::cst_sada<> *stp, sdsl::csa_bitcompressed<> *sap, std::vector<int> *Li, std::vector<bool> *E, std::vector<bool> *PREV, int *len);
-void extendToEnd(std::string *sj, sdsl::cst_sada<> *stp, sdsl::csa_bitcompressed<> *sap, std::vector<int> *Li, std::vector<bool> *R, int *len, std::vector<int> *report, int *tpos, std::string *P);
+void extendToEnd(std::string *sj, sdsl::cst_sada<> *stp, sdsl::csa_bitcompressed<> *sap, std::vector<int> *Li, std::vector<bool> *R, int *len, std::vector<int> *report, int *tpos, std::string *P, bool *deg);
 
 // testing purposes only //
 void printSeqs(std::list<std::vector<std::string>> *T, std::string *P);
@@ -170,11 +170,14 @@ sdsl::csa_bitcompressed<> sap = computeSuffixArray(P);
 std::vector<int> report; //vector storing all reported i of T
 std::vector<int> Li;
 std::vector<int> Li_1;
+int prev_position = -1;
 
 /* Loop Through Each T[i] */
 for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it++){
 	/* declare i */
 	int i = std::distance(T.begin(),it);
+	bool deg = false;
+	if ( (*it).size() > 1) deg = true;
 	///std::cout << "\n\nwe are in pos " << i << " of T......" << std::endl;
 	/* prepare all S_j in T[i] */
 	std::stringstream x; //stringstream used to create string X
@@ -182,7 +185,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 	bool epsilon = false; //flag empty string in T[i]
 	std::vector<int> B; //border table
 	std::string X; //as defined in paper
-	prepareX(&x, &Bprime, &epsilon, &P, &report, &i, &X, it, &f); // O(X + S_j)
+	prepareX(&x, &Bprime, &epsilon, &P, &report, &i, &X, it, &f, &prev_position, &deg); // O(X + S_j)
 	/* begin GISM algorithm */
 	if (it==T.begin()) { //only for T[0] do:
 		/* STEP 1: FIND PREFIXES OF P */
@@ -230,12 +233,22 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 			cumulative_len += len; //update cum. length in preparation for next S_j
 			std::string sj = X.substr(startpos,len);
 			///std::cout << "now looking at sj = " << sj << std::endl;
-			extendToEnd(&sj, &stp, &sap, &Li, &R, &len, &report, &i, &P);
+			extendToEnd(&sj, &stp, &sap, &Li, &R, &len, &report, &i, &P, &deg);
 		} //end_for all S_j in T[i]
 		///std::cout << "printing Li after step 3" << std::endl;
 		///printVector(&Li);
+
+
+
 		if (epsilon==true) Li.insert(Li.end(), Li_1.begin(), Li_1.end());
 	} //end_if T[0]
+
+	if ((*it).size() > 1) {
+		prev_position++;
+	} else {
+		prev_position += (*it)[0].size();
+	}
+
 } //end_GISM
 
 std::clock_t end_time = clock();
@@ -266,7 +279,7 @@ return 0;
 /*******************           extend to end       ************************/
 
 
-void extendToEnd(std::string *sj, sdsl::cst_sada<> *stp, sdsl::csa_bitcompressed<> *sap, std::vector<int> *Li, std::vector<bool> *R, int *len, std::vector<int> *report, int *tpos, std::string *P)
+void extendToEnd(std::string *sj, sdsl::cst_sada<> *stp, sdsl::csa_bitcompressed<> *sap, std::vector<int> *Li, std::vector<bool> *R, int *len, std::vector<int> *report, int *prev_position, std::string *P, bool *deg)
 {
 
 std::string s = (*sj);
@@ -295,7 +308,11 @@ for (uint64_t char_pos = 0; it != s.end(); ++it){
 				///std::cout << "ends at pos " << endpos << " in the pattern" << std::endl;
 				if ( (*R)[startpos] && endpos == ( (*P).length()-1 ) ){
 				//if ((*R)[startpos] && (*stp).is_leaf(v)){
-					(*report).push_back((*tpos));
+					if ((*deg)==true) {
+						(*report).push_back((*prev_position)+1);
+					} else {
+						(*report).push_back((*prev_position)+occ+1);
+					}
 					///std::cout << "reporting pos " << (*tpos) << std::endl;
 				}
 
@@ -380,14 +397,16 @@ void prepareX(std::stringstream *x,
 		int *i,
 		std::string *X,
 		std::list<std::vector<std::string>>::iterator it,
-		std::vector<int> *f
+		std::vector<int> *f,
+		int *prev_position,
+		bool *deg
 		)
 {
 (*x) << (*P) << "$"; //concatenate unique symbol to P to initiaise string X
+
+
+
 for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ //for each S_j in T[i]
-	//bool deg = false;
-	//if ( (*it).size() > 1) deg = true;
-	//std::cout << deg << std::endl;
 	if ((*j) == "E"){
 		(*epsilon) = true; //if S_j is empty string, set flag to true 
 	} else {
@@ -396,7 +415,14 @@ for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ /
 			////////////////////////////////////////////////////////////////if (KMP(P, &(*j))){ //if P occurs in S_j
 			int kmp = KMP( &(*P) , &(*j) , f);
 			if ( kmp != -1){
-				(*report).push_back((*i)); //report pos T[i]
+
+				if ((*deg)==true) {
+					(*report).push_back((*prev_position)+1);
+				} else {
+					(*report).push_back((*prev_position)+kmp+1);
+				}
+
+				//////////////(*report).push_back((*i)); //report pos T[i]
 				///std::cout << "reporting " << (*i) << std::endl;
 			}
 		}
