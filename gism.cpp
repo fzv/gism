@@ -35,6 +35,7 @@ install SDSL lite library
 #include <iterator>
 #include "sdsl/rmq_support.hpp"
 #include <algorithm> //std::find
+#include <ctime> 
 
 /************************************************************************************/
 /******************************* FUNCTION DECLARATIONS ******************************/
@@ -52,7 +53,7 @@ sdsl::csa_bitcompressed<> computeSuffixArray(std::string s);
 //int getlcp(int *suffx, int *suffy, std::vector<int> *iSA, std::vector<int> *LCP, sdsl::rmq_succinct_sct<> *rmq);
 //////////////////////int getlcp(int *suffx, int *suffy, std::vector<int> *iSA, std::vector<int> *LCP);
 void updateBitVector(std::vector<bool> *BV, std::vector<int> *Li_1, int m);
-void reporting(std::vector<int> *vector);
+void reporting(std::vector<int> *vector, std::ofstream *outfile);
 void extend(std::string *sj, sdsl::cst_sada<> *stp, sdsl::csa_bitcompressed<> *sap, std::vector<int> *Li, std::vector<bool> *E, std::vector<bool> *PREV, int *len);
 void extendToEnd(std::string *sj, sdsl::cst_sada<> *stp, sdsl::csa_bitcompressed<> *sap, std::vector<int> *Li, std::vector<bool> *R, int *len, std::vector<int> *report, int *tpos, std::string *P);
 
@@ -71,7 +72,7 @@ int main(int argc, char* argv[])
 
 /* Welcome Message */
 
-std::cout << "GISM - Generalised Indeterminate String Matching" << std::endl << std::endl;
+std::cout << "GISM - Generalised Indeterminate String Matching" << std::endl;
 
 /* Declare & Assign Seq Variables */
 
@@ -86,6 +87,11 @@ parseInput(&P, &T, textfile, patfile, &tempfile);
 ///std::cout << "there are " << T.size() << " positions in T" << std::endl;
 //printSeqs(&T, &P);
 //pre-process pattern ready for KMPs
+
+
+std::clock_t start_time = clock();
+
+
 std::vector<int> f(P.length(),0);
 //int f[P.length()];
 preKMP(&P, &f);
@@ -232,11 +238,19 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 	} //end_if T[0]
 } //end_GISM
 
+std::clock_t end_time = clock();
+double elapsed_secs = double(end_time - start_time) / CLOCKS_PER_SEC;
+
 
 //** report **//
-std::cout << std::endl << "pattern occurs in text, ending at the following positions" << std::endl;
-reporting(&report);
-std::cout << std::endl;
+std::ofstream outfile; 
+std::string output_file = argv[3];
+outfile.open(output_file);
+outfile << elapsed_secs << std::endl;
+outfile << std::endl << "pattern occurs in text, ending at the following positions" << std::endl;
+reporting(&report, &outfile);
+outfile << std::endl;
+outfile.close();
 
 return 0;
 
@@ -342,14 +356,16 @@ if (occ == (*len)-1){ // whole sj found in P, but where?
 
 /*******************           report        ************************/
 // post-processing
-void reporting(std::vector<int> *vector)
+void reporting(std::vector<int> *vector,
+		std::ofstream *outfile
+		)
 {
 if ( (*vector).size()==0 ){
 	std::cout << "Nothing to report." << std::endl;
 } else {
-	std::cout << (*vector)[0] << " ";
+	(*outfile) << (*vector)[0] << std::endl;
 	for (int i=1; i<(*vector).size(); i++){
-		if((*vector)[i] != (*vector)[i-1]) std::cout << (*vector)[i] << " ";
+		if((*vector)[i] != (*vector)[i-1]) (*outfile) << (*vector)[i] << std::endl;
 	}
 }
 }
@@ -369,13 +385,17 @@ void prepareX(std::stringstream *x,
 {
 (*x) << (*P) << "$"; //concatenate unique symbol to P to initiaise string X
 for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ //for each S_j in T[i]
+	//bool deg = false;
+	//if ( (*it).size() > 1) deg = true;
+	//std::cout << deg << std::endl;
 	if ((*j) == "E"){
 		(*epsilon) = true; //if S_j is empty string, set flag to true 
 	} else {
 		(*x) << (*j) << "$"; //concatenate S_j and unique letter to string X
 		if ((*j).length() >= (*P).length()){ //if P could occur in S_j
 			////////////////////////////////////////////////////////////////if (KMP(P, &(*j))){ //if P occurs in S_j
-			if ( KMP( &(*P) , &(*j) , f) != -1){
+			int kmp = KMP( &(*P) , &(*j) , f);
+			if ( kmp != -1){
 				(*report).push_back((*i)); //report pos T[i]
 				///std::cout << "reporting " << (*i) << std::endl;
 			}
@@ -734,6 +754,7 @@ std::cout << std::endl << std::endl;
 
 void preKMP(std::string *pattern, std::vector<int> *f)
 {
+//std::cout << "doig nprekmp" << std::endl;
 	int m = (*pattern).length();
 	int k;
 	(*f)[0] = -1;
@@ -793,7 +814,7 @@ int KMP(std::string *needle, std::string *haystack, std::vector<int> *f)
 	int m = (*needle).length();
 	int n = (*haystack).length();
 	//int f[m];
-	/////////preKMP(needle, f);
+	//////////////preKMP(needle, f);
 	int i = 0;
 	int k = 0;
 	while (i<n)
