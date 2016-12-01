@@ -42,11 +42,11 @@ install SDSL lite library
 /************************************************************************************/
 
 void parseInput(std::string *P, std::list<std::vector<std::string>> *T, std::string textfile, std::string patfile, std::ofstream *tempfile);
-void prepareX(std::stringstream *x, std::vector<int> *Bprime, bool *epsilon, std::string *P, std::vector<int> *report, int *i, std::string *X, std::list<std::vector<std::string>>::iterator it, std::vector<int> *f, int *prev_position, bool *deg);
+void prepareX(std::stringstream *x, std::vector<int> *Bprime, bool *epsilon, std::string *P, std::vector<int> *report, int *i, std::string *X, std::list<std::vector<std::string>>::iterator it, std::vector<int> *f, int *prev_position, bool *deg, bool *reporter);
 void computeBorderTable(std::string *X, std::vector<int> *B);
 void preKMP(std::string *pattern, std::vector<int> *f);
 //bool KMP(std::string *needle, std::string *haystack);
-void KMP(std::string *needle, std::string *haystack, std::vector<int> *f, bool *deg, std::vector<int> *report, int *prev_position);
+void KMP(std::string *needle, std::string *haystack, std::vector<int> *f, bool *deg, std::vector<int> *report, int *prev_position, bool *reporter);
 void computeBps(std::vector<int> *Li, std::vector<int> *B, std::vector<int> *Bprime, std::string *P);
 sdsl::csa_bitcompressed<> computeSuffixArray(std::string s);
 //void computeLCParray(std::string *s, sdsl::csa_bitcompressed<> *SA, std::vector<int> *iSA, std::vector<int> *LCP);
@@ -55,7 +55,7 @@ sdsl::csa_bitcompressed<> computeSuffixArray(std::string s);
 void updateBitVector(std::vector<bool> *BV, std::vector<int> *Li_1, int m);
 void reporting(std::vector<int> *vector, std::ofstream *outfile);
 void extend(std::string *sj, sdsl::cst_sada<> *stp, sdsl::csa_bitcompressed<> *sap, std::vector<int> *Li, std::vector<bool> *E, std::vector<bool> *PREV, int *len);
-void extendToEnd(std::string *sj, sdsl::cst_sada<> *stp, sdsl::csa_bitcompressed<> *sap, std::vector<int> *Li, std::vector<bool> *R, int *len, std::vector<int> *report, int *prev_position, std::string *P, bool *deg);
+void extendToEnd(std::string *sj, sdsl::cst_sada<> *stp, sdsl::csa_bitcompressed<> *sap, std::vector<int> *Li, std::vector<bool> *R, int *len, std::vector<int> *report, int *prev_position, std::string *P, bool *deg, bool *reporter);
 
 // testing purposes only //
 void printSeqs(std::list<std::vector<std::string>> *T, std::string *P);
@@ -178,6 +178,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 	int i = std::distance(T.begin(),it);
 	bool deg = false;
 	if ( (*it).size() > 1) deg = true;
+	bool reporter = false;
 	//std::cout << deg << std::endl;
 	std::cout << "\n\nwe are in pos " << i << " of T......" << std::endl;
 	/* prepare all S_j in T[i] */
@@ -186,7 +187,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 	bool epsilon = false; //flag empty string in T[i]
 	std::vector<int> B; //border table
 	std::string X; //as defined in paper
-	prepareX(&x, &Bprime, &epsilon, &P, &report, &i, &X, it, &f, &prev_position, &deg); // O(X + S_j)
+	prepareX(&x, &Bprime, &epsilon, &P, &report, &i, &X, it, &f, &prev_position, &deg, &reporter); // O(X + S_j)
 	/* begin GISM algorithm */
 	if (it==T.begin()) { //only for T[0] do:
 		/* STEP 1: FIND PREFIXES OF P */
@@ -234,7 +235,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 			cumulative_len += len; //update cum. length in preparation for next S_j
 			std::string sj = X.substr(startpos,len);
 			///std::cout << "now looking at sj = " << sj << std::endl;
-			extendToEnd(&sj, &stp, &sap, &Li, &R, &len, &report, &prev_position, &P, &deg);
+			extendToEnd(&sj, &stp, &sap, &Li, &R, &len, &report, &prev_position, &P, &deg, &reporter);
 		} //end_for all S_j in T[i]
 		///std::cout << "printing Li after step 3" << std::endl;
 		///printVector(&Li);
@@ -280,7 +281,7 @@ return 0;
 /*******************           extend to end       ************************/
 
 
-void extendToEnd(std::string *sj, sdsl::cst_sada<> *stp, sdsl::csa_bitcompressed<> *sap, std::vector<int> *Li, std::vector<bool> *R, int *len, std::vector<int> *report, int *prev_position, std::string *P, bool *deg)
+void extendToEnd(std::string *sj, sdsl::cst_sada<> *stp, sdsl::csa_bitcompressed<> *sap, std::vector<int> *Li, std::vector<bool> *R, int *len, std::vector<int> *report, int *prev_position, std::string *P, bool *deg, bool *reporter)
 {
 
 std::string s = (*sj);
@@ -310,7 +311,10 @@ for (uint64_t char_pos = 0; it != s.end(); ++it){
 				if ( (*R)[startpos] && endpos == ( (*P).length()-1 ) ){
 				//if ((*R)[startpos] && (*stp).is_leaf(v)){
 					if ((*deg)==true) {
-						(*report).push_back((*prev_position)+1);
+						if ((*reporter)==false){
+							(*report).push_back((*prev_position)+1);
+							(*reporter)==true;
+						}
 					} else {
 						(*report).push_back((*prev_position)+occ+1);
 					}
@@ -416,7 +420,8 @@ void prepareX(std::stringstream *x,
 		std::list<std::vector<std::string>>::iterator it,
 		std::vector<int> *f,
 		int *prev_position,
-		bool *deg
+		bool *deg,
+		bool *reporter
 		)
 {
 (*x) << (*P) << "$"; //concatenate unique symbol to P to initiaise string X
@@ -429,8 +434,10 @@ for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ /
 	} else {
 		(*x) << (*j) << "$"; //concatenate S_j and unique letter to string X
 		if ((*j).length() >= (*P).length()){ //if P could occur in S_j
-			std::cout << "calling kmp" << std::endl;
-			KMP( &(*P) , &(*j) , f, &(*deg), &(*report), &(*prev_position));
+			//std::cout << "calling kmp" << std::endl;
+			if ( (*reporter)==false ){
+			KMP( &(*P) , &(*j) , f, &(*deg), &(*report), &(*prev_position), &(*reporter));
+			}
 		}
 		(*Bprime).push_back((*x).str().length()-2); //in B': store ending pos of S_j in X
 	}
@@ -900,7 +907,7 @@ int KMP(std::string *needle, std::string *haystack, std::vector<int> *f)
 }
 */
 
-void KMP(std::string *pattern, std::string *text, std::vector<int> *f, bool *deg, std::vector<int> *report, int *prev_position)
+void KMP(std::string *pattern, std::string *text, std::vector<int> *f, bool *deg, std::vector<int> *report, int *prev_position, bool *reporter)
 {
 //std::cout << "using kmp" << std::endl;
 	int m = (*pattern).length();
@@ -927,7 +934,8 @@ std::cout << "S_j is " << (*text) << std::endl;
 
 				if ((*deg)==true) {
 					(*report).push_back((*prev_position)+1);
-					//break;
+					(*reporter) = true;
+					break;
 				} else {
 					(*report).push_back((*prev_position) + i-1 + 1 );
 				}
