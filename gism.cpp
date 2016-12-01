@@ -46,7 +46,7 @@ void prepareX(std::stringstream *x, std::vector<int> *Bprime, bool *epsilon, std
 void computeBorderTable(std::string *X, std::vector<int> *B);
 void preKMP(std::string *pattern, std::vector<int> *f);
 //bool KMP(std::string *needle, std::string *haystack);
-int KMP(std::string *needle, std::string *haystack, std::vector<int> *f);
+int KMP(std::string *needle, std::string *haystack, std::vector<int> *f, bool *deg, std::vector<int> *report, int *prev_position);
 void computeBps(std::vector<int> *Li, std::vector<int> *B, std::vector<int> *Bprime, std::string *P);
 sdsl::csa_bitcompressed<> computeSuffixArray(std::string s);
 //void computeLCParray(std::string *s, sdsl::csa_bitcompressed<> *SA, std::vector<int> *iSA, std::vector<int> *LCP);
@@ -55,7 +55,7 @@ sdsl::csa_bitcompressed<> computeSuffixArray(std::string s);
 void updateBitVector(std::vector<bool> *BV, std::vector<int> *Li_1, int m);
 void reporting(std::vector<int> *vector, std::ofstream *outfile);
 void extend(std::string *sj, sdsl::cst_sada<> *stp, sdsl::csa_bitcompressed<> *sap, std::vector<int> *Li, std::vector<bool> *E, std::vector<bool> *PREV, int *len);
-void extendToEnd(std::string *sj, sdsl::cst_sada<> *stp, sdsl::csa_bitcompressed<> *sap, std::vector<int> *Li, std::vector<bool> *R, int *len, std::vector<int> *report, int *tpos, std::string *P, bool *deg);
+void extendToEnd(std::string *sj, sdsl::cst_sada<> *stp, sdsl::csa_bitcompressed<> *sap, std::vector<int> *Li, std::vector<bool> *R, int *len, std::vector<int> *report, int *prev_position, std::string *P, bool *deg);
 
 // testing purposes only //
 void printSeqs(std::list<std::vector<std::string>> *T, std::string *P);
@@ -178,7 +178,8 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 	int i = std::distance(T.begin(),it);
 	bool deg = false;
 	if ( (*it).size() > 1) deg = true;
-	///std::cout << "\n\nwe are in pos " << i << " of T......" << std::endl;
+	//std::cout << deg << std::endl;
+	std::cout << "\n\nwe are in pos " << i << " of T......" << std::endl;
 	/* prepare all S_j in T[i] */
 	std::stringstream x; //stringstream used to create string X
 	std::vector<int> Bprime; //B'[j] = i s.t. i is ending pos of S_j in X
@@ -233,7 +234,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 			cumulative_len += len; //update cum. length in preparation for next S_j
 			std::string sj = X.substr(startpos,len);
 			///std::cout << "now looking at sj = " << sj << std::endl;
-			extendToEnd(&sj, &stp, &sap, &Li, &R, &len, &report, &i, &P, &deg);
+			extendToEnd(&sj, &stp, &sap, &Li, &R, &len, &report, &prev_position, &P, &deg);
 		} //end_for all S_j in T[i]
 		///std::cout << "printing Li after step 3" << std::endl;
 		///printVector(&Li);
@@ -373,6 +374,7 @@ if (occ == (*len)-1){ // whole sj found in P, but where?
 
 /*******************           report        ************************/
 // post-processing
+/*
 void reporting(std::vector<int> *vector,
 		std::ofstream *outfile
 		)
@@ -386,6 +388,21 @@ if ( (*vector).size()==0 ){
 	}
 }
 }
+*/
+/////FOR COMPARSON WITH RITU ONLY:
+void reporting(std::vector<int> *vector,
+		std::ofstream *outfile
+		)
+{
+if ( (*vector).size()==0 ){
+	std::cout << "Nothing to report." << std::endl;
+} else {
+	for (int i=0; i<(*vector).size(); i++){
+		(*outfile) << (*vector)[i] << std::endl;
+	}
+}
+}
+
 
 /*******************           prepare X        ************************/
 // O(X)
@@ -413,7 +430,14 @@ for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ /
 		(*x) << (*j) << "$"; //concatenate S_j and unique letter to string X
 		if ((*j).length() >= (*P).length()){ //if P could occur in S_j
 			////////////////////////////////////////////////////////////////if (KMP(P, &(*j))){ //if P occurs in S_j
-			int kmp = KMP( &(*P) , &(*j) , f);
+
+
+
+
+
+			int kmp = KMP( &(*P) , &(*j) , f, &(*deg), &(*report), &(*prev_position));
+
+			//std::cout << kmp << std::endl;
 			if ( kmp != -1){
 
 				if ((*deg)==true) {
@@ -424,7 +448,9 @@ for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ /
 
 				//////////////(*report).push_back((*i)); //report pos T[i]
 				///std::cout << "reporting " << (*i) << std::endl;
+
 			}
+
 		}
 		(*Bprime).push_back((*x).str().length()-2); //in B': store ending pos of S_j in X
 	}
@@ -782,23 +808,23 @@ void preKMP(std::string *pattern, std::vector<int> *f)
 {
 //std::cout << "doig nprekmp" << std::endl;
 	int m = (*pattern).length();
-	int k;
+	int j;
 	(*f)[0] = -1;
 	for (int i = 1; i < m; i++)
 	{
-		k = (*f)[i - 1];
-		while (k >= 0)
+		j = (*f)[i - 1];
+		while (j >= 0)
 		{
-			if ((*pattern)[k] == (*pattern)[i - 1])
+			if ((*pattern)[j] == (*pattern)[i - 1])
 			{
 				break;
 			}
 			else
 			{
-				k = (*f)[k];
+				j = (*f)[j];
 			}
 		}
-		(*f)[i] = k + 1;
+		(*f)[i] = j + 1;
 	}
 
 }
@@ -834,6 +860,7 @@ bool KMP(std::string *needle, std::string *haystack)
 }
 */
 
+/*
 int KMP(std::string *needle, std::string *haystack, std::vector<int> *f)
 {
 //std::cout << "using kmp" << std::endl;
@@ -842,28 +869,61 @@ int KMP(std::string *needle, std::string *haystack, std::vector<int> *f)
 	//int f[m];
 	//////////////preKMP(needle, f);
 	int i = 0;
-	int k = 0;
+	int j = 0;
 	while (i<n)
 	{
-		if (k==-1)
+		if (j==-1)
 		{
 			i++;
-			k = 0;
+			j = 0;
 		}
-        	else if ((*haystack)[i] == (*needle)[k])
+        	else if ((*haystack)[i] == (*needle)[j])
 		{
-			k++;
-			if (k==m) return i;
+			j++;
+			if (j==m) return i;
 			i++;
 		}
 		else
 		{
-			k = (*f)[k];
+			j = (*f)[j];
 		}
 	}
 	return -1;
 }
+*/
 
+int KMP(std::string *needle, std::string *haystack, std::vector<int> *f, bool *deg, std::vector<int> *report, int *prev_position)
+{
+//std::cout << "using kmp" << std::endl;
+	int m = (*needle).length();
+	int n = (*haystack).length();
+	//int f[m];
+	//////////////preKMP(needle, f);
+	int i = 0;
+	int j = 0;
+	while (i<n)
+	{
+		if ((*haystack)[i] == (*needle)[j])
+		{
+			i++;
+			j++;
+		}
+		if (j==m)
+		{
+			std::cout << "found sj in pattern at P[" << i-j << "]" << std::endl;
+			j = (*f)[j-1];
+		}
+		else
+		{
+			if (j != 0){
+				j = (*f)[j-1];
+			} else {
+				i++;
+			}
+		}
+	}
+	return -1;
+}
 
 
 
