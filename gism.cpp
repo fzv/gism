@@ -46,7 +46,7 @@ void prepareX(std::stringstream *x, std::vector<int> *Bprime, bool *epsilon, std
 void computeBorderTable(std::string *X, std::vector<int> *B);
 void preKMP(std::string *pattern, std::vector<int> *f);
 //bool KMP(std::string *needle, std::string *haystack);
-int KMP(std::string *needle, std::string *haystack, std::vector<int> *f, bool *deg, std::vector<int> *report, int *prev_position);
+void KMP(std::string *needle, std::string *haystack, std::vector<int> *f, bool *deg, std::vector<int> *report, int *prev_position);
 void computeBps(std::vector<int> *Li, std::vector<int> *B, std::vector<int> *Bprime, std::string *P);
 sdsl::csa_bitcompressed<> computeSuffixArray(std::string s);
 //void computeLCParray(std::string *s, sdsl::csa_bitcompressed<> *SA, std::vector<int> *iSA, std::vector<int> *LCP);
@@ -429,28 +429,8 @@ for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ /
 	} else {
 		(*x) << (*j) << "$"; //concatenate S_j and unique letter to string X
 		if ((*j).length() >= (*P).length()){ //if P could occur in S_j
-			////////////////////////////////////////////////////////////////if (KMP(P, &(*j))){ //if P occurs in S_j
-
-
-
-
-
-			int kmp = KMP( &(*P) , &(*j) , f, &(*deg), &(*report), &(*prev_position));
-
-			//std::cout << kmp << std::endl;
-			if ( kmp != -1){
-
-				if ((*deg)==true) {
-					(*report).push_back((*prev_position)+1);
-				} else {
-					(*report).push_back((*prev_position)+kmp+1);
-				}
-
-				//////////////(*report).push_back((*i)); //report pos T[i]
-				///std::cout << "reporting " << (*i) << std::endl;
-
-			}
-
+			std::cout << "calling kmp" << std::endl;
+			KMP( &(*P) , &(*j) , f, &(*deg), &(*report), &(*prev_position));
 		}
 		(*Bprime).push_back((*x).str().length()-2); //in B': store ending pos of S_j in X
 	}
@@ -804,6 +784,7 @@ std::cout << std::endl << std::endl;
 //credit to http://www.sanfoundry.com/cpp-program-implement-kruth-morris-patt-algorithm-kmp/
 //returns 1 if needle found in haystack, else returns 0
 
+/*
 void preKMP(std::string *pattern, std::vector<int> *f)
 {
 //std::cout << "doig nprekmp" << std::endl;
@@ -828,6 +809,33 @@ void preKMP(std::string *pattern, std::vector<int> *f)
 	}
 
 }
+*/
+void preKMP(std::string *pattern, std::vector<int> *f)
+{
+int m = (*pattern).length();
+int j = 0;
+int i = 1;
+(*f)[0] = 0;
+
+while (i < m)
+{
+	if ( (*pattern)[i] ==  (*pattern)[j]){
+		j++;
+		(*f)[i] = j;
+		i++;
+	} else {
+		if (j != 0){
+			j = (*f)[j-1];
+		} else {
+			(*f)[i] = 0;
+			i++;
+		}
+	}
+}
+
+}
+
+
 
 /*
 bool KMP(std::string *needle, std::string *haystack)
@@ -892,43 +900,52 @@ int KMP(std::string *needle, std::string *haystack, std::vector<int> *f)
 }
 */
 
-int KMP(std::string *needle, std::string *haystack, std::vector<int> *f, bool *deg, std::vector<int> *report, int *prev_position)
+void KMP(std::string *pattern, std::string *text, std::vector<int> *f, bool *deg, std::vector<int> *report, int *prev_position)
 {
 //std::cout << "using kmp" << std::endl;
-	int m = (*needle).length();
-	int n = (*haystack).length();
-	//int f[m];
-	//////////////preKMP(needle, f);
+	int m = (*pattern).length();
+	int n = (*text).length();
+
+std::cout << "pattern is " << (*pattern) << std::endl;
+std::cout << "S_j is " << (*text) << std::endl;
+
 	int i = 0;
 	int j = 0;
 	while (i<n)
 	{
-		if ((*haystack)[i] == (*needle)[j])
+		if ((*text)[i] == (*pattern)[j])
 		{
+			std::cout << (*text)[i] << " = " << (*pattern)[j] << std::endl;
 			i++;
 			j++;
+			
 		}
+		std::cout << "j=" << j << "   " << "i=" << i << std::endl;
 		if (j==m)
 		{
-			std::cout << "found sj in pattern at P[" << i-j << "]" << std::endl;
+			std::cout << "found P in S_j ending at S_j[" << i-1 << "]" << std::endl;
+
+				if ((*deg)==true) {
+					(*report).push_back((*prev_position)+1);
+					//break;
+				} else {
+					(*report).push_back((*prev_position) + i-1 + 1 );
+				}
 			j = (*f)[j-1];
+			std::cout << "j=" << j << "   " << "i=" << i << std::endl;
 		}
-		else
+		if  ( (*text)[i] != (*pattern)[j] )
 		{
+			std::cout << "moving along" << std::endl;
 			if (j != 0){
 				j = (*f)[j-1];
 			} else {
 				i++;
 			}
+			std::cout << "j=" << j << "   " << "i=" << i << std::endl;
 		}
 	}
-	return -1;
 }
-
-
-
-
-
 
 
 
