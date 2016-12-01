@@ -9,7 +9,7 @@ To compile GISM
 $ make
 
 To run GISM
-$ ./gism <text_file_name> <pattern_file_name>
+$ ./gism <text_file_name> <pattern_file_name> <output_file_name>
 
 Input files must be in same directory and must not contain any white spaces or meta data
 
