@@ -180,7 +180,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 	if ( (*it).size() > 1) deg = true;
 	bool reporter = false;
 	//std::cout << deg << std::endl;
-	std::cout << "\n\nwe are in pos " << i << " of T......" << std::endl;
+	//std::cout << "\n\nwe are in pos " << i << " of T......" << std::endl;
 	/* prepare all S_j in T[i] */
 	std::stringstream x; //stringstream used to create string X
 	std::vector<int> Bprime; //B'[j] = i s.t. i is ending pos of S_j in X
@@ -262,7 +262,8 @@ std::ofstream outfile;
 std::string output_file = argv[3];
 outfile.open(output_file);
 outfile << elapsed_secs << std::endl;
-outfile << std::endl << "pattern occurs in text, ending at the following positions" << std::endl;
+outfile << "#" << report.size() << std::endl;
+//outfile << std::endl << "pattern occurs in text, ending at the following positions" << std::endl;
 reporting(&report, &outfile);
 outfile << std::endl;
 outfile.close();
@@ -401,8 +402,9 @@ void reporting(std::vector<int> *vector,
 if ( (*vector).size()==0 ){
 	std::cout << "Nothing to report." << std::endl;
 } else {
-	for (int i=0; i<(*vector).size(); i++){
-		(*outfile) << (*vector)[i] << std::endl;
+	(*outfile) << (*vector)[0];
+	for (int i=1; i<(*vector).size(); i++){
+		(*outfile) << std::endl << (*vector)[i];
 	}
 }
 }
@@ -913,8 +915,8 @@ void KMP(std::string *pattern, std::string *text, std::vector<int> *f, bool *deg
 	int m = (*pattern).length();
 	int n = (*text).length();
 
-std::cout << "pattern is " << (*pattern) << std::endl;
-std::cout << "S_j is " << (*text) << std::endl;
+//std::cout << "pattern is " << (*pattern) << std::endl;
+//std::cout << "S_j is " << (*text) << std::endl;
 
 	int i = 0;
 	int j = 0;
@@ -922,15 +924,15 @@ std::cout << "S_j is " << (*text) << std::endl;
 	{
 		if ((*text)[i] == (*pattern)[j])
 		{
-			std::cout << (*text)[i] << " = " << (*pattern)[j] << std::endl;
+			//std::cout << (*text)[i] << " = " << (*pattern)[j] << std::endl;
 			i++;
 			j++;
 			
 		}
-		std::cout << "j=" << j << "   " << "i=" << i << std::endl;
+		//std::cout << "j=" << j << "   " << "i=" << i << std::endl;
 		if (j==m)
 		{
-			std::cout << "found P in S_j ending at S_j[" << i-1 << "]" << std::endl;
+			//std::cout << "found P in S_j ending at S_j[" << i-1 << "]" << std::endl;
 
 				if ((*deg)==true) {
 					(*report).push_back((*prev_position)+1);
@@ -940,17 +942,17 @@ std::cout << "S_j is " << (*text) << std::endl;
 					(*report).push_back((*prev_position) + i-1 + 1 );
 				}
 			j = (*f)[j-1];
-			std::cout << "j=" << j << "   " << "i=" << i << std::endl;
+			//std::cout << "j=" << j << "   " << "i=" << i << std::endl;
 		}
 		if  ( (*text)[i] != (*pattern)[j] )
 		{
-			std::cout << "moving along" << std::endl;
+			//std::cout << "moving along" << std::endl;
 			if (j != 0){
 				j = (*f)[j-1];
 			} else {
 				i++;
 			}
-			std::cout << "j=" << j << "   " << "i=" << i << std::endl;
+			//std::cout << "j=" << j << "   " << "i=" << i << std::endl;
 		}
 	}
 }
