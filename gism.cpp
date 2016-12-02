@@ -180,7 +180,7 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 	if ( (*it).size() > 1) deg = true;
 	bool reporter = false;
 	//std::cout << deg << std::endl;
-	//std::cout << "\n\nwe are in pos " << i << " of T......" << std::endl;
+	std::cout << "\n\nwe are in pos " << i << " of T......" << std::endl;
 	/* prepare all S_j in T[i] */
 	std::stringstream x; //stringstream used to create string X
 	std::vector<int> Bprime; //B'[j] = i s.t. i is ending pos of S_j in X
@@ -312,12 +312,15 @@ for (uint64_t char_pos = 0; it != s.end(); ++it){
 				if ( (*R)[startpos] && endpos == ( (*P).length()-1 ) ){
 				//if ((*R)[startpos] && (*stp).is_leaf(v)){
 					if ((*deg)==true) {
-						if ((*reporter)==false){
+						//if ((*reporter)==false){
 							(*report).push_back((*prev_position)+1);
-							(*reporter)==true;
-						}
+							std::cout << "!!extend reporting pos " << occ << std::endl;
+							//(*reporter)==true;
+						//}
 					} else {
 						(*report).push_back((*prev_position)+occ+1);
+						std::cout << "!!extend reporting pos " << occ << std::endl;
+						
 					}
 					///std::cout << "reporting pos " << (*tpos) << std::endl;
 				}
@@ -434,12 +437,13 @@ for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ /
 	if ((*j) == "E"){
 		(*epsilon) = true; //if S_j is empty string, set flag to true 
 	} else {
+		std::cout << (*j) << " ";
 		(*x) << (*j) << "$"; //concatenate S_j and unique letter to string X
 		if ((*j).length() >= (*P).length()){ //if P could occur in S_j
 			//std::cout << "calling kmp" << std::endl;
-			if ( (*reporter)==false ){
+			//if ( (*reporter)==false ){
 			KMP( &(*P) , &(*j) , f, &(*deg), &(*report), &(*prev_position), &(*reporter));
-			}
+			//}
 		}
 		(*Bprime).push_back((*x).str().length()-2); //in B': store ending pos of S_j in X
 	}
@@ -936,10 +940,12 @@ void KMP(std::string *pattern, std::string *text, std::vector<int> *f, bool *deg
 
 				if ((*deg)==true) {
 					(*report).push_back((*prev_position)+1);
-					(*reporter) = true;
-					break;
+					std::cout << "!!kmp reporting " << (*text) << std::endl;
+					//(*reporter) = true;
+					//break;
 				} else {
 					(*report).push_back((*prev_position) + i-1 + 1 );
+					std::cout << "!!kmp reporting pos " << ( i-1 )  << " in " << (*text) << std::endl;
 				}
 			j = (*f)[j-1];
 			//std::cout << "j=" << j << "   " << "i=" << i << std::endl;
