@@ -79,13 +79,9 @@ construct(stp, "temporary.gism", 1); //build suffix tree using pattern file
 std::remove("temporary.gism");
 
 
-
-
-
 //Construct Suffix Array of pattern P
 sdsl::csa_bitcompressed<> sap = computeSuffixArray(P);
-///std::cout << "printing suffix array" << std::endl;
-///printSuffixArray(sap);
+
 
 
 /* GISM */
@@ -101,9 +97,6 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 	bool deg = false;
 	if ( (*it).size() > 1) deg = true;
 	bool reporter = false;
-	//std::cout << deg << std::endl;
-	//logfile << "\n\nwe are in pos " << i << " of T......" << std::endl;
-	//logfile << "prev pos = " << prev_position << std::endl;
 	/* prepare all S_j in T[i] */
 	std::stringstream x; //stringstream used to create string X
 	std::vector<int> Bprime; //B'[j] = i s.t. i is ending pos of S_j in X
@@ -114,7 +107,6 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 	/* begin GISM algorithm */
 	if (it==T.begin()) { //only for T[0] do:
 		/* STEP 1: FIND PREFIXES OF P */
-		///std::cout << "/* STEP 1: FIND PREFIXES OF P */" << std::endl;
 		computeBorderTable(&X, &B); // O(X)
 		computeBps(&Li, &B, &Bprime, &P);
 		///printVector(&Li);
@@ -122,18 +114,14 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 		Li_1 = Li;
 		Li.clear();
 		/* STEP 1: FIND PREFIXES OF P */
-		//std::cout << "/* STEP 1: FIND PREFIXES OF P */" << std::endl;
 		computeBorderTable(&X, &B); // O(X)
 		computeBps(&Li, &B, &Bprime, &P);
-		///std::cout << "printing Li after step 1" << std::endl;
-		///printVector(&Li);
 		// initialise bitvector (E)xtend to aid extension of prefixes of P
 		std::vector<bool> E(P.length(),false);
 		updateBitVector(&E, &Li_1, P.length());
 		// initialise bitvector (PREV)iously extended to aid extension of prefixes of P
 		std::vector<bool> PREV(P.length(),true);
 		/* STEP 2: EXTEND PREFIXES OF P */
-		//std::cout << "/* STEP 2: EXTEND PREFIXES OF P */" << std::endl;
 		int cumulative_len = 0; //length of X minus length of S_j
 		for (int b = 0; b<Bprime.size(); b++){ //for all S_j in T[i]
 			int len = Bprime[b] - P.length() - cumulative_len - b; //length of S_j
@@ -141,14 +129,10 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 			cumulative_len += len; //update cum. length in preparation for next S_j
 			if (len < P.length()) { //if S_j could occur in P
 				std::string sj = X.substr(startpos,len);
-				///std::cout << "\nnow looking at sj = " << sj << std::endl;
 				extend(&sj, &stp, &sap, &Li, &E, &PREV, &len);
 			} //end_if S_j could occur in P
 		} //end_for all S_j in T[i]
-		///std::cout << "printing Li after step 2" << std::endl;
-		///printVector(&Li);
 		/* STEP 3: EXTEND PREFIXES OF P TO END OF P*/
-		//std::cout << "/* STEP 3: EXTEND PREFIXES OF P TO END OF P*/" << std::endl;
 		std::vector<bool> R(P.length(),false); //bitvector (R)eport to aid reporting of occurences of P in T
 		updateBitVector(&R, &Li_1, P.length());
 		cumulative_len = 0; //length of X minus length of S_j
@@ -157,12 +141,9 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 			int startpos = Bprime[b]-len+1; //start pos of S_j in X
 			cumulative_len += len; //update cum. length in preparation for next S_j
 			std::string sj = X.substr(startpos,len);
-			//std::cout << "now looking at sj = " << sj << std::endl;
 			extendToEnd(&sj, &stp, &sap, &Li, &R, &len, &report, &prev_position, &P, &deg, &reporter, &logfile);
-			//std::cout << "done with extend to end" << std::endl;
 		} //end_for all S_j in T[i]
-		///std::cout << "printing Li after step 3" << std::endl;
-		///printVector(&Li);
+
 		
 		
 
@@ -191,12 +172,7 @@ std::ofstream outfile;
 std::string output_file = argv[3];
 outfile.open(output_file);
 outfile << elapsed_secs << std::endl;
-//if (report.size()!=0){
-	outfile << "#" << report.size() << std::endl;
-//} else {
-//	outfile << "#0" << std::endl;
-//}
-//outfile << std::endl << "pattern occurs in text, ending at the following positions" << std::endl;
+outfile << "#" << report.size() << std::endl;
 reporting(&report, &outfile);
 outfile << std::endl;
 outfile.close();
@@ -218,57 +194,52 @@ return 0;
 
 void extendToEnd(std::string *sj, sdsl::cst_sada<> *stp, sdsl::csa_bitcompressed<> *sap, std::vector<int> *Li, std::vector<bool> *R, int *len, std::vector<int> *report, int *prev_position, std::string *P, bool *deg, bool *reporter, std::ofstream *logfile)
 {
-//std::cout << "inside extend to end" << std::endl;
+
 std::string s = (*sj);
 int occ = -1;
 sdsl::cst_sada<>::size_type lb;
 sdsl::cst_sada<>::size_type rb;
 sdsl::cst_sada<>::node_type v = (*stp).root();
 auto it = s.begin();
-//std::cout << "declared everything" << std::endl;
+
 for (uint64_t char_pos = 0; it != s.end(); ++it){
 	if ( forward_search( (*stp), v, it-s.begin(), *it, char_pos) > 0 ){
-		//std::cout << "inside IF statement" << std::endl;
+
 		occ = it-s.begin();
-		///std::cout << "occ = " << occ << std::endl;
+
 		lb = (*stp).lb(v);
 		rb = (*stp).rb(v);
 
-		//lb--;
-		///std::cout << "lb = " << lb << std::endl;
-		//rb--;
-		///std::cout << "rb = " << rb << std::endl;
-		///std::cout <<  "found " << (*sj).substr(0,occ+1) << std::endl;
 		if (occ > -1){ //prefix of S_j found in P, but where in P? Must be suffix!
 			for (int i = lb; i < rb+1; i++){
-				///std::cout << "occurs at pos " << (*sap)[i] << " in pattern" << std::endl;	
+
 				int startpos = (*sap)[i];
 				int endpos = startpos+occ; //can be extended to P[endpos]
-				///std::cout << "ends at pos " << endpos << " in the pattern" << std::endl;
+
 				if ( (*R)[startpos] && endpos == ( (*P).length()-1 ) ){
 				
-				//if ((*R)[startpos] && (*stp).is_leaf(v)){
+
 					if ((*deg)==true) {
 						if ((*reporter)==false){ 
 							(*report).push_back((*prev_position)+1);
-							//(*logfile) << "!!extend reporting pos " << occ << std::endl;
+
 							(*reporter)==true;
 						}
 					} else {
 						(*report).push_back((*prev_position)+occ+1);
-						//(*logfile) << "!!extend reporting pos " << occ << std::endl;
+
 						
 					}
-					///std::cout << "reporting pos " << (*tpos) << std::endl;
+
 				}
 
 			}
 		} else {
-			//std::cout << "not suffix of p" << std::endl;
+
 		}
 
 	} else {
-		//std::cout << "breaking now" << std::endl;
+
 		break;
 	}
 }
@@ -297,23 +268,19 @@ for (uint64_t char_pos = 0; it != s.end(); ++it){
 		break;
 	}
 }
-//lb--;
-//rb--;
+
 if (occ == (*len)-1){ // whole sj found in P, but where?
 	for (int i = lb; i < rb+1; i++){
-		///std::cout << "sj occurs at pos " << (*sap)[i] << " in pattern" << std::endl;	
 		int startpos = (*sap)[i];
-		//int endpos = startpos+(*len)-1; //can be extended to P[endpos]
 		int endpos = startpos+occ;
 		if ((*E)[startpos] && (*PREV)[endpos]){
 			(*PREV)[endpos]=false;
 			(*Li).push_back(endpos);
-			///std::cout << "adding to Li" << std::endl;
 		}
 
 	}
 } else {
-	///std::cout << "sj DOES NOT occur in p" << std::endl;
+
 }
 
 }
@@ -377,10 +344,8 @@ for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ /
 	if ((*j) == "E"){
 		(*epsilon) = true; //if S_j is empty string, set flag to true 
 	} else {
-		//(*logfile) << (*j) << " ";
 		(*x) << (*j) << "$"; //concatenate S_j and unique letter to string X
 		if ((*j).length() >= (*P).length()){ //if P could occur in S_j
-			//std::cout << "calling kmp" << std::endl;
 			if ( (*reporter)==false ){
 			KMP( &(*P) , &(*j) , f , &(*deg), &(*report), &(*prev_position), &(*reporter), &(*logfile));
 			} 
@@ -390,9 +355,7 @@ for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ /
 }
 (*X) = (*x).str(); //concatenation of P and all S_j, separated by unique chars
 (*X).pop_back(); //remove unecessary unique letter at end pos of X
-///std::cout << "String X: " << (*X) << std::endl; 
-///printVector(Bprime); 
-///std::cout << "check above indexes of below border table" << std::endl;
+
 }
 
 /*******************           parse input file       ************************/
@@ -483,29 +446,6 @@ if (pFile.is_open()){
 (*tempfile) << (*P);
 (*tempfile).close();
 
-
-
-
-
-
-/*
-for (int i=0; i<t.length(); i++){ //loop through text string
-	if (t[i]=='{'){ //if new pos in T
-		tempVector.clear(); //clear vector to hold all s in t[i]
-		tempString.str(""); //clear string stream to hold all a in s[j]
-		tempString.clear();//clear string stream to hold all a in s[j]
-	} else if (t[i]=='}'){ //if reach end of t[i]
-		tempVector.push_back(tempString.str()); //add previous s to tempVector
-		(*T).push_back(tempVector); //fill current pos in T with tempVector
-	} else if (t[i]==','){ //if new s in t[i]
-		tempVector.push_back(tempString.str()); //add previous s to tempVector
-		tempString.str(""); //clear string stream to hold all a in s[j]
-		tempString.clear(); //clear string stream to hold all a in s[j]
-	} else { //if next a in s
-		tempString << t[i]; //add a to string stream
-	} //end_if
-} //end_for
-*/
 }
 
 /*******************           Update bit vector       ************************/
@@ -515,9 +455,7 @@ void updateBitVector(std::vector<bool> *BV,
 			int m
 			)
 {
-///std::cout << std::endl << "inside updateBV function" << std::endl;
 for (std::vector<int>::iterator p = (*Li_1).begin(); p != (*Li_1).end(); p++){
-	///std::cout << "for p=" << (*p) << " desired j is " << ((*p)+1) << std::endl;
 	if ((*p)!=-1000){
 		(*BV)[((*p)+1)] = true;
 	}
@@ -575,42 +513,12 @@ if ((*iSA)[(*suffx)] < (*iSA)[(*suffy)]){
 	i = (*iSA)[(*suffy)];
 	j = (*iSA)[(*suffx)];
 }
-//std::cout << "i = " << i << std::endl;
-//std::cout << "j = " << j << std::endl;
+
 auto min_idx = (*rmq)(i+1,j); 
 int lcp = (*LCP)[min_idx];
 return lcp;
 }
 
-
-/*********************          Compute lcp(suffix x, suffix y)          **************************/
-/*
-// O(1)
-int getlcp(int *suffx,
-	int *suffy,
-	std::vector<int> *iSA,
-	std::vector<int> *LCP
-	)
-{
-int i;
-int j;
-int lcp;
-if ((*iSA)[(*suffx)] < (*iSA)[(*suffy)]){
-	i = (*iSA)[(*suffx)];
-	j = (*iSA)[(*suffy)];
-} else {
-	i = (*iSA)[(*suffy)];
-	j = (*iSA)[(*suffx)];
-}
-
-lcp = (*LCP)[i+1];
-for (int k = i+2; k <= j; k++){
-	if ((*LCP)[k] < lcp) lcp = (*LCP)[k];
-}
-return lcp;
-
-}
-*/
 /*********************          Compute LCP array of string s         **************************/
 // Kasai's algorithm
 // O(n)
@@ -675,13 +583,11 @@ void computeBps(std::vector<int> *Li, //stores all B_p,s (for all pos in T)
 				std::string *P //pattern string
 				)
 {	
-///std::cout << "computing Bp,s" << std::endl;
 for (int i = 0; i != (*Bprime).size(); i++)
 {
 	int Bi = (*Bprime)[i];
 	if ((*B)[Bi] != 0)
 	{
-		///std::cout << "looking at " << Bi << "th pos in B: " << (*B)[Bi] << std::endl;
 		for(int x = (*B)[Bi]; x != 0; x = (*B)[x-1]){
 			(*Li).push_back(x-1);
 		}
@@ -721,48 +627,11 @@ for (int q = 1; q < m; q++){
 	p++;
 }
 (*B)[m-1] = p;
-
-//** print border table **//
-/*
-std::cout << "border table" << std::endl;
-for (std::vector<int>::iterator it = (*B).begin(); it != (*B).end(); it++){
-	std::cout << *it << " ";
-}
-std::cout << std::endl << std::endl;
-*/
 }
 
 /*********************                    KMP string matching algorithm              **************************/
 // O(haystack)
-//credit to http://www.sanfoundry.com/cpp-program-implement-kruth-morris-patt-algorithm-kmp/
-//returns 1 if needle found in haystack, else returns 0
 
-/*
-void preKMP(std::string *pattern, std::vector<int> *f)
-{
-//std::cout << "doig nprekmp" << std::endl;
-	int m = (*pattern).length();
-	int j;
-	(*f)[0] = -1;
-	for (int i = 1; i < m; i++)
-	{
-		j = (*f)[i - 1];
-		while (j >= 0)
-		{
-			if ((*pattern)[j] == (*pattern)[i - 1])
-			{
-				break;
-			}
-			else
-			{
-				j = (*f)[j];
-			}
-		}
-		(*f)[i] = j + 1;
-	}
-
-}
-*/
 void preKMP(std::string *pattern, std::vector<int> *f)
 {
 int m = (*pattern).length();
@@ -785,82 +654,12 @@ while (i < m)
 		}
 	}
 }
-
 }
-
-
-
-/*
-bool KMP(std::string *needle, std::string *haystack)
-{
-	int m = (*needle).length();
-	int n = (*haystack).length();
-	int f[m];
-	preKMP(needle, f);
-	int i = 0;
-	int k = 0;
-	while (i<n)
-	{
-		if (k==-1)
-		{
-			i++;
-			k = 0;
-		}
-        	else if ((*haystack)[i] == (*needle)[k])
-		{
-			k++;
-			if (k==m) return 1;
-			i++;
-		}
-		else
-		{
-			k = f[k];
-		}
-	}
-	return 0;
-}
-*/
-
-/*
-int KMP(std::string *needle, std::string *haystack, std::vector<int> *f)
-{
-//std::cout << "using kmp" << std::endl;
-	int m = (*needle).length();
-	int n = (*haystack).length();
-	//int f[m];
-	//////////////preKMP(needle, f);
-	int i = 0;
-	int j = 0;
-	while (i<n)
-	{
-		if (j==-1)
-		{
-			i++;
-			j = 0;
-		}
-        	else if ((*haystack)[i] == (*needle)[j])
-		{
-			j++;
-			if (j==m) return i;
-			i++;
-		}
-		else
-		{
-			j = (*f)[j];
-		}
-	}
-	return -1;
-}
-*/
 
 void KMP(std::string *pattern, std::string *text, std::vector<int> *f, bool *deg, std::vector<int> *report, int *prev_position, bool *reporter, std::ofstream *logfile)
 {
-//std::cout << "using kmp" << std::endl;
 	int m = (*pattern).length();
 	int n = (*text).length();
-
-//std::cout << "pattern is " << (*pattern) << std::endl;
-//std::cout << "S_j is " << (*text) << std::endl;
 
 	int i = 0;
 	int j = 0;
@@ -868,15 +667,12 @@ void KMP(std::string *pattern, std::string *text, std::vector<int> *f, bool *deg
 	{
 		if ((*text)[i] == (*pattern)[j])
 		{
-			//std::cout << (*text)[i] << " = " << (*pattern)[j] << std::endl;
 			i++;
 			j++;
 			
 		}
-		//std::cout << "j=" << j << "   " << "i=" << i << std::endl;
 		if (j==m)
 		{
-			//std::cout << "found P in S_j ending at S_j[" << i-1 << "]" << std::endl;
 				if ((*deg)==true) {
 					(*report).push_back((*prev_position)+1);
 					(*reporter) = true;
