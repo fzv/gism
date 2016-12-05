@@ -78,25 +78,28 @@ sdsl::cst_sada<> stp; //documentation says construction is slow but fast operati
 construct(stp, "temporary.gism", 1); //build suffix tree using pattern file
 std::remove("temporary.gism");
 
-
+/* THIS SHOULDNT BE DONE */
 //Construct Suffix Array of pattern P
 sdsl::csa_bitcompressed<> sap = computeSuffixArray(P);
 
-
-
 /* GISM */
-std::vector<int> report; //vector storing all reported i of T
+std::vector<int> report;
 std::vector<int> Li;
 std::vector<int> Li_1;
 int prev_position = -1;
 
 /* Loop Through Each T[i] */
 for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it++){
-	/* declare i */
+	/* declare segment number */
 	int i = std::distance(T.begin(),it);
+
+	/* is this segment degenerate? */
 	bool deg = false;
 	if ( (*it).size() > 1) deg = true;
+
+	/* if it is, has it already been reported? */
 	bool reporter = false;
+
 	/* prepare all S_j in T[i] */
 	std::stringstream x; //stringstream used to create string X
 	std::vector<int> Bprime; //B'[j] = i s.t. i is ending pos of S_j in X
@@ -104,52 +107,64 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 	std::vector<int> B; //border table
 	std::string X; //as defined in paper
 	prepareX(&x, &Bprime, &epsilon, &P, &report, &i, &X, it, &f, &prev_position, &deg, &reporter, &logfile); // O(X + S_j)
+
 	/* begin GISM algorithm */
 	if (it==T.begin()) { //only for T[0] do:
+
 		/* STEP 1: FIND PREFIXES OF P */
 		computeBorderTable(&X, &B); // O(X)
 		computeBps(&Li, &B, &Bprime, &P);
-		///printVector(&Li);
 	} else {
 		Li_1 = Li;
 		Li.clear();
+
 		/* STEP 1: FIND PREFIXES OF P */
 		computeBorderTable(&X, &B); // O(X)
 		computeBps(&Li, &B, &Bprime, &P);
-		// initialise bitvector (E)xtend to aid extension of prefixes of P
+
+		/* initialise bitvector (E)xtend to aid extension of prefixes of P */
 		std::vector<bool> E(P.length(),false);
 		updateBitVector(&E, &Li_1, P.length());
-		// initialise bitvector (PREV)iously extended to aid extension of prefixes of P
+
+		/* initialise bitvector (PREV)iously extended to aid extension of prefixes of P */
 		std::vector<bool> PREV(P.length(),true);
+
 		/* STEP 2: EXTEND PREFIXES OF P */
 		int cumulative_len = 0; //length of X minus length of S_j
+
 		for (int b = 0; b<Bprime.size(); b++){ //for all S_j in T[i]
+
 			int len = Bprime[b] - P.length() - cumulative_len - b; //length of S_j
 			int startpos = Bprime[b]-len+1; //start pos of S_j in X
 			cumulative_len += len; //update cum. length in preparation for next S_j
+
 			if (len < P.length()) { //if S_j could occur in P
+
 				std::string sj = X.substr(startpos,len);
 				extend(&sj, &stp, &sap, &Li, &E, &PREV, &len);
-			} //end_if S_j could occur in P
-		} //end_for all S_j in T[i]
+
+			} //END_IF(S_j could occur in P)
+
+		} //END_FOR(all S_j in T[i])
+
 		/* STEP 3: EXTEND PREFIXES OF P TO END OF P*/
 		std::vector<bool> R(P.length(),false); //bitvector (R)eport to aid reporting of occurences of P in T
 		updateBitVector(&R, &Li_1, P.length());
 		cumulative_len = 0; //length of X minus length of S_j
+
 		for (int b = 0; b<Bprime.size(); b++){ //for all S_j in T[i]
+
 			int len = Bprime[b] - P.length() - cumulative_len - b; //length of S_j
 			int startpos = Bprime[b]-len+1; //start pos of S_j in X
 			cumulative_len += len; //update cum. length in preparation for next S_j
 			std::string sj = X.substr(startpos,len);
 			extendToEnd(&sj, &stp, &sap, &Li, &R, &len, &report, &prev_position, &P, &deg, &reporter, &logfile);
-		} //end_for all S_j in T[i]
 
-		
-		
+		} //END_FOR(all S_j in T[i])
 
 		if (epsilon==true) Li.insert(Li.end(), Li_1.begin(), Li_1.end());
 
-	} //end_if T[0]
+	} //END_IF(T[0])
 
 	if ((*it).size() > 1) {
 		prev_position++;
@@ -157,23 +172,30 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 		prev_position += (*it)[0].size();
 	}
 
+} //END_FOR(GISM)
 
-
-} //end_GISM
-
-
+/* Stop Clock */
 
 std::clock_t end_time = clock();
 double elapsed_secs = double(end_time - start_time) / CLOCKS_PER_SEC;
 
+/* Report */
 
-//** report **//
+// create output file
 std::ofstream outfile; 
 std::string output_file = argv[3];
 outfile.open(output_file);
+
+// record time
 outfile << elapsed_secs << std::endl;
+
+// record number of ending positions reported
 outfile << "#" << report.size() << std::endl;
+
+// record all ending positions
 reporting(&report, &outfile);
+
+//close files
 outfile << std::endl;
 outfile.close();
 logfile.close();
@@ -192,7 +214,10 @@ return 0;
 /*******************           extend to end       ************************/
 
 
-void extendToEnd(std::string *sj, sdsl::cst_sada<> *stp, sdsl::csa_bitcompressed<> *sap, std::vector<int> *Li, std::vector<bool> *R, int *len, std::vector<int> *report, int *prev_position, std::string *P, bool *deg, bool *reporter, std::ofstream *logfile)
+void extendToEnd(std::string *sj,
+		sdsl::cst_sada<> *stp,
+		sdsl::csa_bitcompressed<> *sap,
+		std::vector<int> *Li, std::vector<bool> *R, int *len, std::vector<int> *report, int *prev_position, std::string *P, bool *deg, bool *reporter, std::ofstream *logfile)
 {
 
 std::string s = (*sj);
