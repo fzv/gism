@@ -74,67 +74,11 @@ std::clock_t start_time = clock();
 std::vector<int> f(P.length(),0);
 preKMP(&P, &f);
 
-
-//Construct Suffix Tree of pattern P
-//std::string file = "pattern";
 sdsl::cst_sada<> stp; //documentation says construction is slow but fast operations, compared to other = vice versa
 construct(stp, "temporary.gism", 1); //build suffix tree using pattern file
 std::remove("temporary.gism");
 
-/*
-std::cout << "number of nodes in suffix tree " << stp.nodes() << std::endl << std::endl;
 
-sdsl::cst_sada<>::size_type d;
-sdsl::cst_sada<>::node_type v;
-sdsl::cst_sada<>::size_type s;
-sdsl::cst_sada<>::size_type sn;
-bool l;
-sdsl::cst_sada<>::size_type lb;
-sdsl::cst_sada<>::size_type rb;
-sdsl::cst_sada<>::size_type c;
-sdsl::cst_sada<>::char_type a;
-
-for (sdsl::cst_sada<>::const_iterator it = stp.begin(); it!=stp.end(); it++)
-{
-if(it.visit()==1) //if we have not traversed the subtree rooted at v
-{
-	v = *it;
-
-	sn = stp.sn(v);
-	std::cout << "Suffix number " << sn << std::endl;
-
-	d = stp.node_depth(v);
-	std::cout << "Node depth " << d << std::endl;
-
-	s = stp.size(v);
-	std::cout << s << " leaves in subtree rooted at v" << std::endl;
-
-	l = stp.is_leaf(v);
-	std::cout << "I am a leaf: " << l << std::endl;
-
-	lb = stp.lb(v);
-	std::cout << "Index of leftmost leaf in SA " << lb << std::endl;
-
-	rb = stp.rb(v);
-	std::cout << "Index of rightmost leaf in SA " << rb << std::endl;
-
-	c = stp.degree(v);
-	std::cout << "Number of children " << c << std::endl;
-	
-	a = stp.edge(v,1);
-	std::cout << "First letter on edge label from root to v: " << a << std::endl;
-
-	std::cout << "L(v) : ";
-	for (int i = 1; i <= stp.depth(v); i++)
-	{
-		std::cout << stp.edge(v,i);
-	}
-	std::cout << std::endl;
-
-	std::cout << std::endl;
-}
-}
-*/
 
 
 
@@ -247,11 +191,11 @@ std::ofstream outfile;
 std::string output_file = argv[3];
 outfile.open(output_file);
 outfile << elapsed_secs << std::endl;
-if (report.size()!=0){
+//if (report.size()!=0){
 	outfile << "#" << report.size() << std::endl;
-} else {
-	outfile << "#0" << std::endl;
-}
+//} else {
+//	outfile << "#0" << std::endl;
+//}
 //outfile << std::endl << "pattern occurs in text, ending at the following positions" << std::endl;
 reporting(&report, &outfile);
 outfile << std::endl;
@@ -935,29 +879,22 @@ void KMP(std::string *pattern, std::string *text, std::vector<int> *f, bool *deg
 			//std::cout << "found P in S_j ending at S_j[" << i-1 << "]" << std::endl;
 				if ((*deg)==true) {
 					(*report).push_back((*prev_position)+1);
-					//(*logfile) << "!!kmp reporting " << (*text) << std::endl;
 					(*reporter) = true;
-					//break;
+					break;
 				} else {
 					(*report).push_back((*prev_position) + i-1 + 1 );
-					//(*logfile) << (*prev_position) << std::endl;
-					//(*logfile) << "!!kmp reporting pos " << ( i-1 )  << " in " << (*text) << std::endl;
 				}
 			j = (*f)[j-1];
-			//std::cout << "j=" << j << "   " << "i=" << i << std::endl;
 		}
 		if  ( (*text)[i] != (*pattern)[j] )
 		{
-			//std::cout << "moving along" << std::endl;
 			if (j != 0){
 				j = (*f)[j-1];
 			} else {
 				i++;
 			}
-			//std::cout << "j=" << j << "   " << "i=" << i << std::endl;
 		}
 	}
-//std::cout << "exiting kmp"  << std::endl;
 }
 
 
@@ -975,121 +912,8 @@ void KMP(std::string *pattern, std::string *text, std::vector<int> *f, bool *deg
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*
-		//construct suffix array of X
-		sdsl::csa_bitcompressed<> SA = computeSuffixArray(X);
-		///printSuffixArray(SA);
-		int size = SA.size();
-		//construct inverse suffix array of X
-		std::vector<int> iSA(size, 0);
-		for (int r = 0; r != size; r ++) iSA[SA[r]] = r;
-		///std::cout << "inverse suffix array" << std::endl; printVector(&iSA);
-		//construct longest common prefix array of X + prepare for rmq
-		std::vector<int> LCP(size, 0);
-		computeLCParray(&X, &SA, &iSA, &LCP);
-		sdsl::rmq_succinct_sct<> rmq; ////////////////////////////////////////////////////////////////////////////////////////////
-		rmq = sdsl::rmq_succinct_sct<>(&LCP); ////////////////////////////////////////////////////////////////////////////////////////////
-		///std::cout << "longest common prefix array" << std::endl; printVector(&LCP);
-*/
-
-//old step 3
-/*
-			for (int suffp = 1; suffp < P.length(); suffp++){ //for each suffix of P
-				//////////////////////////////////////////////////////////////////int lcp = getlcp(&suffp, &suffs, &iSA, &LCP);
-				int lcp = getlcp(&suffp, &suffs, &iSA, &LCP, &rmq); //lcp of S_j and suffix of P
-				///std::cout << "\nlcp of suffixes " << suffp << " and " << suffs << " is " << lcp << std::endl;
-				if (lcp > len) lcp = len;
-				if (R[suffp] && lcp == (P.length()-suffp) ){
-					///std::cout << "reporting " << i << std::endl;
-					report.push_back(i); //report T[i]
-				}
-			} //end_for each suffix of P
-*/
-
-
-
-/*
-// search for CTA inside ST(P)
-std::string test_sj = "CTA";
-std::vector<bool> test_occ( test_sj.length() , false ); //if all on then sj occurs in P
-std::cout << "printing bool vector" << std::endl;
-for (int i = 0; i < test_sj.length(); i++) std::cout << test_occ[i];
-std::cout << std::endl;
-//bitwise AND bool vector of same length, all true > sj found in p if all true
-int test_int=0; //????????
-
-sdsl::cst_sada<>::node_type v;
-sdsl::cst_sada<>::char_type a;
-//traversing entire ST
-for (sdsl::cst_sada<>::const_iterator it = cst.begin(); it!=cst.end(); it++)
-{
-if(it.visit()==1) //if we have not traversed the subtree rooted at v
-{
-
-	v = *it; //node
-
-	a = cst.edge(v,1);
-	std::cout << "First letter on edge label from root to v: " << a << std::endl;
-
-	if (a == test_sj[test_int]){ //if letter is letter of sj
-		test_occ[test_int] = true; //set bit to on
-		test_int++; //now look for next letter in sj
-		for (int i = 1; i <= cst.depth(v); i++) //check rest of edge label
-		{
-			if ( cst.edge(v,i) == test_sj[test_int] ){
-				test_occ[test_int] = true;
-				test_int++;
-			} else {
-				continue;
-			}
-		}
-		std::cout << std::endl;
-	} else {
-		std::cout << "failed to find - moving to next node" << std::endl;
-	}
-
-}
-}
-
-std::cout << "printing bool vector" << std::endl;
-for (int i = 0; i < test_sj.length(); i++) std::cout << test_occ[i];
-std::cout << std::endl;
-
-if (test_occ) std::cout << "found!" << std::endl;
-
-
-/********************************************************************************************
-//Do stuff with STp
-std::cout << "number of nodes in suffix tree " << cst.nodes() << std::endl << std::endl;
+std::cout << "number of nodes in suffix tree " << stp.nodes() << std::endl << std::endl;
 
 sdsl::cst_sada<>::size_type d;
 sdsl::cst_sada<>::node_type v;
@@ -1101,187 +925,40 @@ sdsl::cst_sada<>::size_type rb;
 sdsl::cst_sada<>::size_type c;
 sdsl::cst_sada<>::char_type a;
 
-for (sdsl::cst_sada<>::const_iterator it = cst.begin(); it!=cst.end(); it++)
+for (sdsl::cst_sada<>::const_iterator it = stp.begin(); it!=stp.end(); it++)
 {
 if(it.visit()==1) //if we have not traversed the subtree rooted at v
 {
 	v = *it;
 
-	sn = cst.sn(v);
+	sn = stp.sn(v);
 	std::cout << "Suffix number " << sn << std::endl;
 
-	d = cst.node_depth(v);
+	d = stp.node_depth(v);
 	std::cout << "Node depth " << d << std::endl;
 
-	s = cst.size(v);
+	s = stp.size(v);
 	std::cout << s << " leaves in subtree rooted at v" << std::endl;
 
-	l = cst.is_leaf(v);
+	l = stp.is_leaf(v);
 	std::cout << "I am a leaf: " << l << std::endl;
 
-	lb = cst.lb(v);
+	lb = stp.lb(v);
 	std::cout << "Index of leftmost leaf in SA " << lb << std::endl;
 
-	rb = cst.rb(v);
+	rb = stp.rb(v);
 	std::cout << "Index of rightmost leaf in SA " << rb << std::endl;
 
-	c = cst.degree(v);
+	c = stp.degree(v);
 	std::cout << "Number of children " << c << std::endl;
 	
-	a = cst.edge(v,1);
+	a = stp.edge(v,1);
 	std::cout << "First letter on edge label from root to v: " << a << std::endl;
 
 	std::cout << "L(v) : ";
-	for (int i = 1; i <= cst.depth(v); i++)
+	for (int i = 1; i <= stp.depth(v); i++)
 	{
-		std::cout << cst.edge(v,i);
-	}
-	std::cout << std::endl;
-
-	std::cout << std::endl;
-}
-}
-
-auto testv = cst.select_child( cst.child( cst.root(),'A' ),2 );
-std::cout << "TESTING TRAVERSAL ";
-for (int i = 1; i <= cst.depth(testv); i++){
-	std::cout << cst.edge(testv,i);
-}
-std::cout << std::endl;
-
-std::cout << "I am a leaf: " << cst.is_leaf(testv) << std::endl;
-
-auto testvv = cst.select_child( cst.child( testv,'T' ),1 );
-
-std::cout << "TESTING TRAVERSAL ";
-for (int i = 1; i <= cst.depth(testv); i++){
-	std::cout << cst.edge(testv,i);
-}
-std::cout << std::endl;
-**************************************************************************/
-
-
-//old step 2
-/*
-				///std::cout << "length of S_j is less than P" << std::endl;
-				for (int suffp = 1; suffp < P.length(); suffp++){ //for each suffix of P
-					//////////////////////////////////////////////////////////////////int lcp = getlcp(&suffp, &suffs, &iSA, &LCP);
-					int lcp = getlcp(&suffp, &suffs, &iSA, &LCP, &rmq); //lcp of S_j and suffix of P
-					///std::cout << "\nlcp of suffixes " << suffp << " and " << suffs << " is " << lcp << std::endl;
-					if (lcp >= len && E[suffp]){ //check if can extend prefix of P from L[i-1]
-						///std::cout << "S_j occurs in P" << std::endl;
-						///std::cout << "checking previous pos of P in L[i-1]" << std::endl;
-						///std::cout << "can extend to pos ";
-						int endpos = suffp+len-1; //can be extended to endpos in P
-						///std::cout << endpos << " of P" << std::endl;
-						if (PREV[endpos]){ //if endpos not in L[i]
-							///std::cout << "not already added to L" << std::endl;
-							PREV[endpos]=false; //do not allow to add endpos to L[i] again
-							////L[i].push_back(endpos); //add endpos to L[i]
-							Li.push_back(endpos); //add endpos to L[i]
-						}
-					} //end_if lcp>=len
-				} //end_for each suffix of P
-*/
-
-/*
-		int endpos;
-		int cumulative_len = 0;
-		for (int b = 0; b<Bprime.size(); b++){ //for all S_j in T[i]
-			int len = Bprime[b] - P.length() - cumulative_len - b; //length of S_j
-			int sj = Bprime[b]-len+1; //start pos of S_j in X
-			cumulative_len += len; //update cum. length in preparation for next S_j
-			if (len < P.length()) { //if S_j could occur in P
-				std::string S_j = X.substr(sj,len);
-				std::cout << std::endl << "following string can occur inside P " << S_j << std::endl;
-
-				do {
-					endpos = KMP(&S_j, &P);// return either -1 or pos in P where S_j ends
-					std::cout << "result of KMP = " << endpos << std::endl;
-					if ( endpos != -1 && E[endpos]==true ){
-						if (PREV[endpos]){ //if endpos not in L[i]
-							PREV[endpos]=false;
-							Li.push_back(endpos); //add endpos to L[i]
-							std::cout << "adding endpos to Li" << std::endl;
-						}
-					}
-				} while ( (endpos != -1) || (endpos != (P.length()-1)) );
-
-			} //end_if S_j could occur in P
-		} //end_for all S_j in T[i]
-
-*/
-
-
-
-
-
-
-
-/*********************                Do stuff with SA(C)          **************************/
-/*
-std::cout << std::endl << "sigma" << std::endl;
-std::cout << SA.sigma << std::endl;
-std::cout << std::endl << "text" << std::endl;
-std::cout << SA.text << std::endl;
-*/
-
-
-
-
-/*
-//Construct Suffix Tree of pattern P
-std::string file = "pattern";
-sdsl::cst_sct3<> cst;
-construct(cst, file, 1);
-
-//Do stuff with STp
-std::cout << "number of nodes in suffix tree " << cst.nodes() << std::endl << std::endl;
-
-sdsl::cst_sct3<>::size_type d;
-sdsl::cst_sct3<>::node_type v;
-sdsl::cst_sct3<>::size_type s;
-sdsl::cst_sct3<>::size_type sn;
-bool l;
-sdsl::cst_sct3<>::size_type lb;
-sdsl::cst_sct3<>::size_type rb;
-sdsl::cst_sct3<>::size_type c;
-sdsl::cst_sct3<>::char_type a;
-
-for (sdsl::cst_sct3<>::const_iterator it = cst.begin(); it!=cst.end(); it++)
-{
-if(it.visit()==1) //if we have not traversed the subtree rooted at v
-{
-	v = *it;
-
-	sn = cst.sn(v);
-	std::cout << "Suffix number " << sn << std::endl;
-
-	d = cst.node_depth(v);
-	std::cout << "Node depth " << d << std::endl;
-
-	s = cst.size(v);
-	std::cout << s << " leaves in subtree rooted at v" << std::endl;
-
-	l = cst.is_leaf(v);
-	std::cout << "I am a leaf: " << l << std::endl;
-
-	lb = cst.lb(v);
-	std::cout << "Index of leftmost leaf in SA " << lb << std::endl;
-
-	rb = cst.rb(v);
-	std::cout << "Index of rightmost leaf in SA " << rb << std::endl;
-
-	c = cst.degree(v);
-	std::cout << "Number of children " << c << std::endl;
-	
-	//a = cst.edge(v,1);
-	//std::cout << "First letter on edge label from root to v: " << a << std::endl;
-
-	std::cout << "L(v) : ";
-	for (int i = 1; i <= cst.depth(v); i++)
-	{
-		std::cout << cst.edge(v,i);
+		std::cout << stp.edge(v,i);
 	}
 	std::cout << std::endl;
 
@@ -1292,36 +969,24 @@ if(it.visit()==1) //if we have not traversed the subtree rooted at v
 
 
 
-/*********************                     Print C'               **************************/
-/*
-std::cout << std::endl << std::endl;
-for (std::vector<int>::iterator it = Cprime.begin(); it != Cprime.end(); it ++){
-	std::cout << *it << " "; 
-}
-std::cout << std::endl << std::endl;
-*/
 
-/*********************           Construct suffix array of C       **************************/
-//sdsl::csa_bitcompressed<> SA = computeSuffixArray(C);
 
-/*********************                    Print SA(C)             **************************/
-//printSuffixArray(SA);
 
-/*********************      Construct inverse suffix array of C   **************************/
-/*
-int size = SA.size();
-std::vector<int> iSA(size, 0);
-for (int i = 0; i != size; i ++) iSA[SA[i]] = i;
-*/
 
-/*********************                    Print iSA(C)             **************************/
-//std::cout << std::endl << "iSA of C" << std::endl;
-//printVector(iSA);
 
-/*********************   Construct LCP array of C - Kasai's algorithm  **************************/
-//std::vector<int> LCP(size, 0);
-//LCP = computeLCParray(C, SA, iSA, LCP);
 
-/*********************                    Print LCP(C)             **************************/
-//std::cout << std::endl << "LCP array" << std::endl;
-//printVector(LCP);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
