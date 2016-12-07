@@ -181,21 +181,35 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 
 
 
+std::stringstream x;
+x << P << "$";
+for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ //for each S_j in T[i]
+	if ((*j) == "E"){
+		epsilon = true;
+	} else {
+		x << (*j) << "$";
+		Bprime.push_back(x.str().length()-2);
+	}
+}
+X = x.str(); 
+X.pop_back();
+
 
 
 
 
 	//X = "ACGATC$A$ACGATCAAA$AAAACGATC$ACG$ATC";
 	//Bprime = {7,17,27,31,35};
-	prepareX(&Bprime, &epsilon, &P, &report, &i, &X, it, &f, &prev_position, &deg, &reporter /*, &logfile */ );
+	//prepareX(&Bprime, &epsilon, &P, &report, &i, &X, it, &f, &prev_position, &deg, &reporter /*, &logfile */ );
 	//std::cout << X << std::endl;
 
-for (std::vector<std::string>::iterator Ti = (*it).begin(); Ti != (*it).end(); Ti++){
-	int len = (*Ti).length();
-	if (len >= P.length() && (*Ti)!="E"){
-	KMP( &P , &(*Ti) , &f , &deg , &report , &prev_position , &reporter /* , &(*logfile) */ );
+	/* report any S_j in which P occurs */
+	for (std::vector<std::string>::iterator Ti = (*it).begin(); Ti != (*it).end(); Ti++){
+		int len = (*Ti).length();
+		if (len >= P.length() && (*Ti)!="E"){
+			KMP( &P , &(*Ti) , &f , &deg , &report , &prev_position , &reporter );
+		}
 	}
-}
 
 
 
