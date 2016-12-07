@@ -149,11 +149,11 @@ sdsl::cst_sada<> stp; //documentation says construction is slow but fast operati
 construct(stp, "temporary.gism", 1); //build suffix tree using temp pattern file
 std::remove("temporary.gism");
 
-/* THIS SHOULDNT BE DONE */
-//Construct Suffix Array of pattern P
+// suffix array of pattern P
 sdsl::csa_bitcompressed<> sap = computeSuffixArray(P);
 
 /* GISM */
+
 std::vector<int> report; //stores all pos in T where occ of P ends
 std::vector<int> Li; //stores ending positions of prefixes of P found in T[i]
 std::vector<int> Li_1; //kept in case L_{i-1} needs to be copied to L_i if epsilon in T[i]
@@ -177,7 +177,32 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 	bool epsilon = false; //flag empty string in T[i]
 	std::vector<int> B; //border table
 	std::string X; //as defined in paper
+
+
+
+
+
+
+
+
+	//X = "ACGATC$A$ACGATCAAA$AAAACGATC$ACG$ATC";
+	//Bprime = {7,17,27,31,35};
 	prepareX(&Bprime, &epsilon, &P, &report, &i, &X, it, &f, &prev_position, &deg, &reporter /*, &logfile */ );
+	//std::cout << X << std::endl;
+
+for (std::vector<std::string>::iterator Ti = (*it).begin(); Ti != (*it).end(); Ti++){
+	int len = (*Ti).length();
+	if (len >= P.length() && (*Ti)!="E"){
+	KMP( &P , &(*Ti) , &f , &deg , &report , &prev_position , &reporter /* , &(*logfile) */ );
+	}
+}
+
+
+
+
+
+
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /***
@@ -248,9 +273,6 @@ std::cout << prev_position+1 << " " << "epsilon?" << epsilon << " " << X << std:
 //		} //END_FOR(all S_j in T[i])
 
 
-
-
-
 		if (epsilon==true) Li.insert(Li.end(), Li_1.begin(), Li_1.end());
 
 	} //END_IF(T[0])
@@ -265,6 +287,7 @@ std::cout << prev_position+1 << " " << "epsilon?" << epsilon << " " << X << std:
 	}
 
 } //END_FOR(GISM)
+
 
 /* Stop Clock */
 
@@ -353,7 +376,7 @@ for (uint64_t char_pos = 0; it != s.end(); ++it){ //for each letter in S_j??????
 				int startpos = (*sap)[i];
 				int endpos = startpos+occ; //can be extended to P[endpos]
 				if ( (*R)[startpos] && endpos == ( (*P).length()-1 ) ){
-					if ( (*deg)==true /* && (*reporter)==false */ ) {
+					if ( (*deg)==true  && (*reporter)==false  ) {
 						(*report).push_back((*prev_position)+1);
 						(*reporter)==true;
 					} else {
@@ -466,6 +489,25 @@ void prepareX
 //, std::ofstream *logfile
 ) //END_PARAMS
 { //FUNCTION
+
+std::stringstream x;
+x << (*P) << "$";
+for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ //for each S_j in T[i]
+	if ((*j) == "E"){
+		(*epsilon) = true;
+	} else {
+		x << (*j) << "$";
+		(*Bprime).push_back(x.str().length()-2);
+	}
+}
+(*X) = x.str(); 
+(*X).pop_back();
+
+
+
+
+
+/*
 std::stringstream x;
 x << (*P) << "$"; //concatenate unique symbol to P to initiaise string X
 for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ //for each S_j in T[i]
@@ -473,14 +515,20 @@ for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ /
 		(*epsilon) = true; //if S_j is empty string, set flag to true 
 	} else {
 		x << (*j) << "$"; //concatenate S_j and unique letter to string X
-		if ( (*j).length() >= (*P).length() && (*reporter)==false ){ //if P could occur in S_j
-			KMP( &(*P) , &(*j) , f , &(*deg) , &(*report) , &(*prev_position) , &(*reporter) /* , &(*logfile) */ );
+		if ( (*j).length() >= (*P).length() ){ //if P could occur in S_j
+			//KMP( &(*P) , &(*j) , f , &(*deg) , &(*report) , &(*prev_position) , &(*reporter) , &(*logfile) );
+			KMP( &(*P) , &(*j) , f , &(*deg) , &(*report) , &(*prev_position) , &(*reporter) );
 		}
 		(*Bprime).push_back(x.str().length()-2); //in B': store ending pos of S_j in X
 	} //END_IF
 } //END_FOR
 (*X) = x.str(); //concatenation of P and all S_j, separated by unique chars
 (*X).pop_back(); //remove unecessary unique letter at end pos of X
+*/
+
+
+
+
 } //END_FUNCTION
 /************************************************************************************************
 function:
@@ -683,6 +731,9 @@ time complexity:
 space complexity:
 source: https://en.wikibooks.org/wiki/Algorithm_Implementation/String_searching/Knuth-Morris-Pratt_pattern_matcher#Python
 */
+
+
+
 void KMP
 ( //PARAMS
   std::string *pattern
@@ -727,6 +778,17 @@ while (i<n)
 	} //END_IF
 } //END_WHILE
 } //END_FUNCTION(kmp)
+
+
+
+
+
+
+
+
+
+
+
 //////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
