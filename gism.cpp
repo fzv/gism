@@ -23,20 +23,6 @@ std::string *P
 , std::string patfile
 , std::ofstream *tempfile
 );
-void prepareX(
-std::vector<int> *Bprime
-, bool *epsilon
-, std::string *P
-, std::vector<int> *report
-, int *i
-, std::string *X
-, std::list<std::vector<std::string>>::iterator it
-, std::vector<int> *f
-, int *prev_position
-, bool *deg
-, bool *reporter
-//, std::ofstream *logfile
-);
 void computeBorderTable(
 std::string *X
 , std::vector<int> *B
@@ -170,62 +156,33 @@ for (std::list<std::vector<std::string>>::iterator it=T.begin(); it!=T.end(); it
 	if ( (*it).size() > 1) deg = true;
 
 	/* if yes, has it already been reported? */
-	bool reporter = false;
+	bool reporter = false; //only made true in degenerate segment
 
-	/* prepare all S_j in T[i] */
+	/* form string X from P + all S_j in T[i] */
 	std::vector<int> Bprime; //B'[j] = i s.t. i is ending pos of S_j in X
 	bool epsilon = false; //flag empty string in T[i]
 	std::vector<int> B; //border table
 	std::string X; //as defined in paper
-
-
-
-
-std::stringstream x;
-x << P << "$";
-for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ //for each S_j in T[i]
-	if ((*j) == "E"){
-		epsilon = true;
-	} else {
-		x << (*j) << "$";
-		Bprime.push_back(x.str().length()-2);
-	}
-}
-X = x.str(); 
-X.pop_back();
-
-
-
-
-
-	//X = "ACGATC$A$ACGATCAAA$AAAACGATC$ACG$ATC";
-	//Bprime = {7,17,27,31,35};
-	//prepareX(&Bprime, &epsilon, &P, &report, &i, &X, it, &f, &prev_position, &deg, &reporter /*, &logfile */ );
-	//std::cout << X << std::endl;
+	std::stringstream x;
+	x << P << "$";
+	for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ //for each S_j in T[i]
+		if ((*j) == "E"){
+			epsilon = true;
+		} else {
+			x << (*j) << "$";
+			Bprime.push_back(x.str().length()-2);
+		} //END_IF
+	} //END_FOR
+	X = x.str(); 
+	X.pop_back();
 
 	/* report any S_j in which P occurs */
-	for (std::vector<std::string>::iterator Ti = (*it).begin(); Ti != (*it).end(); Ti++){
+	std::vector<std::string>::iterator Ti = (*it).begin();
+	do{
 		int len = (*Ti).length();
-		if (len >= P.length() && (*Ti)!="E"){
-			KMP( &P , &(*Ti) , &f , &deg , &report , &prev_position , &reporter );
-		}
-	}
-
-
-
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/***
-if (i < 800){
-std::cout << prev_position+1 << " " << "epsilon?" << epsilon << " " << X << std::endl;
-}
-***/
-
-	if (reporter!=true){
+		KMP( &P , &(*Ti) , &f , &deg , &report , &prev_position , &reporter );
+		Ti++;
+	} while ( reporter!=true && Ti != (*it).end() );
 
 	/* begin GISM algorithm */
 	if (it==T.begin()) { //only for T[0] do:
@@ -270,7 +227,6 @@ std::cout << prev_position+1 << " " << "epsilon?" << epsilon << " " << X << std:
 		std::vector<bool> R(P.length(),false); //bitvector (R)eport to aid reporting of occurences of P in T
 		updateBitVector(&R, &Li_1, P.length());
 
-
 		std::vector<std::string>::iterator Ti = (*it).begin();
 		do{
 			int len = (*Ti).length();
@@ -278,20 +234,9 @@ std::cout << prev_position+1 << " " << "epsilon?" << epsilon << " " << X << std:
 			Ti++;
 		} while ( reporter!=true && Ti != (*it).end() );
 
-
-//		for (std::vector<std::string>::iterator Ti = (*it).begin(); Ti != (*it).end(); Ti++){
-//
-//			int len = (*Ti).length();
-//			extendToEnd(&(*Ti), &stp, &sap, &Li, &R, &len, &report, &prev_position, &P, &deg, &reporter /* , &logfile */ );
-//
-//		} //END_FOR(all S_j in T[i])
-
-
 		if (epsilon==true) Li.insert(Li.end(), Li_1.begin(), Li_1.end());
 
 	} //END_IF(T[0])
-
-	} //END_IF(reporter!=true)
 
 	/* update position in T */
 	if ((*it).size() > 1) {
@@ -390,7 +335,8 @@ for (uint64_t char_pos = 0; it != s.end(); ++it){ //for each letter in S_j??????
 				int startpos = (*sap)[i];
 				int endpos = startpos+occ; //can be extended to P[endpos]
 				if ( (*R)[startpos] && endpos == ( (*P).length()-1 ) ){
-					if ( (*deg)==true  && (*reporter)==false  ) {
+//					if ( (*deg)==true  && (*reporter)==false  ) {
+					if ( (*deg)==true ) {
 						(*report).push_back((*prev_position)+1);
 						(*reporter)==true;
 					} else {
@@ -465,84 +411,6 @@ if ( (*vector).size()==0 ){
 		if((*vector)[i] != (*vector)[i-1]) (*outfile) << std::endl << (*vector)[i];
 	} //END_FOR
 } //END_IF
-} //END_FUNCTION
-// FOR COMPARSON WITH RITU ONLY:
-/*
-void reporting(std::vector<int> *vector,
-		std::ofstream *outfile
-		)
-{
-if ( (*vector).size()==0 ){
-	std::cout << "Nothing to report." << std::endl;
-} else {
-	(*outfile) << (*vector)[0];
-	for (int i=1; i<(*vector).size(); i++){
-		(*outfile) << std::endl << (*vector)[i];
-	}
-}
-}
-*/
-/************************************************************************************************
-function to
-time complexity:
-space complexity:
-*/
-void prepareX
-( //PARAMS
-  std::vector<int> *Bprime
-, bool *epsilon
-, std::string *P
-, std::vector<int> *report
-, int *i
-, std::string *X
-, std::list<std::vector<std::string>>::iterator it
-, std::vector<int> *f
-, int *prev_position
-, bool *deg
-, bool *reporter
-//, std::ofstream *logfile
-) //END_PARAMS
-{ //FUNCTION
-
-std::stringstream x;
-x << (*P) << "$";
-for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ //for each S_j in T[i]
-	if ((*j) == "E"){
-		(*epsilon) = true;
-	} else {
-		x << (*j) << "$";
-		(*Bprime).push_back(x.str().length()-2);
-	}
-}
-(*X) = x.str(); 
-(*X).pop_back();
-
-
-
-
-
-/*
-std::stringstream x;
-x << (*P) << "$"; //concatenate unique symbol to P to initiaise string X
-for (std::vector<std::string>::iterator j=(*it).begin(); j!=(*it).end(); j++){ //for each S_j in T[i]
-	if ((*j) == "E"){
-		(*epsilon) = true; //if S_j is empty string, set flag to true 
-	} else {
-		x << (*j) << "$"; //concatenate S_j and unique letter to string X
-		if ( (*j).length() >= (*P).length() ){ //if P could occur in S_j
-			//KMP( &(*P) , &(*j) , f , &(*deg) , &(*report) , &(*prev_position) , &(*reporter) , &(*logfile) );
-			KMP( &(*P) , &(*j) , f , &(*deg) , &(*report) , &(*prev_position) , &(*reporter) );
-		}
-		(*Bprime).push_back(x.str().length()-2); //in B': store ending pos of S_j in X
-	} //END_IF
-} //END_FOR
-(*X) = x.str(); //concatenation of P and all S_j, separated by unique chars
-(*X).pop_back(); //remove unecessary unique letter at end pos of X
-*/
-
-
-
-
 } //END_FUNCTION
 /************************************************************************************************
 function:
@@ -745,9 +613,6 @@ time complexity:
 space complexity:
 source: https://en.wikibooks.org/wiki/Algorithm_Implementation/String_searching/Knuth-Morris-Pratt_pattern_matcher#Python
 */
-
-
-
 void KMP
 ( //PARAMS
   std::string *pattern
